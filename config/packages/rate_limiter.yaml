@@ -1,0 +1,21 @@
+framework:
+  rate_limiter:
+    register_activation_ip:
+      policy: sliding_window
+      limit: 10
+      interval: '15 minutes'
+
+    reset_password_ip:
+      policy: sliding_window
+      limit: 10
+      interval: '15 minutes'
+
+    register_activation_email:
+      policy: fixed_window
+      limit: 3
+      interval: '30 minutes'
+
+    reset_password_email:
+      policy: fixed_window
+      limit: 3
+      interval: '30 minutes'

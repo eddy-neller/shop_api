@@ -1,0 +1,14 @@
+api_platform:
+    title: '%env(APP_TITLE)%'
+    version: '%env(APP_VERSION)%'
+    show_webby: false
+    formats:
+        json: ['application/json']
+    docs_formats:
+        html: ['text/html']
+    error_formats:
+        json: [ 'application/json' ]
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']

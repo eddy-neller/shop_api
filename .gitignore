@@ -8,3 +8,36 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+makefile.conf
+.idea
+
+# Assets and user uploads
+/assets/*
+/public/uploads/images/product/*
+!public/uploads/images/product/.gitkeep
+/public/uploads/images/user/avatar/*
+!public/uploads/images/user/avatar/.gitkeep
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+###> friendsofphp/php-cs-fixer ###
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
+###< friendsofphp/php-cs-fixer ###
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###
+
+###> squizlabs/php_codesniffer ###
+/.phpcs-cache
+/phpcs.xml
+###< squizlabs/php_codesniffer ###

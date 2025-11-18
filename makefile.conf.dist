@@ -1,0 +1,8 @@
+# Color variables using ANSI escape codes
+YELLOW := \033[0;33m
+GREEN := \033[0;32m
+RED := \033[0;31m
+RESET := \033[0m
+
+DOCKER=docker compose --env-file .env.local
+SYMFONY=symfony

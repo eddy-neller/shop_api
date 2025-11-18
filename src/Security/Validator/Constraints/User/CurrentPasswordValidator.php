@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Security\Validator\Constraints\User;
+
+use App\Entity\User\User;
+use App\Service\InfoCodes;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Component\Validator\Exception\UnexpectedTypeException;
+
+class CurrentPasswordValidator extends ConstraintValidator
+{
+    public function __construct(
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly Security $security,
+    ) {
+    }
+
+    /**
+     * Checks if the passed value is valid.
+     */
+    public function validate(mixed $value, Constraint $constraint): void
+    {
+        if (!$constraint instanceof CurrentPassword) {
+            throw new UnexpectedTypeException($constraint, CurrentPassword::class);
+        }
+
+        $user = $this->security->getUser();
+        if (!$user instanceof User) {
+            throw new AccessDeniedException(InfoCodes::USER['USER_AUTH_NOT_FOUND']);
+        }
+
+        if (!$this->passwordHasher->isPasswordValid($user, $value)) {
+            $this->context->buildViolation($constraint->message)
+                ->setCode(CurrentPassword::INVALID_PASSWORD_ERROR)
+                ->addViolation();
+        }
+    }
+}
