@@ -331,7 +331,7 @@ phone: This value should not be blank.',
 
     public static function provideUpdateAddressException(): Generator
     {
-        $notOwnerToken = 'MEMBER_4_TOKEN_PLACEHOLDER';
+        $notOwnerToken = self::PLACEHOLDERS['TOKENS']['MEMBER_1'];
 
         yield 'No role' => [
             [
@@ -377,7 +377,7 @@ phone: This value should not be blank.',
 
     public static function provideDeleteShopAddressSuccess(): Generator
     {
-        $ownerToken = 'MEMBER_TOKEN_PLACEHOLDER';
+        $ownerToken = self::PLACEHOLDERS['TOKENS']['MEMBER'];
 
         yield 'Full: Owner' => [
             [
@@ -400,7 +400,7 @@ phone: This value should not be blank.',
 
     public static function provideDeleteShopAddressException(): Generator
     {
-        $notOwnerToken = 'MEMBER_4_TOKEN_PLACEHOLDER';
+        $notOwnerToken = self::PLACEHOLDERS['TOKENS']['MEMBER_1'];
 
         yield 'No role' => [
             [],

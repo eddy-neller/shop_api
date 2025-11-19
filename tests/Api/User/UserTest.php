@@ -18,7 +18,7 @@ final class UserTest extends BaseTest
 {
     protected const string URL_API_OPE = self::URL_API . 'users';
 
-    protected const string USER_DATA = 'user_member_6';
+    protected const string USER_DATA = 'user_member';
 
     protected const array CRITERIA_IRI = ['username' => self::USER_DATA];
 
@@ -971,7 +971,7 @@ confirmNewPassword: This value should not be blank.',
 
     public static function provideUpdatePasswordSuccess(): Generator
     {
-        $ownerToken = self::PLACEHOLDERS['USER']['MEMBER'];
+        $ownerToken = self::PLACEHOLDERS['TOKENS']['MEMBER'];
 
         yield 'Update Password' => [
             [
@@ -1003,7 +1003,7 @@ confirmNewPassword: This value should not be blank.',
     public static function provideUpdatePasswordException(): Generator
     {
         $faker = Factory::create();
-        $ownerToken = self::PLACEHOLDERS['USER']['MEMBER'];
+        $ownerToken = self::PLACEHOLDERS['TOKENS']['MEMBER'];
 
         yield 'Bad Current Password' => [
             [
@@ -1149,7 +1149,7 @@ confirmNewPassword: This value should not be blank.',
             [
                 'extra' => [
                     'files' => [
-                        'avatarFile' => self::PLACEHOLDERS['IMAGES']['VENOM'],
+                        'avatarFile' => self::PLACEHOLDERS['IMAGES']['AVATAR'],
                     ],
                 ],
                 'headers' => ['Content-Type' => 'multipart/form-data'],
@@ -1183,7 +1183,7 @@ confirmNewPassword: This value should not be blank.',
             [
                 'extra' => [
                     'files' => [
-                        'avatarFile' => self::PLACEHOLDERS['IMAGES']['VENOM'],
+                        'avatarFile' => self::PLACEHOLDERS['IMAGES']['AVATAR'],
                     ],
                 ],
                 'headers' => ['Content-Type' => 'multipart/form-data'],
@@ -1273,7 +1273,7 @@ confirmNewPassword: This value should not be blank.',
             [
                 'extra' => [
                     'files' => [
-                        'avatarFile' => self::PLACEHOLDERS['IMAGES']['VENOM'],
+                        'avatarFile' => self::PLACEHOLDERS['IMAGES']['AVATAR'],
                     ],
                 ],
                 'headers' => ['Content-Type' => 'application/json'],

@@ -6,8 +6,6 @@ namespace App\Tests\Api;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
-use App\Entity\HasOwnerInterface;
-use App\Entity\User\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Faker\Factory;
 use Faker\Generator;
@@ -53,26 +51,32 @@ abstract class BaseTest extends ApiTestCase
     protected const array PLACEHOLDERS = [
         'TOKENS' => [
             'ADMIN' => 'ADMIN_TOKEN_PLACEHOLDER',
-            'MODER' => 'MODER_TOKEN_PLACEHOLDER',
             'MEMBER' => 'MEMBER_TOKEN_PLACEHOLDER',
-            'MEMBER_4' => 'MEMBER_4_TOKEN_PLACEHOLDER',
-            'MEMBER_8' => 'MEMBER_8_TOKEN_PLACEHOLDER',
-            'MODER_1' => 'MODER_1_TOKEN_PLACEHOLDER',
-            'MODER_2' => 'MODER_2_TOKEN_PLACEHOLDER',
-            'MODER_3' => 'MODER_3_TOKEN_PLACEHOLDER',
-            'ADMIN_4' => 'ADMIN_4_TOKEN_PLACEHOLDER',
+            'MEMBER_1' => 'MEMBER_1_TOKEN_PLACEHOLDER',
         ],
         'IMAGES' => [
             'PAYSAGE' => 'PAYSAGE_IMAGE_PLACEHOLDER',
+            'AVATAR' => 'AVATAR_IMAGE_PLACEHOLDER',
             'LARGE' => 'LARGE_IMAGE_PLACEHOLDER',
             'PDF' => 'PDF_IMAGE_PLACEHOLDER',
             'WIDE' => 'WIDE_IMAGE_PLACEHOLDER',
             'TALL' => 'TALL_IMAGE_PLACEHOLDER',
-            'VENOM' => 'VENOM_IMAGE_PLACEHOLDER',
         ],
-        'USER' => [
-            'MEMBER' => 'USER_MEMBER_PLACEHOLDER',
-        ],
+    ];
+
+    private const array TOKEN_PLACEHOLDER_MAPPING = [
+        'ADMIN_TOKEN_PLACEHOLDER' => 'user_admin',
+        'MEMBER_TOKEN_PLACEHOLDER' => 'user_member',
+        'MEMBER_1_TOKEN_PLACEHOLDER' => 'user_member_1',
+    ];
+
+    private const array IMAGE_PLACEHOLDER_MAPPING = [
+        'PAYSAGE_IMAGE_PLACEHOLDER' => 'paysage.jpg',
+        'AVATAR_IMAGE_PLACEHOLDER' => 'venom.jpg',
+        'LARGE_IMAGE_PLACEHOLDER' => 'large_image.jpg',
+        'PDF_IMAGE_PLACEHOLDER' => 'document.pdf',
+        'WIDE_IMAGE_PLACEHOLDER' => 'wide_image.jpg',
+        'TALL_IMAGE_PLACEHOLDER' => 'tall_image.jpg',
     ];
 
     protected Client $client;
@@ -263,7 +267,7 @@ abstract class BaseTest extends ApiTestCase
 
             try {
                 $items = $res->toArray();
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 throw new RuntimeException('findIriByHttp: invalid response');
             }
 
@@ -403,26 +407,6 @@ abstract class BaseTest extends ApiTestCase
         return $this->getManager()->getRepository($class)->findOneBy($criteria); // @phpstan-ignore-line
     }
 
-    protected function getOwner(mixed $class, array $criteria): string
-    {
-        /** @var HasOwnerInterface $instance */
-        $instance = $this->getInstance($class, $criteria);
-
-        return $instance->getUser()->getUsername();
-    }
-
-    protected function getNotOwner(mixed $class, array $criteria, string $role): string
-    {
-        $owner = $this->getOwner($class, $criteria);
-
-        return match ($role) {
-            User::ROLES['admin'] => $this->filterUsers($owner, $this->listOtherAdmin),
-            User::ROLES['moder'] => $this->filterUsers($owner, $this->listOtherModer),
-            User::ROLES['user'] => $this->filterUsers($owner, $this->listOtherMember),
-            default => null,
-        };
-    }
-
     protected function getImage(string $filename, string $suffix): UploadedFile
     {
         return $this->getPhysicalTempFile($filename, $suffix);
@@ -543,62 +527,36 @@ abstract class BaseTest extends ApiTestCase
         return $res;
     }
 
-    private function filterUsers(string $owner, array $otherUsers): string
-    {
-        $user = $otherUsers[0];
-        foreach ($otherUsers as $user) {
-            if ($user !== $owner) {
-                break;
-            }
-        }
-
-        return $user;
-    }
-
-    /**
-     * Code à remplacer dès que possible.
-     */
     private function replacePlaceholders(array $options): array
     {
-        // Replace token placeholders
-        if (isset($options['auth_bearer'])) {
-            $tokenPlaceholder = $options['auth_bearer'];
+        $options = $this->replaceTokenPlaceholders($options);
 
-            if ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['ADMIN']) {
-                $options['auth_bearer'] = $this->getToken($this->userAdmin);
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['MODER']) {
-                $options['auth_bearer'] = $this->getToken($this->userModer);
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['MEMBER']) {
-                $options['auth_bearer'] = $this->getToken($this->userMember);
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['MEMBER_4']) {
-                $options['auth_bearer'] = $this->getToken('user_member_4');
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['MEMBER_8']) {
-                $options['auth_bearer'] = $this->getToken('user_member_8');
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['MODER_1']) {
-                $options['auth_bearer'] = $this->getToken('user_moder_1');
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['MODER_2']) {
-                $options['auth_bearer'] = $this->getToken('user_moder_2');
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['MODER_3']) {
-                $options['auth_bearer'] = $this->getToken('user_moder_3');
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['TOKENS']['ADMIN_4']) {
-                $options['auth_bearer'] = $this->getToken('user_admin_4');
-            } elseif ($tokenPlaceholder === self::PLACEHOLDERS['USER']['MEMBER']) {
-                $options['auth_bearer'] = $this->getToken('user_member_6');
-            }
+        return $this->replaceFilePlaceholders($options);
+    }
+
+    private function replaceTokenPlaceholders(array $options): array
+    {
+        if (!isset($options['auth_bearer'])) {
+            return $options;
         }
 
-        // Replace image placeholders in files
-        if (isset($options['files']['imageFile'])) {
-            $options['files']['imageFile'] = $this->replaceImagePlaceholder($options['files']['imageFile']);
+        $tokenPlaceholder = $options['auth_bearer'];
+
+        if (isset(self::TOKEN_PLACEHOLDER_MAPPING[$tokenPlaceholder])) {
+            $username = self::TOKEN_PLACEHOLDER_MAPPING[$tokenPlaceholder];
+            $options['auth_bearer'] = $this->getToken($username);
         }
 
-        // Replace image placeholders in extra/files
-        if (isset($options['extra']['files']['imageFile'])) {
+        return $options;
+    }
+
+    private function replaceFilePlaceholders(array $options): array
+    {
+        if (isset($options['extra']['files']['imageFile']) && is_string($options['extra']['files']['imageFile'])) {
             $options['extra']['files']['imageFile'] = $this->replaceImagePlaceholder($options['extra']['files']['imageFile']);
         }
 
-        // Replace avatar file placeholders in extra/files
-        if (isset($options['extra']['files']['avatarFile'])) {
+        if (isset($options['extra']['files']['avatarFile']) && is_string($options['extra']['files']['avatarFile'])) {
             $options['extra']['files']['avatarFile'] = $this->replaceImagePlaceholder($options['extra']['files']['avatarFile']);
         }
 
@@ -607,15 +565,13 @@ abstract class BaseTest extends ApiTestCase
 
     private function replaceImagePlaceholder(string $placeholder): UploadedFile|string
     {
-        return match ($placeholder) {
-            self::PLACEHOLDERS['IMAGES']['PAYSAGE'] => $this->getImage('paysage.jpg', __METHOD__),
-            self::PLACEHOLDERS['IMAGES']['LARGE'] => $this->getImage('large_image.jpg', __METHOD__),
-            self::PLACEHOLDERS['IMAGES']['PDF'] => $this->getImage('document.pdf', __METHOD__),
-            self::PLACEHOLDERS['IMAGES']['WIDE'] => $this->getImage('wide_image.jpg', __METHOD__),
-            self::PLACEHOLDERS['IMAGES']['TALL'] => $this->getImage('tall_image.jpg', __METHOD__),
-            self::PLACEHOLDERS['IMAGES']['VENOM'] => $this->getImage('venom.jpg', __METHOD__),
-            default => $placeholder,
-        };
+        if (!isset(self::IMAGE_PLACEHOLDER_MAPPING[$placeholder])) {
+            return $placeholder;
+        }
+
+        $filename = self::IMAGE_PLACEHOLDER_MAPPING[$placeholder];
+
+        return $this->getImage($filename, __METHOD__);
     }
 
     private function getPhysicalTempFile(string $filename, string $suffix): UploadedFile
