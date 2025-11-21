@@ -1,0 +1,23 @@
+{% extends 'emails/layout.html.twig' %}
+
+{% block btn %}
+    <a href="{{ link is not null ? link : '#' }}"
+       target="_blank" rel="noopener"
+       title="{% block btn_title %}{% endblock %}"
+       class="btn">
+        {% block btn_text %}{% endblock %}
+    </a>
+{% endblock %}
+
+{% block broken %}
+    <p class="broken-text">
+        {{ 'broken_btn_link'|trans({}, 'messages', locale)|raw }}
+    </p>
+    <p class="broken-url">
+        <a href="{{ link }}" target="_blank" rel="noopener" class="fallback-link" title="{{ link }}">
+            {{ link }}
+        </a>
+    </p>
+{% endblock %}
+
+{% block rights %} {{ 'rights'|trans({}, 'messages', locale)|raw }} {% endblock %}

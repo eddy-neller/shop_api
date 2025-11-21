@@ -1,0 +1,28 @@
+{% apply inline_css(source('emails/style.css')) %}
+    <div class="wrapper">
+        <div class="container">
+            <header class="header">
+                <div class="brand">{{ app_title }}</div>
+            </header>
+
+            <h1 class="h1">{% block h1 %}{% endblock %}</h1>
+            <hr class="divider"/>
+
+            <main class="content">
+                {% block content %}{% endblock %}
+            </main>
+
+            {% block row_button %}
+                <div class="cta">
+                    {% block btn %}{% endblock %}
+                </div>
+                <div class="brokenlink">{% block broken %}{% endblock %}</div>
+            {% endblock %}
+
+            <footer class="footer">
+                <p>&copy; {{ 'now'|date('Y') }} {{ app_title }}</p>
+                <p>{% block rights %}{% endblock %}</p>
+            </footer>
+        </div>
+    </div>
+{% endapply %}

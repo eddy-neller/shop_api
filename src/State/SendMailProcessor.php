@@ -31,8 +31,9 @@ readonly class SendMailProcessor implements ProcessorInterface
         }
 
         $request = $context['request'] ?? null;
+
         $acceptLanguage = $request instanceof Request
-            ? $request->headers->get('Accept-Language', 'en')
+            ? $request->getPreferredLanguage($this->parameterBag->get('app.enabled_locales'))
             : 'en';
 
         $email = (new TemplatedEmail())

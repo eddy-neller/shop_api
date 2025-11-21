@@ -1,0 +1,27 @@
+{% extends 'emails/templateWithButton.html.twig' %}
+
+{% set locale = userLocale is defined ? userLocale|lower : defaultLocale  %}
+
+{% block h1 %}
+    {{ 'user.register.activation.title'|trans({}, 'messages', locale) }}
+{% endblock %}
+
+{% block content %}
+    <p>
+        {{ ('user.register.activation.content')|trans({'%firstname%': firstname, '%appName%': app_title}, 'messages', locale)|raw }}
+    </p>
+
+    {% if plan is defined and plan %}
+        <p style="background-color:rgb(33, 12, 129); padding: 15px; border-radius: 5px; margin: 20px 0;">
+            {{ 'user.register.activation.selectedPlan'|trans({}, 'messages', locale) }} : <strong>{{ plan|capitalize }}</strong><br>
+            <small>{{ 'user.register.activation.planContent'|trans({}, 'messages', locale) }}.</small>
+        </p>
+    {% endif %}
+{% endblock %}
+
+{% block btn_title %}
+    {{ 'user.register.activation.title'|trans({}, 'messages', locale) }}
+{% endblock%}
+{% block btn_text %}
+    {{ 'user.register.activation.title'|trans({}, 'messages', locale)|raw }}
+{% endblock%}
