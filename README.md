@@ -1,4 +1,4 @@
-# E.N E-commerce API
+# E.N Shop API
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.com/en-develop/ecommerce-api.git
+git remote add origin https://gitlab.com/en-develop/shop-api.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://gitlab.com/en-develop/ecommerce-api/-/settings/integrations)
+- [ ] [Set up project integrations](https://gitlab.com/en-develop/shop-api/-/settings/integrations)
 
 ## Collaborate with your team
 

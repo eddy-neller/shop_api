@@ -2,7 +2,7 @@
 services:
 ###> doctrine/doctrine-bundle ###
   database:
-    container_name: en_commerce_api_database
+    container_name: en_shop_api_database
     restart: always
     build:
         context: ./docker/database

@@ -1,8 +1,8 @@
 {
-    "name": "en-ecommerce/api",
+    "name": "en-shop/api",
     "type": "project",
     "license": "proprietary",
-    "description": "E.N Develop - E-commerce API",
+    "description": "E.N Shop API",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
@@ -50,8 +50,7 @@
         "twig/cssinliner-extra": "^3.22",
         "twig/extra-bundle": "^3.22.1",
         "vich/uploader-bundle": ">=2.8.1"
-    }
-    ,
+    },
     "require-dev": {
         "dama/doctrine-test-bundle": ">=8.4",
         "doctrine/doctrine-fixtures-bundle": "^4.3",

@@ -9,7 +9,7 @@ class SendMailInput
 {
     #[Groups(['send_mail:write'])]
     #[Assert\NotBlank]
-    #[Assert\Length(min: 2, max: 20)]
+    #[Assert\Length(min: 2, max: 50)]
     public string $name;
 
     #[Groups(['send_mail:write'])]
@@ -20,11 +20,11 @@ class SendMailInput
 
     #[Groups(['send_mail:write'])]
     #[Assert\NotBlank]
-    #[Assert\Length(min: 3, max: 100)]
+    #[Assert\Length(min: 5, max: 100)]
     public string $subject;
 
     #[Groups(['send_mail:write'])]
     #[Assert\NotBlank]
-    #[Assert\Length(min: 5, max: 1000)]
+    #[Assert\Length(min: 10, max: 1000)]
     public string $message;
 }
