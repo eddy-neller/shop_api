@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\User\State\Me;
+
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
+use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarCommand;
+use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarOutput;
+use App\Presentation\Shared\Adapter\SymfonyFileAdapter;
+use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\User\Dto\Me\UserMeAvatarInput;
+use App\Presentation\User\Presenter\UserResourcePresenter;
+use App\Presentation\User\Security\UserMeSecurityTrait;
+use LogicException;
+use Symfony\Bundle\SecurityBundle\Security;
+
+readonly class UserMeAvatarProcessor implements ProcessorInterface
+{
+    use UserMeSecurityTrait;
+
+    public function __construct(
+        private Security $security,
+        private CommandBusInterface $commandBus,
+        private UserResourcePresenter $userResourcePresenter,
+    ) {
+    }
+
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+    {
+        if (!$data instanceof UserMeAvatarInput) {
+            throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
+        }
+
+        $user = $this->getCurrentUserOrThrow();
+        $userId = $this->getUserIdFromAuthenticatedUser($user);
+
+        // Adapter le File Symfony en FileInterface
+        $fileAdapter = new SymfonyFileAdapter($data->avatarFile);
+
+        $command = new UploadAndUpdateAvatarCommand(
+            userId: $userId,
+            avatarFile: $fileAdapter,
+        );
+        /** @var UploadAndUpdateAvatarOutput $output */
+        $output = $this->commandBus->dispatch($command);
+
+        return $this->userResourcePresenter->toResource($output->user);
+    }
+
+    protected function getSecurity(): Security
+    {
+        return $this->security;
+    }
+}

@@ -25,31 +25,54 @@ parameters:
 services:
     # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
+        autowire: true # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
-        resource: '../src/'
+        resource: "../src/"
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
-    App\OpenApi\JwtDecorator:
-        decorates: "api_platform.openapi.factory"
-        arguments: ["@.inner"]
+    App\Application\:
+        resource: "../application/src/"
 
-    App\Serializer\ContextBuilder\AutoGroup:
-        decorates: "api_platform.serializer.context_builder"
-        arguments: ['@App\Serializer\ContextBuilder\AutoGroup.inner']
-        autoconfigure: false
+    App\Infrastructure\:
+        resource: "../infrastructure/src/"
 
-    App\Serializer\ContextBuilder\AdminGroup:
-        decorates: "api_platform.serializer.context_builder"
-        arguments: ['@App\Serializer\ContextBuilder\AdminGroup.inner']
-        autoconfigure: false
+    App\Presentation\:
+        resource: "../presentation/src/"
 
-    App\EventListener\LocaleListener:
+    # CQRS - configuration manuelle des handlers
+    App\Application\User\UseCase\Command\:
+        resource: "../application/src/User/UseCase/Command/**/*Handler.php"
+        tags: ["app.cqrs.command_handler"]
+
+    App\Application\User\UseCase\Query\:
+        resource: "../application/src/User/UseCase/Query/**/*Handler.php"
+        tags: ["app.cqrs.query_handler"]
+
+    # CQRS - Configuration des resolvers avec injection manuelle des ServiceLocators
+    App\Application\Shared\CQRS\Command\CommandHandlerResolver:
         arguments:
-            $translatableListener: "@stof_doctrine_extensions.listener.translatable"
-            $enabledLocales: "%app.enabled_locales%"
+            $handlerLocator: !tagged_locator { tag: "app.cqrs.command_handler" }
+
+    App\Application\Shared\CQRS\Query\QueryHandlerResolver:
+        arguments:
+            $handlerLocator: !tagged_locator { tag: "app.cqrs.query_handler" }
+
+    # CQRS - Configuration des middlewares
+    App\Application\Shared\CQRS\Middleware\CommandLoggingMiddleware:
+        tags: ["app.cqrs.command_middleware"]
+
+    App\Application\Shared\CQRS\Middleware\QueryLoggingMiddleware:
+        tags: ["app.cqrs.query_middleware"]
+
+    # CQRS - Configuration des Bus avec injection manuelle des middlewares
+    App\Application\Shared\CQRS\Command\CommandBus:
+        arguments:
+            $middlewares:
+                !tagged_iterator { tag: "app.cqrs.command_middleware" }
+
+    App\Application\Shared\CQRS\Query\QueryBus:
+        arguments:
+            $middlewares: !tagged_iterator { tag: "app.cqrs.query_middleware" }

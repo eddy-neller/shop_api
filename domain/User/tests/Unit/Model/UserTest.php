@@ -1,0 +1,354 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\User\Tests\Unit\Model;
+
+use App\Domain\User\Event\PasswordResetRequestedEvent;
+use App\Domain\User\Event\UserActivatedEvent;
+use App\Domain\User\Event\UserCreatedByAdminEvent;
+use App\Domain\User\Event\UserRegisteredEvent;
+use App\Domain\User\Event\UserUpdatedByAdminEvent;
+use App\Domain\User\Exception\ActivationLimitReachedException;
+use App\Domain\User\Exception\ResetPasswordLimitReachedException;
+use App\Domain\User\Exception\UserLockedException;
+use App\Domain\User\Model\User;
+use App\Domain\User\ValueObject\ActiveEmail;
+use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\ValueObject\HashedPassword;
+use App\Domain\User\ValueObject\Preferences;
+use App\Domain\User\ValueObject\ResetPassword;
+use App\Domain\User\ValueObject\RoleSet;
+use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Username;
+use App\Domain\User\ValueObject\UserStatus;
+use DateTimeImmutable;
+use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
+
+final class UserTest extends TestCase
+{
+    public function testRegisterCreatesInactiveUserWithDefaultRole(): void
+    {
+        $user = $this->createUser();
+
+        $this->assertFalse($user->isActive());
+        $this->assertSame(['ROLE_USER'], $user->getRoles()->all());
+        $this->assertSame(UserStatus::INACTIVE, $user->getStatus()->toInt());
+        $this->assertCount(1, $user->getDomainEvents());
+    }
+
+    public function testRegisterRecordsUserRegisteredEvent(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $user = User::register(
+            id: $userId,
+            username: new Username('john'),
+            email: new EmailAddress('john@example.com'),
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'fr']),
+            now: new DateTimeImmutable(),
+        );
+
+        $events = $user->getDomainEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(UserRegisteredEvent::class, $events[0]);
+    }
+
+    public function testCreateByAdminCreatesUserWithCustomRolesAndStatus(): void
+    {
+        $roles = ['ROLE_ADMIN', 'ROLE_USER'];
+        $user = User::createByAdmin(
+            id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
+            username: new Username('admin'),
+            email: new EmailAddress('admin@example.com'),
+            password: new HashedPassword('hash'),
+            roles: new RoleSet($roles),
+            status: UserStatus::fromInt(UserStatus::ACTIVE),
+            now: new DateTimeImmutable(),
+        );
+
+        $this->assertSame($roles, $user->getRoles()->all());
+        $this->assertTrue($user->isActive());
+        $events = $user->getDomainEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(UserCreatedByAdminEvent::class, $events[0]);
+    }
+
+    public function testRequestActivationIncrementsMailSentAndStoresToken(): void
+    {
+        $user = $this->createUser();
+        $token = 'activation-token';
+        $now = new DateTimeImmutable();
+        $expiresAt = new DateTimeImmutable('+1 day');
+
+        $user->requestActivation($token, $expiresAt, $now);
+
+        $this->assertSame(1, $user->getActiveEmail()->getMailSent());
+        $this->assertSame($token, $user->getActiveEmail()->getToken());
+        $this->assertSame($expiresAt->getTimestamp(), $user->getActiveEmail()->getTokenTtl());
+    }
+
+    public function testRequestActivationThrowsWhenLimitReached(): void
+    {
+        $user = $this->createUser();
+        $this->setActiveEmail($user, new ActiveEmail(mailSent: 3));
+
+        $this->expectException(ActivationLimitReachedException::class);
+
+        $user->requestActivation('token', new DateTimeImmutable('+1 day'), new DateTimeImmutable());
+    }
+
+    public function testActivateSetsUserActiveAndClearsActivationToken(): void
+    {
+        $user = $this->createUser();
+        $user->requestActivation('token', new DateTimeImmutable('+1 day'), new DateTimeImmutable());
+        $user->clearDomainEvents(); // Clear previous events
+
+        $now = new DateTimeImmutable();
+        $user->activate($now);
+
+        $this->assertTrue($user->isActive());
+        $this->assertNull($user->getActiveEmail()->getToken());
+        $this->assertSame(0, $user->getActiveEmail()->getMailSent());
+
+        $events = $user->getDomainEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(UserActivatedEvent::class, $events[0]);
+    }
+
+    public function testRequestPasswordResetStoresTokenAndIncrementsMailSent(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $email = new EmailAddress('john@example.com');
+        $user = User::register(
+            id: $userId,
+            username: new Username('john'),
+            email: $email,
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'fr']),
+            now: new DateTimeImmutable(),
+        );
+        $user->activate(new DateTimeImmutable());
+        $user->clearDomainEvents();
+
+        $token = 'reset-token';
+        $now = new DateTimeImmutable();
+        $expiresAt = new DateTimeImmutable('+15 minutes');
+
+        $user->requestPasswordReset($token, $expiresAt, $now);
+
+        $this->assertSame(1, $user->getResetPassword()->getMailSent());
+        $this->assertSame($token, $user->getResetPassword()->getToken());
+        $this->assertSame($expiresAt->getTimestamp(), $user->getResetPassword()->getTokenTtl());
+
+        $events = $user->getDomainEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(PasswordResetRequestedEvent::class, $events[0]);
+
+        /** @var PasswordResetRequestedEvent $event */
+        $event = $events[0];
+        $this->assertTrue($userId->equals($event->getUserId()));
+        $this->assertSame($email, $event->getEmail());
+        $this->assertSame($now, $event->occurredOn());
+        $this->assertSame('user.password_reset.requested', $event->eventName());
+    }
+
+    public function testRequestPasswordResetThrowsWhenUserIsLocked(): void
+    {
+        $user = $this->createUser();
+        $this->setStatus($user, UserStatus::fromInt(UserStatus::BLOCKED));
+
+        $this->expectException(UserLockedException::class);
+
+        $user->requestPasswordReset('token', new DateTimeImmutable('+15 minutes'), new DateTimeImmutable());
+    }
+
+    public function testRequestPasswordResetThrowsWhenLimitReached(): void
+    {
+        $user = $this->createActiveUser();
+        $this->setResetPassword($user, new ResetPassword(mailSent: 3));
+
+        $this->expectException(ResetPasswordLimitReachedException::class);
+
+        $user->requestPasswordReset('token', new DateTimeImmutable('+15 minutes'), new DateTimeImmutable());
+    }
+
+    public function testCompletePasswordResetChangesPasswordAndClearsToken(): void
+    {
+        $user = $this->createActiveUser();
+        $user->requestActivation('token', new DateTimeImmutable('+15 minutes'), new DateTimeImmutable());
+
+        $newPassword = new HashedPassword('new-hashed-password');
+        $now = new DateTimeImmutable();
+
+        $user->completePasswordReset($newPassword, $now);
+
+        $this->assertSame($newPassword, $user->getPassword());
+        $this->assertNull($user->getResetPassword()->getToken());
+        $this->assertSame(0, $user->getResetPassword()->getMailSent());
+    }
+
+    public function testChangePasswordUpdatesPasswordOnly(): void
+    {
+        $user = $this->createActiveUser();
+        $oldPassword = $user->getPassword();
+        $newPassword = new HashedPassword('new-password');
+        $now = new DateTimeImmutable();
+
+        $user->changePassword($newPassword, $now);
+
+        $this->assertSame($newPassword, $user->getPassword());
+        $this->assertNotSame($oldPassword, $user->getPassword());
+    }
+
+    public function testUpdateByAdminUpdatesOnlyProvidedFields(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $user = User::register(
+            id: $userId,
+            username: new Username('john'),
+            email: new EmailAddress('john@example.com'),
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'fr']),
+            now: new DateTimeImmutable(),
+        );
+        $user->activate(new DateTimeImmutable());
+        $user->clearDomainEvents();
+
+        $originalEmail = $user->getEmail();
+        $newUsername = new Username('updated-username');
+        $now = new DateTimeImmutable();
+
+        $user->updateByAdmin(
+            now: $now,
+            username: $newUsername,
+        );
+
+        $this->assertSame($newUsername, $user->getUsername());
+        $this->assertSame($originalEmail, $user->getEmail());
+
+        $events = $user->getDomainEvents();
+        $this->assertCount(1, $events);
+        $this->assertInstanceOf(UserUpdatedByAdminEvent::class, $events[0]);
+
+        /** @var UserUpdatedByAdminEvent $event */
+        $event = $events[0];
+        $this->assertTrue($userId->equals($event->getUserId()));
+        $this->assertSame($now, $event->occurredOn());
+        $this->assertSame('user.updated_by_admin', $event->eventName());
+    }
+
+    public function testUpdateByAdminDoesNotRecordEventWhenNoChanges(): void
+    {
+        $user = $this->createActiveUser();
+        $now = new DateTimeImmutable();
+
+        $user->updateByAdmin(now: $now);
+
+        $events = $user->getDomainEvents();
+        $this->assertCount(0, $events);
+    }
+
+    public function testIsLockedReturnsTrueWhenUserBlocked(): void
+    {
+        $user = $this->createUser();
+        $this->setStatus($user, UserStatus::fromInt(UserStatus::BLOCKED));
+
+        $this->assertTrue($user->isLocked());
+    }
+
+    public function testIsActiveReturnsFalseForInactiveUser(): void
+    {
+        $user = $this->createUser();
+
+        $this->assertFalse($user->isActive());
+    }
+
+    public function testEqualsReturnsTrueForSameUser(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $user1 = User::register(
+            id: $userId,
+            username: new Username('john'),
+            email: new EmailAddress('john@example.com'),
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'fr']),
+            now: new DateTimeImmutable(),
+        );
+        $user2 = User::register(
+            id: $userId,
+            username: new Username('jane'),
+            email: new EmailAddress('jane@example.com'),
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'en']),
+            now: new DateTimeImmutable(),
+        );
+
+        $this->assertTrue($user1->equals($user2));
+    }
+
+    public function testEqualsReturnsFalseForDifferentUsers(): void
+    {
+        $user1 = User::register(
+            id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
+            username: new Username('john'),
+            email: new EmailAddress('john@example.com'),
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'fr']),
+            now: new DateTimeImmutable(),
+        );
+        $user2 = User::register(
+            id: UserId::fromString('550e8400-e29b-41d4-a716-446655440001'),
+            username: new Username('jane'),
+            email: new EmailAddress('jane@example.com'),
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'en']),
+            now: new DateTimeImmutable(),
+        );
+
+        $this->assertFalse($user1->equals($user2));
+    }
+
+    private function createUser(): User
+    {
+        return User::register(
+            id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
+            username: new Username('john'),
+            email: new EmailAddress('john@example.com'),
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'fr']),
+            now: new DateTimeImmutable(),
+        );
+    }
+
+    private function createActiveUser(): User
+    {
+        $user = $this->createUser();
+        $user->activate(new DateTimeImmutable());
+        $user->clearDomainEvents(); // Clear events
+
+        return $user;
+    }
+
+    private function setActiveEmail(User $user, ActiveEmail $activeEmail): void
+    {
+        $this->setProperty($user, 'activeEmail', $activeEmail);
+    }
+
+    private function setStatus(User $user, UserStatus $status): void
+    {
+        $this->setProperty($user, 'status', $status);
+    }
+
+    private function setResetPassword(User $user, ResetPassword $resetPassword): void
+    {
+        $this->setProperty($user, 'resetPassword', $resetPassword);
+    }
+
+    private function setProperty(User $user, string $property, mixed $value): void
+    {
+        $reflection = new ReflectionProperty(User::class, $property);
+        $reflection->setValue($user, $value);
+    }
+}

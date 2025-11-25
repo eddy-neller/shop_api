@@ -1,7 +1,7 @@
 {
     "name": "en-shop/api",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "description": "E.N Shop API",
     "minimum-stability": "stable",
     "prefer-stable": true,
@@ -85,12 +85,21 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "App\\": "src/",
+            "App\\Application\\": "application/src/",
+            "App\\Domain\\SharedKernel\\": "domain/SharedKernel/src/",
+            "App\\Domain\\User\\": "domain/User/src/",
+            "App\\Infrastructure\\": "infrastructure/src/",
+            "App\\Presentation\\": "presentation/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "App\\Tests\\": "tests/",
+            "App\\Application\\Tests\\": "application/tests/",
+            "App\\Domain\\User\\Tests\\": "domain/User/tests/",
+            "App\\Infrastructure\\Tests\\": "infrastructure/tests/",
+            "App\\Presentation\\Tests\\": "presentation/tests/"
         }
     },
     "replace": {

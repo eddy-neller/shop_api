@@ -1,0 +1,183 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\EventSubscriber\User;
+
+use App\Application\User\Port\TokenProviderInterface;
+use App\Application\User\Port\UserNotifierInterface;
+use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\Event\ActivationEmailRequestedEvent;
+use App\Domain\User\Event\PasswordResetCompletedEvent;
+use App\Domain\User\Event\PasswordResetRequestedEvent;
+use App\Domain\User\Event\UserActivatedEvent;
+use App\Domain\User\Event\UserCreatedByAdminEvent;
+use App\Domain\User\Event\UserDeletedEvent;
+use App\Domain\User\Event\UserRegisteredEvent;
+use App\Domain\User\Event\UserUpdatedByAdminEvent;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+/**
+ * Subscriber centralisé pour tous les événements liés aux utilisateurs.
+ * Simplifie la gestion des événements et nettoie la configuration services.yaml.
+ */
+final class UserEventSubscriber implements EventSubscriberInterface
+{
+    public function __construct(
+        private readonly UserRepositoryInterface $repository,
+        private readonly TokenProviderInterface $tokenProvider,
+        private readonly UserNotifierInterface $notifier,
+        private readonly LoggerInterface $logger,
+    ) {
+    }
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            'user.registered' => 'onUserRegistered',
+            'user.password_reset.requested' => 'onPasswordResetRequested',
+            'user.activation_email.requested' => 'onActivationEmailRequested',
+            'user.activated' => 'onUserActivated',
+            'user.password_reset.completed' => 'onPasswordResetCompleted',
+            'user.deleted' => 'onUserDeleted',
+            'user.created_by_admin' => 'onUserCreatedByAdmin',
+            'user.updated_by_admin' => 'onUserUpdatedByAdmin',
+        ];
+    }
+
+    public function onUserRegistered(UserRegisteredEvent $event): void
+    {
+        $this->logger->info('User registered', [
+            'user_id' => $event->getUserId()->toString(),
+            'email' => $event->getEmail()->toString(),
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        $user = $this->repository->findById($event->getUserId());
+
+        if (null === $user) {
+            return;
+        }
+
+        $activeEmail = $user->getActiveEmail();
+        $token = $activeEmail->getToken();
+
+        if (null !== $token) {
+            $encoded = $this->tokenProvider->encode($token, $event->getEmail());
+            $this->notifier->sendActivationEmail($user, $encoded);
+        }
+    }
+
+    public function onPasswordResetRequested(PasswordResetRequestedEvent $event): void
+    {
+        $this->logger->info('Password reset requested', [
+            'user_id' => $event->getUserId()->toString(),
+            'email' => $event->getEmail()->toString(),
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        $user = $this->repository->findById($event->getUserId());
+
+        if (null === $user) {
+            return;
+        }
+
+        $resetPassword = $user->getResetPassword();
+        $token = $resetPassword->getToken();
+
+        if (null !== $token) {
+            $encoded = $this->tokenProvider->encode($token, $event->getEmail());
+            $this->notifier->sendResetPasswordEmail($user, $encoded);
+        }
+    }
+
+    public function onActivationEmailRequested(ActivationEmailRequestedEvent $event): void
+    {
+        $this->logger->info('Activation email requested', [
+            'user_id' => $event->getUserId()->toString(),
+            'email' => $event->getEmail()->toString(),
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        $user = $this->repository->findById($event->getUserId());
+
+        if (null === $user) {
+            return;
+        }
+
+        $activeEmail = $user->getActiveEmail();
+        $token = $activeEmail->getToken();
+
+        if (null !== $token) {
+            $encoded = $this->tokenProvider->encode($token, $event->getEmail());
+            $this->notifier->sendActivationEmail($user, $encoded);
+        }
+    }
+
+    public function onUserActivated(UserActivatedEvent $event): void
+    {
+        $this->logger->info('User activated', [
+            'user_id' => $event->getUserId()->toString(),
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        // Ici, on peut ajouter d'autres actions :
+        // - Envoyer un email de bienvenue
+        // - Créer des données par défaut
+        // - Notifier d'autres systèmes
+    }
+
+    public function onPasswordResetCompleted(PasswordResetCompletedEvent $event): void
+    {
+        $this->logger->info('Password reset completed', [
+            'user_id' => $event->getUserId()->toString(),
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        // Ici, on peut ajouter d'autres actions :
+        // - Envoyer un email de confirmation
+        // - Notifier les systèmes de sécurité
+        // - Invalider les sessions actives
+    }
+
+    public function onUserDeleted(UserDeletedEvent $event): void
+    {
+        $this->logger->info('User deleted', [
+            'user_id' => $event->getUserId()->toString(),
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        // Ici, on peut ajouter d'autres actions :
+        // - Nettoyer les données associées
+        // - Notifier les systèmes externes
+        // - Archiver les données
+    }
+
+    public function onUserCreatedByAdmin(UserCreatedByAdminEvent $event): void
+    {
+        $this->logger->info('User created by admin', [
+            'user_id' => $event->getUserId()->toString(),
+            'email' => $event->getEmail()->toString(),
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        // Ici, on peut ajouter d'autres actions :
+        // - Envoyer un email de notification à l'utilisateur
+        // - Créer des données par défaut
+        // - Notifier d'autres systèmes
+    }
+
+    public function onUserUpdatedByAdmin(UserUpdatedByAdminEvent $event): void
+    {
+        $this->logger->info('User updated by admin', [
+            'user_id' => $event->getUserId()->toString(),
+            'occurred_on' => $event->occurredOn()->format('Y-m-d H:i:s'),
+        ]);
+
+        // Ici, on peut ajouter d'autres actions :
+        // - Notifier l'utilisateur des changements
+        // - Synchroniser avec d'autres systèmes
+        // - Archiver les modifications
+    }
+}

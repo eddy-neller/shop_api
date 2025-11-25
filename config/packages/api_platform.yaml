@@ -1,14 +1,18 @@
 api_platform:
-    title: '%env(APP_TITLE)%'
-    version: '%env(APP_VERSION)%'
+    title: "%env(APP_TITLE)%"
+    version: "%env(APP_VERSION)%"
     show_webby: false
+    mapping:
+        paths:
+            - "%kernel.project_dir%/src/Entity"
+            - "%kernel.project_dir%/presentation/src"
     formats:
-        json: ['application/json']
+        json: ["application/json"]
     docs_formats:
-        html: ['text/html']
+        html: ["text/html"]
     error_formats:
-        json: [ 'application/json' ]
+        json: ["application/json"]
     defaults:
         stateless: true
         cache_headers:
-            vary: ['Content-Type', 'Authorization', 'Origin']
+            vary: ["Content-Type", "Authorization", "Origin"]

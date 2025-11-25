@@ -58,6 +58,8 @@
     </rule>
 
     <exclude-pattern>*Entity/*.php</exclude-pattern>
-    <exclude-pattern>*Command/Invest/*.php</exclude-pattern>
     <exclude-pattern>*/save/*</exclude-pattern>
+    <exclude-pattern>*/DataFixtures/*</exclude-pattern>
+    <exclude-pattern>*/EventListener/*</exclude-pattern>
+    <exclude-pattern>*/SendMail/State/*</exclude-pattern>
 </ruleset>

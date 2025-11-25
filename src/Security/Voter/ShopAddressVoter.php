@@ -2,8 +2,9 @@
 
 namespace App\Security\Voter;
 
+use App\Domain\User\ValueObject\RoleSet;
 use App\Entity\Shop\Address;
-use App\Entity\User\User;
+use App\Infrastructure\Entity\User\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -44,7 +45,7 @@ class ShopAddressVoter extends Voter
 
         /* @var Address $subject */
         return match ($attribute) {
-            self::ITEM_READ, self::ITEM_WRITE => $this->security->isGranted(User::ROLES['admin']) || $user->getId() === $subject->getUser()->getId(),
+            self::ITEM_READ, self::ITEM_WRITE => $this->security->isGranted(RoleSet::ROLE_ADMIN) || $user->getId()->toString() === $subject->getUser()->getId()->toString(),
             default => false,
         };
     }

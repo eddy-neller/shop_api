@@ -12,10 +12,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
-use App\Entity\User\User;
+use App\Domain\User\ValueObject\RoleSet;
+use App\Presentation\RouteRequirements;
+use App\Presentation\Shared\State\PaginatedCollectionProvider;
 use App\Repository\Shop\CarrierRepository;
-use App\Service\RouteRequirements;
-use App\State\PaginatedCollectionProvider;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -41,7 +41,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('" . User::ROLES['admin'] . "')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'patch',
         ),
         new Delete(
@@ -50,7 +50,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('" . User::ROLES['admin'] . "')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'delete',
         ),
         new Post(
@@ -58,7 +58,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('" . User::ROLES['admin'] . "')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'post',
         ),
         new GetCollection(

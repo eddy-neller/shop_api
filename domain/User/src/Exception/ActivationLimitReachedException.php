@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Domain\User\Exception;
+
+final class ActivationLimitReachedException extends UserDomainException
+{
+    public function __construct()
+    {
+        parent::__construct("Nombre maximal d'emails d'activation atteint.");
+    }
+}

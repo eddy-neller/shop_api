@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\User\UseCase\Query\CheckPasswordResetToken;
+
+use App\Application\User\Port\TokenProviderInterface;
+use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\ValueObject\EmailAddress;
+
+final class CheckPasswordResetTokenHandler
+{
+    public function __construct(
+        private readonly UserRepositoryInterface $repository,
+        private readonly TokenProviderInterface $tokenProvider,
+    ) {
+    }
+
+    public function handle(CheckPasswordResetTokenQuery $query): CheckPasswordResetTokenOutput
+    {
+        $split = $this->tokenProvider->split($query->token);
+        $email = new EmailAddress($split['email'] ?? '');
+        $rawToken = $split['token'] ?? '';
+
+        $user = $this->repository->findByResetPasswordToken($rawToken);
+
+        if (null === $user || !$user->getEmail()->equals($email)) {
+            return new CheckPasswordResetTokenOutput(isValid: false);
+        }
+
+        $resetPassword = $user->getResetPassword();
+        $ttl = $resetPassword->getTokenTtl() ?? 0;
+        if ($ttl <= 0 || $ttl <= time()) {
+            return new CheckPasswordResetTokenOutput(isValid: false);
+        }
+
+        if ($resetPassword->getToken() !== $rawToken) {
+            return new CheckPasswordResetTokenOutput(isValid: false);
+        }
+
+        return new CheckPasswordResetTokenOutput(isValid: true);
+    }
+}

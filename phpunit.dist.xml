@@ -18,37 +18,54 @@
     </php>
 
     <testsuites>
-        <testsuite name="api.shop">
-            <directory>tests/Api/Shop</directory>
+        <testsuite name="appli.usecase.user">
+            <directory>application/tests/Unit/User/UseCase</directory>
         </testsuite>
 
-        <testsuite name="api.user">
-            <file>tests/Api/User/UserTest.php</file>
+        <testsuite name="domain.user">
+            <directory>domain/User/tests/Unit</directory>
         </testsuite>
 
-        <testsuite name="unit.command.shop">
+        <!--<testsuite name="unit.command.shop">
             <directory>tests/Unit/Command/Shop</directory>
+        </testsuite>-->
+        <testsuite name="infra.command.user">
+            <directory>infrastructure/tests/Unit/Command/User</directory>
         </testsuite>
-        <testsuite name="unit.command.user">
-            <directory>tests/Unit/Command/User</directory>
+        <testsuite name="infra.notif.user">
+            <directory>infrastructure/tests/Unit/Notification/User</directory>
         </testsuite>
-
-        <testsuite name="unit.repository">
+        <!--<testsuite name="unit.repository">
             <directory>tests/Unit/Repository</directory>
+        </testsuite>-->
+        <testsuite name="infra.persist">
+            <directory>infrastructure/tests/Unit/Persistence</directory>
+        </testsuite>
+        <testsuite name="infra.service.encoder">
+            <directory>infrastructure/tests/Unit/Service/Encoder</directory>
+        </testsuite>
+        <testsuite name="infra.service.token">
+            <directory>infrastructure/tests/Unit/Service/Token</directory>
+        </testsuite>
+        <testsuite name="infra.service.user">
+            <directory>infrastructure/tests/Unit/Service/User</directory>
         </testsuite>
 
-        <testsuite name="unit.service.encoder">
-            <directory>tests/Unit/Service/Encoder</directory>
-        </testsuite>
-        <testsuite name="unit.service.user">
-            <directory>tests/Unit/Service/User</directory>
-        </testsuite>
-        <testsuite name="unit.service.bitfield">
-            <file>tests/Unit/Service/BitFieldTest.php</file>
+        <!--<testsuite name="api.shop">
+            <directory>tests/Api/Shop</directory>
+        </testsuite>-->
+        <testsuite name="api.user">
+            <directory>presentation/tests/Api/User</directory>
         </testsuite>
 
+        <testsuite name="unit.state.sendmail">
+            <directory>presentation/tests/Unit/State/SendMail</directory>
+        </testsuite>
+        <testsuite name="unit.state.shared">
+            <directory>presentation/tests/Unit/State/Shared</directory>
+        </testsuite>
         <testsuite name="unit.state.user">
-            <directory>tests/Unit/State/User</directory>
+            <directory>presentation/tests/Unit/State/User</directory>
         </testsuite>
     </testsuites>
 
@@ -58,19 +75,32 @@
             restrictWarnings="true"
     >
         <include>
+            <directory>application/src/User</directory>
+            <directory>domain/User/src</directory>
+            <directory>infrastructure/src</directory>
+            <directory>presentation/src</directory>
             <directory>src</directory>
         </include>
         <exclude>
+            <directory>application/src/Shared</directory>
+            <directory>application/src/User/Port</directory>
+            <directory>infrastructure/src/DataFixtures</directory>
+            <directory>infrastructure/src/Entity</directory>
+            <directory>infrastructure/src/EventListener</directory>
+            <directory>infrastructure/src/EventSubscriber</directory>
+            <directory>infrastructure/src/OpenApi</directory>
+            <directory>infrastructure/src/Notification/Mailer</directory>
+            <directory>infrastructure/src/Service/Config</directory>
+            <directory>infrastructure/src/Service/Helper</directory>
+            <directory>infrastructure/src/Service/Media</directory>
+            <directory>presentation/src/SendMail/ApiResource</directory>
+            <directory>presentation/src/SendMail/Dto</directory>
+            <directory>presentation/src/Shared/Adapter</directory>
+            <directory>presentation/src/User/ApiResource</directory>
+            <directory>presentation/src/User/Dto</directory>
+            <directory>presentation/src/User/Security</directory>
             <directory>src/DataFixtures</directory>
-            <directory>src/Dto</directory>
-            <directory>src/Enum</directory>
-            <directory>src/Filter</directory>
             <directory>src/Entity</directory>
-            <directory>src/EventSubscriber</directory>
-            <directory>src/OpenApi</directory>
-            <directory>src/Service/Helper</directory>
-            <directory>src/Service/Mailer</directory>
-            <directory>src/Service/Media</directory>
         </exclude>
 
         <deprecationTrigger>

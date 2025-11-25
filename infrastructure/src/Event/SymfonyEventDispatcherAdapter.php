@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Event;
+
+use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Domain\SharedKernel\Event\DomainEventInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface as SymfonyEventDispatcher;
+
+final class SymfonyEventDispatcherAdapter implements EventDispatcherInterface
+{
+    public function __construct(
+        private readonly SymfonyEventDispatcher $eventDispatcher,
+    ) {
+    }
+
+    public function dispatch(DomainEventInterface $event): void
+    {
+        $this->eventDispatcher->dispatch($event, $event->eventName());
+    }
+
+    public function dispatchAll(array $events): void
+    {
+        foreach ($events as $event) {
+            $this->dispatch($event);
+        }
+    }
+}

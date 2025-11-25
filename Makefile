@@ -196,7 +196,7 @@ serve-restart:
 ## Run grum tests
 .PHONY: grumphp
 grumphp:
-	@vendor/bin/grumphp run
+	@$(APP) sh -c "vendor/bin/grumphp run"
 
 ## Run phpunit tests
 .PHONY: unit
@@ -213,55 +213,60 @@ unit-filter:
 unit-suite:
 	@$(APP) sh -c "vendor/bin/phpunit --testsuite ${s} --display-warnings --display-deprecations --display-phpunit-deprecations --display-notices"
 
+## Run PHPUnit with code coverage (generates HTML report in coverage/)
+.PHONY: unit-coverage
+unit-coverage:
+	@$(APP) sh -c "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html coverage/"
+
 ## Run phpstan tests
 .PHONY: stan
 stan:
-	@vendor/bin/phpstan analyse
+	@$(APP) sh -c "vendor/bin/phpstan analyse"
 
 ## Run phpcs tests
 .PHONY: phpcs
 phpcs:
-	@vendor/bin/phpcs
+	@$(APP) sh -c "vendor/bin/phpcs"
 
 ## Run phpcs tests with details
 .PHONY: phpcs_det
 phpcs_det:
-	@vendor/bin/phpcs -s
+	@$(APP) sh -c "vendor/bin/phpcs -s"
 
 ## Run phpspec tests summary
 .PHONY: phpcs_sum
 phpcs_sum:
-	@vendor/bin/phpcs --report-summary
+	@$(APP) sh -c "vendor/bin/phpcs --report-summary"
 
 ## Run phpcsfixer tests
 .PHONY: phpcsfixer
 phpcsfixer:
-	@vendor/bin/php-cs-fixer
+	@$(APP) sh -c "vendor/bin/php-cs-fixer"
 
 ## Run phpcsfixer dry-run tests
 .PHONY: phpcsfixer_dry
 phpcsfixer_dry:
-	@vendor/bin/php-cs-fixer fix --dry-run --diff
+	@$(APP) sh -c "vendor/bin/php-cs-fixer fix --dry-run --diff"
 
 ## Run phpcsfixer fix tests
 .PHONY: phpcsfixer_fix
 phpcsfixer_fix:
-	@vendor/bin/php-cs-fixer fix ${f}
+	@$(APP) sh -c "vendor/bin/php-cs-fixer fix ${f}"
 
 ## Run phpmd tests
 .PHONY: phpmd
 phpmd:
-	@vendor/bin/phpmd src text ruleset.xml
+	@$(APP) sh -c "vendor/bin/phpmd src text ruleset.xml"
 
 ## Run rector
 .PHONY: rector
 rector:
-	@vendor/bin/rector
+	@$(APP) sh -c "vendor/bin/rector"
 
 ## Run rector dry-run
 .PHONY: rector-dry
 rector-dry:
-	@vendor/bin/rector --dry-run
+	@$(APP) sh -c "vendor/bin/rector --dry-run"
 
 ##--------------------------------- Autres -----------------------------------
 

@@ -14,6 +14,10 @@
         <exclude name="PSR12.Operators.OperatorSpacing.NoSpaceAfter"/>
     </rule>
 
+    <file>application/</file>
+    <file>domain/</file>
+    <file>infrastructure/</file>
+    <file>presentation/</file>
     <file>src/</file>
     <file>tests/</file>
 

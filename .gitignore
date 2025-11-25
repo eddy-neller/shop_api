@@ -9,8 +9,14 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
-makefile.conf
-.idea
+/.env
+/makefile.conf
+/.idea
+/coverage
+
+# Ignorer tous les fichiers Markdown maid réautoriser uniquement le README racine
+*.md
+!README.md
 
 # Assets and user uploads
 /assets/*

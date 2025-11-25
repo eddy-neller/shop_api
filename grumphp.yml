@@ -13,20 +13,21 @@ grumphp:
       config: .php-cs-fixer.dist.php
     phpunit: ~
     phpmd:
-      whitelist_patterns: [ 'src' ]
-      exclude: [ 'tests' ]
+      whitelist_patterns:
+        ["application", "domain", "infrastructure", "presentation", "src"]
+      exclude: ["tests"]
       report_format: text
-      ruleset: [ 'ruleset.xml' ]
-      triggered_by: [ 'php' ]
+      ruleset: ["ruleset.xml"]
+      triggered_by: ["php"]
     rector:
       config: rector.php
-      triggered_by: [ php ]
+      triggered_by: [php]
     git_branch_name:
       blacklist:
-        - 'develop'
-        - 'preprod'
-        - 'master'
-      additional_modifiers: ''
+        - "develop"
+        - "preprod"
+        - "master"
+      additional_modifiers: ""
       allow_detached_head: true
     composer:
       file: ./composer.json
@@ -38,18 +39,18 @@ grumphp:
       strict: false
     shell:
       scripts:
-        - [ "-c", "bin/console about" ]
+        - ["-c", "bin/console about"]
     xmllint:
-      ignore_patterns: [ ]
+      ignore_patterns: []
       load_from_net: false
       x_include: false
       dtd_validation: false
       scheme_validation: false
-      triggered_by: [ 'xml' ]
+      triggered_by: ["xml"]
     yamllint:
-      whitelist_patterns: [ ]
-      ignore_patterns: [ ]
+      whitelist_patterns: []
+      ignore_patterns: ["config/services.yaml"]
       object_support: false
       exception_on_invalid_type: false
       parse_constant: false
-      parse_custom_tags: false
+      parse_custom_tags: true

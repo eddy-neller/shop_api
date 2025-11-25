@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Shared\CQRS\Query;
+
+use App\Application\Shared\CQRS\Middleware\QueryMiddlewareInterface;
+
+/**
+ * Implémentation simple d'un QueryBus avec chaîne de middlewares.
+ */
+final class QueryBus implements QueryBusInterface
+{
+    /**
+     * @param iterable<QueryMiddlewareInterface> $middlewares
+     */
+    public function __construct(
+        private readonly iterable $middlewares,
+        private readonly QueryHandlerResolverInterface $handlerResolver,
+    ) {
+    }
+
+    public function dispatch(QueryInterface $query): mixed
+    {
+        $handler = $this->handlerResolver->resolve($query);
+
+        $pipeline = $this->buildMiddlewarePipeline($handler);
+
+        return $pipeline($query);
+    }
+
+    /**
+     * @param callable(QueryInterface):mixed $handler
+     *
+     * @return callable(QueryInterface):mixed
+     */
+    private function buildMiddlewarePipeline(callable $handler): callable
+    {
+        $next = $handler;
+
+        $middlewares = is_array($this->middlewares) ? $this->middlewares : iterator_to_array($this->middlewares);
+        $middlewares = array_reverse($middlewares);
+
+        foreach ($middlewares as $middleware) {
+            $currentNext = $next;
+            $next = static fn (QueryInterface $query): mixed => $middleware->handle($query, $currentNext);
+        }
+
+        return $next;
+    }
+}

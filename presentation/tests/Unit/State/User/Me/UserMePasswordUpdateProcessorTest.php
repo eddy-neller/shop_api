@@ -1,0 +1,116 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Tests\Unit\State\User\Me;
+
+use ApiPlatform\Metadata\Operation;
+use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\User\UseCase\Command\UpdatePassword\UpdatePasswordCommand;
+use App\Infrastructure\Entity\User\User;
+use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\User\Dto\Me\UserMePasswordUpdateInput;
+use App\Presentation\User\State\Me\UserMePasswordUpdateProcessor;
+use LogicException;
+use PHPUnit\Framework\MockObject\MockObject;
+use Ramsey\Uuid\Uuid;
+use stdClass;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Bundle\SecurityBundle\Security;
+
+final class UserMePasswordUpdateProcessorTest extends KernelTestCase
+{
+    private Security&MockObject $security;
+
+    private CommandBusInterface&MockObject $commandBus;
+
+    private Operation&MockObject $operation;
+
+    private User&MockObject $user;
+
+    private UserMePasswordUpdateProcessor $userMePasswordUpdateProcessor;
+
+    protected function setUp(): void
+    {
+        $this->security = $this->createMock(Security::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->operation = $this->createMock(Operation::class);
+        $this->user = $this->createMock(User::class);
+
+        $this->userMePasswordUpdateProcessor = new UserMePasswordUpdateProcessor(
+            $this->security,
+            $this->commandBus,
+        );
+    }
+
+    public function testProcessWithValidInput(): void
+    {
+        $input = $this->createValidUserMePasswordUpdateInput();
+        $userId = Uuid::uuid4();
+
+        $this->user->expects($this->once())
+            ->method('getId')
+            ->willReturn($userId);
+
+        $this->security->expects($this->once())
+            ->method('getUser')
+            ->willReturn($this->user);
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(function ($command) use ($input) {
+                $this->assertInstanceOf(UpdatePasswordCommand::class, $command);
+                $this->assertSame($input->newPassword, $command->newPassword);
+
+                return true;
+            }));
+
+        $result = $this->userMePasswordUpdateProcessor->process($input, $this->operation);
+
+        $this->assertNull($result);
+    }
+
+    public function testProcessThrowsLogicExceptionForInvalidInput(): void
+    {
+        $invalidInput = new stdClass();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userMePasswordUpdateProcessor->process($invalidInput, $this->operation);
+    }
+
+    public function testProcessThrowsLogicExceptionForNullInput(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userMePasswordUpdateProcessor->process(null, $this->operation);
+    }
+
+    public function testProcessThrowsLogicExceptionForStringInput(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userMePasswordUpdateProcessor->process('invalid', $this->operation);
+    }
+
+    public function testProcessThrowsLogicExceptionForArrayInput(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userMePasswordUpdateProcessor->process(['newPassword' => 'test'], $this->operation);
+    }
+
+    private function createValidUserMePasswordUpdateInput(): UserMePasswordUpdateInput
+    {
+        $input = new UserMePasswordUpdateInput();
+        $input->currentPassword = 'current_password';
+        $input->newPassword = 'NewPassword123!';
+        $input->confirmNewPassword = 'NewPassword123!';
+
+        return $input;
+    }
+}

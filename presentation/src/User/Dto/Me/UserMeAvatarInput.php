@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Presentation\User\Dto\Me;
+
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+
+#[Vich\Uploadable]
+class UserMeAvatarInput
+{
+    #[Groups(['user:write'])]
+    #[Assert\NotNull(message: 'Please upload an avatar.')]
+    #[Assert\File(
+        maxSize: '200k',
+        mimeTypes: ['image/png', 'image/gif', 'image/jpeg', 'image/pjpeg']
+    )]
+    #[Assert\Image(
+        minWidth: 96,
+        maxWidth: 96,
+        maxHeight: 96,
+        minHeight: 96
+    )]
+    public ?File $avatarFile = null;
+}

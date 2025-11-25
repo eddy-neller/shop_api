@@ -1,7 +1,7 @@
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     role_hierarchy:
         ROLE_MODERATEUR: [ROLE_USER]
@@ -11,7 +11,7 @@ security:
     providers:
         users:
             entity:
-                class: App\Entity\User\User
+                class: App\Infrastructure\Entity\User\User
                 property: email
 
     firewalls:

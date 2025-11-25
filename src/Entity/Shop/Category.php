@@ -12,10 +12,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
-use App\Entity\User\User;
+use App\Domain\User\ValueObject\RoleSet;
+use App\Presentation\RouteRequirements;
 use App\Repository\NestedTreeRepository;
 use App\Security\Validator\Constraints as AppAssert;
-use App\Service\RouteRequirements;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -47,7 +47,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('" . User::ROLES['admin'] . "')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'patch',
         ),
         new Delete(
@@ -56,7 +56,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('" . User::ROLES['admin'] . "')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'delete',
         ),
         new GetCollection(
@@ -80,7 +80,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             openapi: new Model\Operation(
                 security: [['ApiKeyAuth' => []]]
             ),
-            security: "is_granted('" . User::ROLES['admin'] . "')",
+            security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'post',
         ),
     ],

@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Entity\User\User;
+use App\Infrastructure\Entity\User\User;
 
 interface HasOwnerInterface
 {

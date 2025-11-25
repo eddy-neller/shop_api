@@ -1,93 +1,170 @@
-# E.N Shop API
+## E.N Shop API – Backend e‑commerce avec Symfony 7 & API Platform 4
 
+E.N Shop API est le **backend e‑commerce** du projet E.N Shop, construit avec **Symfony 7** et **API Platform 4**.  
+Ce dépôt a été pensé comme un **projet portfolio** pour démontrer des compétences backend modernes : DDD, architecture hexagonale, validation stricte, documentation automatique REST/JSON:API et qualité de code industrielle.
 
+---
 
-## Getting started
+## 🎯 Objectifs du projet (vue recruteur)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+-   **Montrer la maîtrise de Symfony 7 et API Platform 4** pour exposer une API REST propre, documentée et sécurisable.
+-   **Appliquer une architecture claire (domain / application / infrastructure / presentation)** pour une bonne séparation des responsabilités.
+-   **Mettre en avant des bonnes pratiques de qualité** : tests, static analysis (PHPStan), normes de code (PHP-CS-Fixer/PHPCS), CI prête à l’emploi.
+-   **S’intégrer dans un écosystème complet** : front Next.js (`en_shop_react`) + éventuelle interface d’admin.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+En résumé : ce repo illustre comment je conçois une API maintenable pour un vrai produit e‑commerce.
 
-## Add your files
+---
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 🧩 Rôle de l’API dans l’écosystème
 
+E.N Shop API fournit les **capabilités métier** pour :
+
+-   Gérer le **catalogue produits** (produits, catégories, attributs, etc.).
+-   Exposer des **endpoints REST** pour les frontends (public shop, admin, etc.).
+-   Centraliser les **règles métier** côté backend (prix, statuts, etc.).
+-   Servir de base à des fonctionnalités futures : panier, commandes, comptes clients, paiement, etc.
+
+Le backend est pensé pour être **consommé par plusieurs clients** (web, admin, mobile) sans fuite de détails techniques côté front.
+
+---
+
+## 🛠️ Stack technique & outils
+
+-   **PHP 8.4**
+-   **Symfony 7.3**
+-   **API Platform 4**
+-   **Doctrine ORM**
+-   **PostgreSQL** (selon configuration Docker)
+-   **PHPUnit** pour les tests
+-   **PHPStan** (analyses statiques, configuration stricte)
+-   **PHP-CS-Fixer / PHPCS** (conventions de code)
+-   **Docker / docker-compose** pour l’environnement de dev
+-   **Makefile** pour centraliser les commandes de développement
+
+Ces choix visent un environnement proche de la **production** (dev local facile, qualité contrôlée, automatisable en CI/CD).
+
+---
+
+## 📁 Architecture du projet
+
+Le projet suit une organisation inspirée de l’architecture clean/hexagonale & DDD :
+
+-   `domain/` : **modèle métier**, entités, value objects, interfaces de repository, invariants.
+-   `application/` : **cas d’usage**, services applicatifs, orchestrations métier.
+-   `infrastructure/` : implémentations techniques (Doctrine, adapters, persistence, etc.).
+-   `presentation/` : exposition de l’API (API Platform, contrôleurs, DTO, sérialisation).
+
+**Décision technique (en clair)** :  
+Je sépare **métier**, **application** et **infrastructure** pour limiter le couplage et garder la possibilité de faire évoluer la persistance, le protocole ou le front sans casser tout le code métier.
+
+---
+
+## 🚀 Démarrage rapide
+
+### Prérequis
+
+-   **Docker** + **docker-compose**
+-   **Make** (pour utiliser le `Makefile`)
+-   (Optionnel) PHP 8.4 en local si tu veux lancer des commandes sans Docker
+
+### Installation & lancement avec Docker
+
+Depuis la racine du projet :
+
+```bash
+cp makefile.conf.dist makefile.conf
+make install        # installe les dépendances, construit les conteneurs
+make start          # démarre l'environnement (API + DB)
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/en-develop/shop-api.git
-git branch -M main
-git push -uf origin main
+
+Par défaut, l’API est accessible sur `http://localhost:8000`.  
+L’interface de documentation d’API Platform (Swagger / ReDoc) est disponible sur `http://localhost:8000/api`.
+
+> Si un port ou service doit être adapté, tout est centralisé dans `docker-compose.yaml` et `makefile.conf`.
+
+---
+
+## 🔌 Points d’entrée principaux de l’API
+
+Selon ta configuration API Platform, tu trouveras (à titre d’exemple) :
+
+-   **Ressources catalogue** : produits, catégories, etc.
+-   **Opérations de lecture/écriture** : recherche de produits, création/mise à jour par l’admin, etc.
+
+Les ressources et endpoints sont décrits via les **attributs PHP** d’API Platform, ce qui permet une **documentation automatique** et un contrat d’API clair.
+
+> Remarque : la liste exacte des endpoints évolue avec le projet, mais le style reste : ressources bien nommées, opérations explicites, validation forte.
+
+---
+
+## ✅ Qualité de code & outillage
+
+-   **Normes de code** :
+    -   `phpcs.xml.dist`, `.php-cs-fixer.dist.php`, `ruleset.xml` pour imposer une convention homogène.
+-   **Analyse statique** :
+    -   `phpstan.neon` / `phpstan.dist.neon` pour garder un niveau de confiance élevé sur le typage et les contrats.
+-   **Tests** :
+    -   `phpunit.dist.xml` pour la configuration des tests.
+-   **Automatisation** :
+    -   `Makefile` pour lancer rapidement : tests, cs-fix, analyse statique, etc.
+    -   (Optionnel) `grumphp.yml` pour exécuter les checks en **pre-commit**.
+
+Exemples de commandes utiles (via `make`) :
+
+```bash
+make cs           # vérifie les standards de code
+make cs-fix       # corrige automatiquement le style
+make phpstan      # lance l’analyse statique
+make test         # exécute la suite de tests
 ```
 
-## Integrate with your tools
+**Pourquoi autant d’outils ?**  
+Parce que pour un backend métier, c’est ce qui permet de garder un **code de production propre** sur la durée (DRY, KISS, peu de dette technique).
 
-- [ ] [Set up project integrations](https://gitlab.com/en-develop/shop-api/-/settings/integrations)
+---
 
-## Collaborate with your team
+## 🔍 Dossiers intéressants
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+-   `domain/` : voir comment le métier est modélisé (entités, valeurs, invariants).
+-   `application/` : cas d’usage et orchestration métier.
+-   `infrastructure/` : implémentations concrètes (Doctrine, adaptateurs).
 
-## Test and Deploy
+Ces emplacements reflètent ma façon de :
 
-Use the built-in continuous integration in GitLab.
+-   **Nommer le code** de manière explicite.
+-   **Séparer la logique** métier de la technique.
+-   **Préparer un projet** pour être maintenu en équipe.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+---
 
-***
+## 🧭 Pistes d’évolution (roadmap)
 
-# Editing this README
+-   Ajout complet du **panier** et des **commandes** (avec statut, paiement, etc.).
+-   Gestion des **comptes clients** et de l’authentification (JWT / OAuth2 / Keycloak, etc.).
+-   Intégration avec un **front Next.js** (projet `en_shop_react`) pour un parcours utilisateur de bout en bout.
+-   Mise en place d’une **CI GitLab** qui exécute tests, PHPStan, CS-Fixer à chaque push.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+L’idée est de montrer que l’API a été pensée pour **grandir proprement**.
 
-## Suggestions for a good README
+---
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## 📄 Licence / type de projet
 
-## Name
-Choose a self-explaining name for your project.
+Ce projet est publié sous **licence MIT** (voir le fichier `LICENSE` à la racine du dépôt).  
+Il peut donc être librement consulté, utilisé et adapté, dans le respect des termes de la licence.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+Même s’il est utilisé ici comme **projet de portfolio**, il est structuré et licencié comme un vrai projet open‑source professionnel.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+---
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## 👤 À propos du développeur
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+Ce projet fait partie d’un **portfolio professionnel** orienté “vrai produit” plutôt que “petits exemples”.  
+Il illustre ma manière de :
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+-   Concevoir une **API** maintenable.
+-   Structurer un code **orienté métier** et non purement technique.
+-   Mettre en place une **boîte à outils de qualité** (tests, static analysis, conventions de code) prête pour la production.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+N’hésite pas à parcourir les autres dépôts associés (front `en_shop_react`, admin, etc.) pour avoir une vision **full‑stack** de l’écosystème E.N Shop.

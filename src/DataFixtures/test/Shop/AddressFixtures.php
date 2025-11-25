@@ -2,10 +2,10 @@
 
 namespace App\DataFixtures\test\Shop;
 
-use App\DataFixtures\DataFixturesTrait;
-use App\DataFixtures\test\User\UserFixtures;
 use App\Entity\Shop\Address;
-use App\Entity\User\User;
+use App\Infrastructure\DataFixtures\DataFixturesTrait;
+use App\Infrastructure\DataFixtures\test\User\UserFixtures;
+use App\Infrastructure\Entity\User\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;

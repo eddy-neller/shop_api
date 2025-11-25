@@ -2,9 +2,9 @@
 
 namespace App\DataFixtures\test\Shop;
 
-use App\DataFixtures\DataFixturesTrait;
 use App\Entity\Shop\Category;
 use App\Entity\Shop\Product;
+use App\Infrastructure\DataFixtures\DataFixturesTrait;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;

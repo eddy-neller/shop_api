@@ -3,7 +3,7 @@
 namespace App\Repository\Shop;
 
 use App\Entity\Shop\Order;
-use App\Entity\User\User;
+use App\Infrastructure\Entity\User\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Persistence\ManagerRegistry;
