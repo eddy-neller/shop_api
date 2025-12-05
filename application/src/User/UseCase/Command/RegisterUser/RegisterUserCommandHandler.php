@@ -11,12 +11,13 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Preferences;
 use App\Domain\User\ValueObject\Username;
 
-final class RegisterUserHandler
+final class RegisterUserCommandHandler
 {
     use DateIntervalTrait;
 
@@ -27,6 +28,7 @@ final class RegisterUserHandler
         private readonly ClockInterface $clock,
         private readonly TransactionalInterface $transactional,
         private readonly ConfigInterface $config,
+        private readonly UserUniquenessCheckerInterface $uniquenessChecker,
     ) {
     }
 
@@ -35,13 +37,18 @@ final class RegisterUserHandler
         return $this->transactional->transactional(function () use ($command): RegisterUserOutput {
             $now = $this->clock->now();
             $userId = $this->repository->nextIdentity();
+
+            $username = new Username($command->username);
             $email = new EmailAddress($command->email);
+
+            $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
+
             $preferences = Preferences::fromArray($command->preferences ?? []);
             $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
 
             $user = User::register(
                 id: $userId,
-                username: new Username($command->username),
+                username: $username,
                 email: $email,
                 password: $hashedPassword,
                 preferences: $preferences,

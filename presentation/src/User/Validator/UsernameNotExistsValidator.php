@@ -3,6 +3,7 @@
 namespace App\Presentation\User\Validator;
 
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\ValueObject\Username;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -26,7 +27,8 @@ class UsernameNotExistsValidator extends ConstraintValidator
         }
 
         /* @var string $value */
-        if (null !== $this->userRepository->findByUsername($value)) {
+        $username = new Username($value);
+        if (null !== $this->userRepository->findByUsername($username)) {
             $this->context->buildViolation($constraint->message)
                 ->setCode(UsernameNotExists::SAME_USERNAME_ERROR)
                 ->addViolation();

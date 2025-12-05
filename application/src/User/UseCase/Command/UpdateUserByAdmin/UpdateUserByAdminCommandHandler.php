@@ -16,7 +16,7 @@ use App\Domain\User\ValueObject\RoleSet;
 use App\Domain\User\ValueObject\Username;
 use App\Domain\User\ValueObject\UserStatus;
 
-final class UpdateUserByAdminHandler
+final class UpdateUserByAdminCommandHandler
 {
     public function __construct(
         private readonly UserRepositoryInterface $repository,

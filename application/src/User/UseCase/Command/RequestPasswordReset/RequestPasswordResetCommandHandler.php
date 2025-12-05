@@ -12,7 +12,7 @@ use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\ValueObject\EmailAddress;
 
-final class RequestPasswordResetHandler
+final class RequestPasswordResetCommandHandler
 {
     use DateIntervalTrait;
 

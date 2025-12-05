@@ -6,8 +6,8 @@ namespace App\Application\Tests\Unit\User\UseCase\Query;
 
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Application\User\UseCase\Query\CheckPasswordResetToken\CheckPasswordResetTokenHandler;
 use App\Application\User\UseCase\Query\CheckPasswordResetToken\CheckPasswordResetTokenQuery;
+use App\Application\User\UseCase\Query\CheckPasswordResetToken\CheckPasswordResetTokenQueryHandler;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\HashedPassword;
@@ -25,13 +25,13 @@ final class CheckPasswordResetTokenTest extends TestCase
 
     private TokenProviderInterface&MockObject $tokenProvider;
 
-    private CheckPasswordResetTokenHandler $handler;
+    private CheckPasswordResetTokenQueryHandler $handler;
 
     protected function setUp(): void
     {
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->tokenProvider = $this->createMock(TokenProviderInterface::class);
-        $this->handler = new CheckPasswordResetTokenHandler(
+        $this->handler = new CheckPasswordResetTokenQueryHandler(
             $this->repository,
             $this->tokenProvider,
         );

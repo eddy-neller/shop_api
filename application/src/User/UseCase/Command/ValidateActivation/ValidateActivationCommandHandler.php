@@ -2,54 +2,50 @@
 
 declare(strict_types=1);
 
-namespace App\Application\User\UseCase\Command\ConfirmPasswordReset;
+namespace App\Application\User\UseCase\Command\ValidateActivation;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
-use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\ValueObject\EmailAddress;
 
-final class ConfirmPasswordResetHandler
+final class ValidateActivationCommandHandler
 {
     public function __construct(
         private readonly UserRepositoryInterface $repository,
         private readonly TokenProviderInterface $tokenProvider,
-        private readonly PasswordHasherInterface $passwordHasher,
         private readonly ClockInterface $clock,
         private readonly TransactionalInterface $transactional,
     ) {
     }
 
-    public function handle(ConfirmPasswordResetCommand $command): void
+    public function handle(ValidateActivationCommand $command): void
     {
         $split = $this->tokenProvider->split($command->token);
         $email = new EmailAddress($split['email'] ?? '');
         $rawToken = $split['token'] ?? '';
 
-        $user = $this->repository->findByResetPasswordToken($rawToken);
+        $user = $this->repository->findByActivationToken($rawToken);
 
         if (null === $user || !$user->getEmail()->equals($email)) {
-            throw new UserDomainException('Token de réinitialisation invalide.');
+            throw new UserDomainException('Utilisateur introuvable pour ce token.');
         }
 
-        $resetPassword = $user->getResetPassword();
-        $ttl = $resetPassword->getTokenTtl() ?? 0;
+        $activeEmail = $user->getActiveEmail();
+        $ttl = $activeEmail->getTokenTtl() ?? 0;
         if ($ttl <= 0 || $ttl <= time()) {
-            throw new UserDomainException('Token de réinitialisation expiré.');
+            throw new UserDomainException('Token d\'activation expiré.');
         }
 
-        if ($resetPassword->getToken() !== $rawToken) {
-            throw new UserDomainException('Token de réinitialisation invalide.');
+        if ($activeEmail->getToken() !== $rawToken) {
+            throw new UserDomainException("Token d'activation invalide.");
         }
 
-        $hashed = $this->passwordHasher->hash($command->newPassword);
-
-        $this->transactional->transactional(function () use ($user, $hashed): void {
+        $this->transactional->transactional(function () use ($user): void {
             $now = $this->clock->now();
-            $user->completePasswordReset($hashed, $now);
+            $user->activate($now);
 
             $this->repository->save($user);
         });

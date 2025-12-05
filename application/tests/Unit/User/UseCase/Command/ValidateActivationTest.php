@@ -9,7 +9,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\ValidateActivation\ValidateActivationCommand;
-use App\Application\User\UseCase\Command\ValidateActivation\ValidateActivationHandler;
+use App\Application\User\UseCase\Command\ValidateActivation\ValidateActivationCommandHandler;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\ActiveEmail;
@@ -22,7 +22,6 @@ use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
-use RuntimeException;
 
 final class ValidateActivationTest extends TestCase
 {
@@ -32,7 +31,7 @@ final class ValidateActivationTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
-    private ValidateActivationHandler $handler;
+    private ValidateActivationCommandHandler $handler;
 
     protected function setUp(): void
     {
@@ -40,7 +39,7 @@ final class ValidateActivationTest extends TestCase
         $this->tokenProvider = $this->createMock(TokenProviderInterface::class);
         $clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->handler = new ValidateActivationHandler(
+        $this->handler = new ValidateActivationCommandHandler(
             $this->repository,
             $this->tokenProvider,
             $clock,
@@ -146,7 +145,7 @@ final class ValidateActivationTest extends TestCase
             ->with($rawToken)
             ->willReturn($user);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(UserDomainException::class);
         $this->expectExceptionMessage('Token d\'activation expiré.');
 
         $this->handler->handle($command);

@@ -10,7 +10,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\AvatarUploaderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarCommand;
-use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarHandler;
+use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarCommandHandler;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
@@ -32,7 +32,7 @@ final class UploadAndUpdateAvatarTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
-    private UploadAndUpdateAvatarHandler $handler;
+    private UploadAndUpdateAvatarCommandHandler $handler;
 
     protected function setUp(): void
     {
@@ -40,7 +40,7 @@ final class UploadAndUpdateAvatarTest extends TestCase
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->handler = new UploadAndUpdateAvatarHandler(
+        $this->handler = new UploadAndUpdateAvatarCommandHandler(
             $this->avatarUploader,
             $this->repository,
             $this->clock,

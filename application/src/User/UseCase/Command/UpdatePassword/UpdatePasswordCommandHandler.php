@@ -2,24 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\Application\User\UseCase\Command\UpdateAvatar;
+namespace App\Application\User\UseCase\Command\UpdatePassword;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
+use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\ValueObject\Avatar;
 
-final class UpdateAvatarHandler
+final class UpdatePasswordCommandHandler
 {
     public function __construct(
         private readonly UserRepositoryInterface $repository,
+        private readonly PasswordHasherInterface $passwordHasher,
         private readonly ClockInterface $clock,
         private readonly TransactionalInterface $transactional,
     ) {
     }
 
-    public function handle(UpdateAvatarCommand $command): UpdateAvatarOutput
+    public function handle(UpdatePasswordCommand $command): void
     {
         $user = $this->repository->findById($command->userId);
 
@@ -27,19 +28,12 @@ final class UpdateAvatarHandler
             throw new UserDomainException('Utilisateur introuvable.');
         }
 
-        return $this->transactional->transactional(function () use ($user, $command): UpdateAvatarOutput {
+        $this->transactional->transactional(function () use ($user, $command): void {
             $now = $this->clock->now();
-            $avatar = new Avatar(
-                fileName: $command->avatarFileName,
-                url: $command->avatarUrl,
-                updatedAt: $now,
-            );
-
-            $user->updateAvatar($avatar, $now);
+            $hashedPassword = $this->passwordHasher->hash($command->newPassword);
+            $user->changePassword($hashedPassword, $now);
 
             $this->repository->save($user);
-
-            return new UpdateAvatarOutput($user);
         });
     }
 }

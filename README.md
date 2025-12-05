@@ -5,7 +5,7 @@ Ce dépôt a été pensé comme un **projet portfolio** pour démontrer des comp
 
 ---
 
-## 🎯 Objectifs du projet (vue recruteur)
+## 🎯 Objectifs du projet
 
 -   **Montrer la maîtrise de Symfony 7 et API Platform 4** pour exposer une API REST propre, documentée et sécurisable.
 -   **Appliquer une architecture claire (domain / application / infrastructure / presentation)** pour une bonne séparation des responsabilités.

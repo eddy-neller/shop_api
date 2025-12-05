@@ -5,6 +5,7 @@ namespace App\Application\User\Port;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Username;
 
 interface UserRepositoryInterface
 {
@@ -22,7 +23,7 @@ interface UserRepositoryInterface
 
     public function findByResetPasswordToken(string $token): ?User;
 
-    public function findByUsername(string $username): ?User;
+    public function findByUsername(Username $username): ?User;
 
     /**
      * @return User[]

@@ -8,7 +8,7 @@ use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\ValueObject\EmailAddress;
 
-final class CheckPasswordResetTokenHandler
+final class CheckPasswordResetTokenQueryHandler
 {
     public function __construct(
         private readonly UserRepositoryInterface $repository,

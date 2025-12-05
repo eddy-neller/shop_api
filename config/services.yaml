@@ -44,11 +44,11 @@ services:
 
     # CQRS - configuration manuelle des handlers
     App\Application\User\UseCase\Command\:
-        resource: "../application/src/User/UseCase/Command/**/*Handler.php"
+        resource: "../application/src/User/UseCase/Command/**/*CommandHandler.php"
         tags: ["app.cqrs.command_handler"]
 
     App\Application\User\UseCase\Query\:
-        resource: "../application/src/User/UseCase/Query/**/*Handler.php"
+        resource: "../application/src/User/UseCase/Query/**/*QueryHandler.php"
         tags: ["app.cqrs.query_handler"]
 
     # CQRS - Configuration des resolvers avec injection manuelle des ServiceLocators

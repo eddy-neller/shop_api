@@ -10,7 +10,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\RequestActivationEmail\RequestActivationEmailCommand;
-use App\Application\User\UseCase\Command\RequestActivationEmail\RequestActivationEmailHandler;
+use App\Application\User\UseCase\Command\RequestActivationEmail\RequestActivationEmailCommandHandler;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\HashedPassword;
@@ -33,7 +33,7 @@ final class RequestActivationEmailTest extends TestCase
 
     private ConfigInterface&MockObject $config;
 
-    private RequestActivationEmailHandler $handler;
+    private RequestActivationEmailCommandHandler $handler;
 
     protected function setUp(): void
     {
@@ -42,7 +42,7 @@ final class RequestActivationEmailTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->config = $this->createMock(ConfigInterface::class);
-        $this->handler = new RequestActivationEmailHandler(
+        $this->handler = new RequestActivationEmailCommandHandler(
             $this->repository,
             $this->tokenProvider,
             $this->clock,

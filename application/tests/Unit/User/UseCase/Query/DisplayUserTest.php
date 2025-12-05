@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Query;
 
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Application\User\UseCase\Query\DisplayUser\DisplayUserHandler;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
+use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQueryHandler;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
@@ -22,12 +22,12 @@ final class DisplayUserTest extends TestCase
 {
     private UserRepositoryInterface&MockObject $repository;
 
-    private DisplayUserHandler $handler;
+    private DisplayUserQueryHandler $handler;
 
     protected function setUp(): void
     {
         $this->repository = $this->createMock(UserRepositoryInterface::class);
-        $this->handler = new DisplayUserHandler($this->repository);
+        $this->handler = new DisplayUserQueryHandler($this->repository);
     }
 
     public function testHandleReturnsUserOutputWhenUserExists(): void

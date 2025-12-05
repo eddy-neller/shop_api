@@ -9,7 +9,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminCommand;
-use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminHandler;
+use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminCommandHandler;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
@@ -30,7 +30,7 @@ final class UpdateUserByAdminTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
-    private UpdateUserByAdminHandler $handler;
+    private UpdateUserByAdminCommandHandler $handler;
 
     protected function setUp(): void
     {
@@ -38,7 +38,7 @@ final class UpdateUserByAdminTest extends TestCase
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->handler = new UpdateUserByAdminHandler(
+        $this->handler = new UpdateUserByAdminCommandHandler(
             $this->repository,
             $this->passwordHasher,
             $clock,

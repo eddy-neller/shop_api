@@ -8,6 +8,7 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Model\User as DomainUser;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Username;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -82,9 +83,9 @@ final class DoctrineUserRepository implements UserRepositoryInterface
         return $entity ? $this->mapper->toDomain($entity) : null;
     }
 
-    public function findByUsername(string $username): ?DomainUser
+    public function findByUsername(Username $username): ?DomainUser
     {
-        $entity = $this->repository->findOneBy(['username' => $username]);
+        $entity = $this->repository->findOneBy(['username' => $username->toString()]);
 
         return $entity ? $this->mapper->toDomain($entity) : null;
     }

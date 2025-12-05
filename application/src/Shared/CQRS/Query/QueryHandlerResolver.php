@@ -10,9 +10,9 @@ use RuntimeException;
 /**
  * Resolver générique qui découvre automatiquement les query handlers via convention de nommage.
  *
- * Convention : {Action}Query → {Action}Handler
+ * Convention : {Action}Query → {Action}QueryHandler
  * Exemples :
- * - DisplayUserQuery → DisplayUserHandler
+ * - DisplayUserQuery → DisplayUserQueryHandler
  */
 final class QueryHandlerResolver implements QueryHandlerResolverInterface
 {
@@ -66,7 +66,7 @@ final class QueryHandlerResolver implements QueryHandlerResolverInterface
     /**
      * Découvre le nom de la classe handler à partir du nom de la query.
      *
-     * Convention : {Action}Query → {Action}Handler
+     * Convention : {Action}Query → {Action}QueryHandler
      */
     private function discoverHandlerClass(string $queryClass): string
     {
@@ -74,10 +74,10 @@ final class QueryHandlerResolver implements QueryHandlerResolverInterface
             throw new RuntimeException(sprintf('Query class "%s" must end with "Query" to use auto-discovery.', $queryClass));
         }
 
-        $handlerClass = preg_replace('/Query$/', 'Handler', $queryClass);
+        $handlerClass = preg_replace('/Query$/', 'QueryHandler', $queryClass);
 
         if (!class_exists($handlerClass)) {
-            throw new RuntimeException(sprintf('Query handler class "%s" not found for query "%s". Expected handler class based on convention: {Action}Query → {Action}Handler.', $handlerClass, $queryClass));
+            throw new RuntimeException(sprintf('Query handler class "%s" not found for query "%s". Expected handler class based on convention: {Action}Query → {Action}QueryHandler.', $handlerClass, $queryClass));
         }
 
         return $handlerClass;

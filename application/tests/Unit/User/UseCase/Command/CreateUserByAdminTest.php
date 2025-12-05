@@ -8,12 +8,16 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminCommand;
-use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminHandler;
+use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminCommandHandler;
+use App\Domain\User\Exception\EmailAlreadyUsedException;
+use App\Domain\User\Exception\UsernameAlreadyUsedException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\HashedPassword;
 use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\ValueObject\Username;
 use App\Domain\User\ValueObject\UserStatus;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -29,7 +33,9 @@ final class CreateUserByAdminTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
-    private CreateUserByAdminHandler $handler;
+    private UserUniquenessCheckerInterface&MockObject $uniquenessChecker;
+
+    private CreateUserByAdminCommandHandler $handler;
 
     protected function setUp(): void
     {
@@ -37,11 +43,13 @@ final class CreateUserByAdminTest extends TestCase
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->handler = new CreateUserByAdminHandler(
+        $this->uniquenessChecker = $this->createMock(UserUniquenessCheckerInterface::class);
+        $this->handler = new CreateUserByAdminCommandHandler(
             $this->repository,
             $this->passwordHasher,
             $this->clock,
             $this->transactional,
+            $this->uniquenessChecker,
         );
     }
 
@@ -77,6 +85,10 @@ final class CreateUserByAdminTest extends TestCase
             ->method('nextIdentity')
             ->willReturn($userId);
 
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAndUsernameAvailable')
+            ->with(new EmailAddress($email), new Username($username));
+
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with($plainPassword)
@@ -105,5 +117,71 @@ final class CreateUserByAdminTest extends TestCase
         $this->assertInstanceOf(User::class, $output->user);
         $this->assertTrue($output->user->getEmail()->equals(new EmailAddress($email)));
         $this->assertSame($username, $output->user->getUsername()->toString());
+    }
+
+    public function testHandleThrowsWhenEmailAlreadyUsed(): void
+    {
+        $email = 'admin@example.com';
+        $username = 'adminuser';
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
+
+        $command = new CreateUserByAdminCommand(
+            email: $email,
+            username: $username,
+            plainPassword: 'password123',
+            roles: ['ROLE_ADMIN'],
+            status: UserStatus::ACTIVE,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($userId);
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAndUsernameAvailable')
+            ->with(new EmailAddress($email), new Username($username))
+            ->willThrowException(new EmailAlreadyUsedException());
+
+        $this->expectException(EmailAlreadyUsedException::class);
+
+        $this->transactional->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsWhenUsernameAlreadyUsed(): void
+    {
+        $email = 'new@example.com';
+        $username = 'existing-admin';
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
+
+        $command = new CreateUserByAdminCommand(
+            email: $email,
+            username: $username,
+            plainPassword: 'password123',
+            roles: ['ROLE_ADMIN'],
+            status: UserStatus::ACTIVE,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('nextIdentity')
+            ->willReturn($userId);
+
+        $this->uniquenessChecker->expects($this->once())
+            ->method('ensureEmailAndUsernameAvailable')
+            ->with(new EmailAddress($email), new Username($username))
+            ->willThrowException(new UsernameAlreadyUsedException());
+
+        $this->expectException(UsernameAlreadyUsedException::class);
+
+        $this->transactional->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->handler->handle($command);
     }
 }

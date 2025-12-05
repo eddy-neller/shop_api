@@ -2,25 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Application\User\UseCase\Command\UpdatePassword;
+namespace App\Application\User\UseCase\Command\DeleteUserByAdmin;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
-use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
 
-final class UpdatePasswordHandler
+final class DeleteUserByAdminCommandHandler
 {
     public function __construct(
         private readonly UserRepositoryInterface $repository,
-        private readonly PasswordHasherInterface $passwordHasher,
         private readonly ClockInterface $clock,
         private readonly TransactionalInterface $transactional,
     ) {
     }
 
-    public function handle(UpdatePasswordCommand $command): void
+    public function handle(DeleteUserByAdminCommand $command): void
     {
         $user = $this->repository->findById($command->userId);
 
@@ -28,12 +26,11 @@ final class UpdatePasswordHandler
             throw new UserDomainException('Utilisateur introuvable.');
         }
 
-        $this->transactional->transactional(function () use ($user, $command): void {
+        $this->transactional->transactional(function () use ($user): void {
             $now = $this->clock->now();
-            $hashedPassword = $this->passwordHasher->hash($command->newPassword);
-            $user->changePassword($hashedPassword, $now);
+            $user->delete($now);
 
-            $this->repository->save($user);
+            $this->repository->delete($user);
         });
     }
 }

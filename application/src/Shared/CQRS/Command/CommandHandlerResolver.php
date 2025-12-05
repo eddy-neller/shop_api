@@ -10,9 +10,9 @@ use RuntimeException;
 /**
  * Resolver générique qui découvre automatiquement les handlers via convention de nommage.
  *
- * Convention : {Action}Command → {Action}Handler
+ * Convention : {Action}Command → {Action}CommandHandler
  * Exemples :
- * - RegisterUserCommand → RegisterUserHandler
+ * - RegisterUserCommand → RegisterUserCommandHandler
  */
 final class CommandHandlerResolver implements CommandHandlerResolverInterface
 {
@@ -66,7 +66,7 @@ final class CommandHandlerResolver implements CommandHandlerResolverInterface
     /**
      * Découvre le nom de la classe handler à partir du nom de la commande.
      *
-     * Convention : {Action}Command → {Action}Handler
+     * Convention : {Action}Command → {Action}CommandHandler
      */
     private function discoverHandlerClass(string $commandClass): string
     {
@@ -74,10 +74,10 @@ final class CommandHandlerResolver implements CommandHandlerResolverInterface
             throw new RuntimeException(sprintf('Command class "%s" must end with "Command" to use auto-discovery.', $commandClass));
         }
 
-        $handlerClass = preg_replace('/Command$/', 'Handler', $commandClass);
+        $handlerClass = preg_replace('/Command$/', 'CommandHandler', $commandClass);
 
         if (!class_exists($handlerClass)) {
-            throw new RuntimeException(sprintf('Handler class "%s" not found for command "%s". Expected handler class based on convention: {Action}Command → {Action}Handler.', $handlerClass, $commandClass));
+            throw new RuntimeException(sprintf('Handler class "%s" not found for command "%s". Expected handler class based on convention: {Action}Command → {Action}CommandHandler.', $handlerClass, $commandClass));
         }
 
         return $handlerClass;

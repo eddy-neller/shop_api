@@ -7,7 +7,7 @@ namespace App\Application\User\UseCase\Query\DisplayUser;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
 
-final class DisplayUserHandler
+final class DisplayUserQueryHandler
 {
     public function __construct(
         private readonly UserRepositoryInterface $repository,

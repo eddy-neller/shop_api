@@ -8,7 +8,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
-use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarHandler;
+use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommandHandler;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
@@ -28,14 +28,14 @@ final class UpdateAvatarTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
-    private UpdateAvatarHandler $handler;
+    private UpdateAvatarCommandHandler $handler;
 
     protected function setUp(): void
     {
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-        $this->handler = new UpdateAvatarHandler(
+        $this->handler = new UpdateAvatarCommandHandler(
             $this->repository,
             $this->clock,
             $this->transactional,

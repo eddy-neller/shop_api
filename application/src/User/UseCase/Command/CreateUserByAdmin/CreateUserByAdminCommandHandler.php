@@ -8,6 +8,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\Port\UserUniquenessCheckerInterface;
 use App\Domain\User\Model\User;
 use App\Domain\User\ValueObject\EmailAddress;
 use App\Domain\User\ValueObject\Firstname;
@@ -17,13 +18,14 @@ use App\Domain\User\ValueObject\RoleSet;
 use App\Domain\User\ValueObject\Username;
 use App\Domain\User\ValueObject\UserStatus;
 
-final class CreateUserByAdminHandler
+final class CreateUserByAdminCommandHandler
 {
     public function __construct(
         private readonly UserRepositoryInterface $repository,
         private readonly PasswordHasherInterface $passwordHasher,
         private readonly ClockInterface $clock,
         private readonly TransactionalInterface $transactional,
+        private readonly UserUniquenessCheckerInterface $uniquenessChecker,
     ) {
     }
 
@@ -32,14 +34,18 @@ final class CreateUserByAdminHandler
         return $this->transactional->transactional(function () use ($command): CreateUserByAdminOutput {
             $now = $this->clock->now();
             $userId = $this->repository->nextIdentity();
+            $username = new Username($command->username);
             $email = new EmailAddress($command->email);
+
+            $this->uniquenessChecker->ensureEmailAndUsernameAvailable($email, $username);
+
             $hashedPassword = $this->passwordHasher->hash($command->plainPassword);
             $roles = new RoleSet($command->roles);
             $status = UserStatus::fromInt($command->status);
 
             $user = User::createByAdmin(
                 id: $userId,
-                username: new Username($command->username),
+                username: $username,
                 email: $email,
                 password: $hashedPassword,
                 roles: $roles,

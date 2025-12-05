@@ -15,7 +15,7 @@ use App\Domain\User\ValueObject\Avatar;
  * Handler qui orchestre l'upload d'avatar et la mise à jour du domaine.
  * Encapsule la logique d'upload technique (Vich) et la mise à jour du domaine.
  */
-final class UploadAndUpdateAvatarHandler
+final class UploadAndUpdateAvatarCommandHandler
 {
     public function __construct(
         private readonly AvatarUploaderInterface $avatarUploader,
