@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject;
 
-use App\Domain\User\ValueObject\Firstname;
+use App\Domain\User\Identity\ValueObject\Firstname;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 

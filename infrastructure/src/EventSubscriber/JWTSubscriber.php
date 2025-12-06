@@ -2,6 +2,11 @@
 
 namespace App\Infrastructure\EventSubscriber;
 
+use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\User\Port\UserRepositoryInterface;
+use App\Application\User\UseCase\Command\RegisterWrongPasswordAttempt\RegisterWrongPasswordAttemptCommand;
+use App\Application\User\UseCase\Command\ResetWrongPasswordAttempts\ResetWrongPasswordAttemptsCommand;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Service\InfoCodes;
 use DateTimeImmutable;
@@ -16,14 +21,18 @@ use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTNotFoundEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
 use Lexik\Bundle\JWTAuthenticationBundle\Response\JWTAuthenticationFailureResponse;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Response;
 
 readonly class JWTSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private RequestStack $requestStack,
         private EntityManagerInterface $em,
+        private CommandBusInterface $commandBus,
+        private UserRepositoryInterface $userRepository,
     ) {
     }
 
@@ -52,13 +61,40 @@ readonly class JWTSubscriber implements EventSubscriberInterface
         $user->setLastVisit(new DateTimeImmutable());
 
         $this->em->flush();
+
+        // Reset wrong password attempts after a successful login
+        $this->commandBus->dispatch(new ResetWrongPasswordAttemptsCommand(
+            userId: (string) $user->getId(),
+        ));
     }
 
     public function onAuthenticationFailureResponse(AuthenticationFailureEvent $event): void
     {
-        $response = new JWTAuthenticationFailureResponse(InfoCodes::JWT['BAD_CREDENTIALS']);
+        $email = $this->extractUsernameFromRequest($event->getRequest());
+        if ('' === $email) {
+            $event->setResponse(new JWTAuthenticationFailureResponse(InfoCodes::JWT['BAD_CREDENTIALS']));
 
-        $event->setResponse($response);
+            return;
+        }
+
+        $this->commandBus->dispatch(new RegisterWrongPasswordAttemptCommand(
+            email: $email,
+        ));
+
+        $user = $this->userRepository->findByEmail(new EmailAddress($email));
+        if (null !== $user && $user->isLocked()) {
+            $event->setResponse(new JsonResponse(
+                [
+                    'code' => Response::HTTP_LOCKED,
+                    'message' => InfoCodes::JWT['ACCOUNT_LOCKED'],
+                ],
+                Response::HTTP_LOCKED
+            ));
+
+            return;
+        }
+
+        $event->setResponse(new JWTAuthenticationFailureResponse(InfoCodes::JWT['BAD_CREDENTIALS']));
     }
 
     public function onJWTCreated(JWTCreatedEvent $event): void
@@ -113,5 +149,26 @@ readonly class JWTSubscriber implements EventSubscriberInterface
         $response = new JWTAuthenticationFailureResponse(InfoCodes::JWT['EXPIRED_TOKEN']);
 
         $event->setResponse($response);
+    }
+
+    private function extractUsernameFromRequest(?Request $request): string
+    {
+        if (!$request instanceof Request) {
+            return '';
+        }
+
+        $contentType = $request->getContentTypeFormat();
+
+        if ('json' === $contentType) {
+            $data = json_decode($request->getContent(), true);
+
+            if (is_array($data) && isset($data['email']) && is_string($data['email'])) {
+                return trim($data['email']);
+            }
+        }
+
+        $email = $request->get('email');
+
+        return is_string($email) ? trim($email) : '';
     }
 }

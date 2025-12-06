@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Tests\Unit\Service\User;
 
 use App\Application\Shared\Port\FileInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\UserId;
 use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use App\Infrastructure\Service\User\AvatarUploader;

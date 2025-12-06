@@ -2,7 +2,7 @@
 
 namespace App\Application\User\Port;
 
-use App\Domain\User\ValueObject\HashedPassword;
+use App\Domain\User\Security\ValueObject\HashedPassword;
 
 interface PasswordHasherInterface
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\User\Port;
 
 use App\Application\Shared\Port\FileInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\UserId;
 
 interface AvatarUploaderInterface
 {

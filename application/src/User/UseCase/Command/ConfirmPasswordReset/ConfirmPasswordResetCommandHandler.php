@@ -10,7 +10,7 @@ use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
 
 final class ConfirmPasswordResetCommandHandler
 {
@@ -35,21 +35,11 @@ final class ConfirmPasswordResetCommandHandler
             throw new UserDomainException('Token de réinitialisation invalide.');
         }
 
-        $resetPassword = $user->getResetPassword();
-        $ttl = $resetPassword->getTokenTtl() ?? 0;
-        if ($ttl <= 0 || $ttl <= time()) {
-            throw new UserDomainException('Token de réinitialisation expiré.');
-        }
-
-        if ($resetPassword->getToken() !== $rawToken) {
-            throw new UserDomainException('Token de réinitialisation invalide.');
-        }
-
         $hashed = $this->passwordHasher->hash($command->newPassword);
 
-        $this->transactional->transactional(function () use ($user, $hashed): void {
+        $this->transactional->transactional(function () use ($user, $hashed, $rawToken): void {
             $now = $this->clock->now();
-            $user->completePasswordReset($hashed, $now);
+            $user->completePasswordReset($rawToken, $hashed, $now);
 
             $this->repository->save($user);
         });

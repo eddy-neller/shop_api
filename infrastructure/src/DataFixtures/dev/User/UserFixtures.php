@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\DataFixtures\dev\User;
 
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
 use App\Infrastructure\Entity\User\User;
 use DateTimeImmutable;

@@ -2,8 +2,8 @@
 
 namespace App\Presentation\User\Dto;
 
-use App\Domain\User\ValueObject\RoleSet;
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\UserStatus;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 

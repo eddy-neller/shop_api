@@ -5,10 +5,10 @@ namespace App\Infrastructure\Persistence\Doctrine\User;
 use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\User\Port\UserRepositoryInterface;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User as DomainUser;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
 use Doctrine\ORM\EntityManagerInterface;
 

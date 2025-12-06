@@ -6,7 +6,7 @@ namespace App\Infrastructure\Service\User;
 
 use App\Application\Shared\Port\FileInterface;
 use App\Application\User\Port\AvatarUploaderInterface;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\UserId;
 use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;

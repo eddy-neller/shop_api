@@ -2,10 +2,10 @@
 
 namespace App\Application\User\Port;
 
+use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
 
 interface UserRepositoryInterface
 {

@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Entity\User;
 
-use App\Domain\User\ValueObject\ActiveEmail;
-use App\Domain\User\ValueObject\ResetPassword;
-use App\Domain\User\ValueObject\RoleSet;
-use App\Domain\User\ValueObject\Security;
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Security\ValueObject\ActiveEmail;
+use App\Domain\User\Security\ValueObject\ResetPassword;
+use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\Security;
+use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Entity\Shop\Address;
 use App\Entity\Shop\Order;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;

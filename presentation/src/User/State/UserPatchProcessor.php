@@ -7,7 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminCommand;
 use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminOutput;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\UserPatchInput;
 use App\Presentation\User\Presenter\UserResourcePresenter;

@@ -2,7 +2,7 @@
 
 namespace App\Presentation\User\Security\Voter;
 
-use App\Domain\User\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Infrastructure\Entity\User\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;

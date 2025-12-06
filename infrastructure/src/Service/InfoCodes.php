@@ -9,6 +9,7 @@ abstract class InfoCodes
         'INVALID_TOKEN' => 'JWTINV0',
         'MISSING_TOKEN' => 'JWTMIS0',
         'EXPIRED_TOKEN' => 'JWTEXP0',
+        'ACCOUNT_LOCKED' => 'JWTLOCK',
     ];
 
     public const array INTERNAL = [

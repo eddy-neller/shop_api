@@ -13,7 +13,6 @@ use Rector\CodingStyle\Rector\If_\NullableCompareToNullRector;
 use Rector\Config\RectorConfig;
 use Rector\Doctrine\Bundle230\Rector\Class_\AddAnnotationToRepositoryRector;
 use Rector\Doctrine\Set\DoctrineSetList;
-use Rector\PHPUnit\CodeQuality\Rector\Class_\RemoveDataProviderParamKeysRector;
 use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\AddInstanceofAssertForNullableInstanceRector;
 use Rector\PHPUnit\CodeQuality\Rector\MethodCall\AssertEmptyNullableObjectToAssertInstanceofRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
@@ -55,7 +54,6 @@ return static function (RectorConfig $rectorConfig): void {
         CombineIfRector::class,
         SimplifyEmptyCheckOnEmptyArrayRector::class,
         NullableCompareToNullRector::class,
-        RemoveDataProviderParamKeysRector::class,
         ExplicitBoolCompareRector::class,
         AddInstanceofAssertForNullableInstanceRector::class,
         AddAnnotationToRepositoryRector::class,

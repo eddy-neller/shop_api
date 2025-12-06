@@ -2,7 +2,7 @@
 
 namespace App\Security\Voter;
 
-use App\Domain\User\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Entity\Shop\Address;
 use App\Infrastructure\Entity\User\User;
 use Symfony\Bundle\SecurityBundle\Security;

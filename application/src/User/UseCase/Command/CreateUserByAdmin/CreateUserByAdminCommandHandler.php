@@ -9,14 +9,14 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\Port\UserUniquenessCheckerInterface;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\Firstname;
+use App\Domain\User\Identity\ValueObject\Lastname;
+use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Firstname;
-use App\Domain\User\ValueObject\Lastname;
-use App\Domain\User\ValueObject\Preferences;
-use App\Domain\User\ValueObject\RoleSet;
-use App\Domain\User\ValueObject\Username;
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Preference\ValueObject\Preferences;
+use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\UserStatus;
 
 final class CreateUserByAdminCommandHandler
 {

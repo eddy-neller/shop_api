@@ -5,6 +5,7 @@ namespace App\Infrastructure\DataFixtures;
 use App\Infrastructure\DataFixtures\dev\User\UserFixtures;
 use App\Infrastructure\DataFixtures\test\User\UserFixtures as UserTestFixtures;
 use App\Infrastructure\Entity\User\User;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Faker\Factory;
 use RuntimeException;
@@ -63,9 +64,12 @@ trait DataFixturesTrait
         $createdAt = $createdAt ?? $faker->dateTimeBetween('-20 years', '-2 days');
         $updatedAt = $faker->dateTimeBetween($createdAt, '-1 days');
 
+        $createdAtImmutable = $createdAt instanceof DateTimeImmutable ? $createdAt : DateTimeImmutable::createFromMutable($createdAt);
+        $updatedAtImmutable = $updatedAt instanceof DateTimeImmutable ? $updatedAt : DateTimeImmutable::createFromMutable($updatedAt);
+
         return [
-            'createdAt' => $createdAt,
-            'updatedAt' => $updatedAt,
+            'createdAt' => $createdAtImmutable,
+            'updatedAt' => $updatedAtImmutable,
         ];
     }
 

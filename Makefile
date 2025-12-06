@@ -4,7 +4,7 @@ help:
 	@printf "\e[1;30m To change the following variables please edit makefile.conf \e[0m\n";
 	@printf "\n \e[1;30m############################################################\e[0m\n\n"
 	@printf "\n"
-	@printf "\e[3m	Usage limited to : E.N Client API \e[0m\n\n";
+	@printf "\e[3m	Usage limited to : E.N Shop API \e[0m\n\n";
 	@printf "\n"
 	@printf "\e[33m	Usage:\e[0m";
 	@printf "   make [option]\n"

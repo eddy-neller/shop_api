@@ -12,13 +12,13 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\ConfirmPasswordReset\ConfirmPasswordResetCommand;
 use App\Application\User\UseCase\Command\ConfirmPasswordReset\ConfirmPasswordResetCommandHandler;
 use App\Domain\User\Exception\UserDomainException;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\HashedPassword;
-use App\Domain\User\ValueObject\Preferences;
-use App\Domain\User\ValueObject\ResetPassword;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
+use App\Domain\User\Preference\ValueObject\Preferences;
+use App\Domain\User\Security\ValueObject\HashedPassword;
+use App\Domain\User\Security\ValueObject\ResetPassword;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -34,6 +34,8 @@ final class ConfirmPasswordResetTest extends TestCase
 
     private TransactionalInterface&MockObject $transactional;
 
+    private ClockInterface&MockObject $clock;
+
     private ConfirmPasswordResetCommandHandler $handler;
 
     protected function setUp(): void
@@ -41,13 +43,13 @@ final class ConfirmPasswordResetTest extends TestCase
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->tokenProvider = $this->createMock(TokenProviderInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
-        $clock = $this->createMock(ClockInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->handler = new ConfirmPasswordResetCommandHandler(
             $this->repository,
             $this->tokenProvider,
             $this->passwordHasher,
-            $clock,
+            $this->clock,
             $this->transactional,
         );
     }
@@ -86,6 +88,10 @@ final class ConfirmPasswordResetTest extends TestCase
             ->willReturnCallback(function (callable $callback) {
                 return $callback();
             });
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
 
         $this->handler->handle($command);
     }
@@ -133,6 +139,21 @@ final class ConfirmPasswordResetTest extends TestCase
             ->with($rawToken)
             ->willReturn($user);
 
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with($newPassword)
+            ->willReturn(new HashedPassword('hashed-new-password'));
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
+
         $this->expectException(UserDomainException::class);
         $this->expectExceptionMessage('Token de réinitialisation expiré.');
 
@@ -157,6 +178,21 @@ final class ConfirmPasswordResetTest extends TestCase
             ->method('findByResetPasswordToken')
             ->with($rawToken)
             ->willReturn($user);
+
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with($newPassword)
+            ->willReturn(new HashedPassword('hashed-new-password'));
+
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->clock->expects($this->once())
+            ->method('now')
+            ->willReturn(new DateTimeImmutable());
 
         $this->expectException(UserDomainException::class);
         $this->expectExceptionMessage('Token de réinitialisation invalide.');

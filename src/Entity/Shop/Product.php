@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
-use App\Domain\User\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Presentation\RouteRequirements;
 use App\Presentation\Shared\State\PaginatedCollectionProvider;
 use App\Repository\Shop\ProductRepository;

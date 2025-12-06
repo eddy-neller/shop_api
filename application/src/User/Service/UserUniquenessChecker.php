@@ -6,10 +6,10 @@ namespace App\Application\User\Service;
 
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\Port\UserUniquenessCheckerInterface;
-use App\Domain\User\Exception\EmailAlreadyUsedException;
-use App\Domain\User\Exception\UsernameAlreadyUsedException;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Username;
+use App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException;
+use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\Username;
 
 final class UserUniquenessChecker implements UserUniquenessCheckerInterface
 {

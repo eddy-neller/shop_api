@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Tests\Api\User;
 
-use App\Domain\User\ValueObject\RoleSet;
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\DataFixtures\test\User\UserFixtures;
 use App\Infrastructure\Service\User\TokenManager;
 use App\Tests\Api\BaseTest;

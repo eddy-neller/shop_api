@@ -6,7 +6,7 @@ namespace App\Application\User\UseCase\Query\CheckPasswordResetToken;
 
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
 
 final class CheckPasswordResetTokenQueryHandler
 {

@@ -9,7 +9,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\AvatarUploaderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\ValueObject\Avatar;
+use App\Domain\User\Profile\ValueObject\Avatar;
 
 /**
  * Handler qui orchestre l'upload d'avatar et la mise à jour du domaine.

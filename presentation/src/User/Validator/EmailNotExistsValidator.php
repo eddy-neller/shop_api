@@ -3,7 +3,7 @@
 namespace App\Presentation\User\Validator;
 
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;

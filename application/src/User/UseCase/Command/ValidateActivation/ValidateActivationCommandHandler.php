@@ -9,7 +9,7 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
 
 final class ValidateActivationCommandHandler
 {
@@ -33,19 +33,9 @@ final class ValidateActivationCommandHandler
             throw new UserDomainException('Utilisateur introuvable pour ce token.');
         }
 
-        $activeEmail = $user->getActiveEmail();
-        $ttl = $activeEmail->getTokenTtl() ?? 0;
-        if ($ttl <= 0 || $ttl <= time()) {
-            throw new UserDomainException('Token d\'activation expiré.');
-        }
-
-        if ($activeEmail->getToken() !== $rawToken) {
-            throw new UserDomainException("Token d'activation invalide.");
-        }
-
-        $this->transactional->transactional(function () use ($user): void {
+        $this->transactional->transactional(function () use ($user, $rawToken): void {
             $now = $this->clock->now();
-            $user->activate($now);
+            $user->activate($rawToken, $now);
 
             $this->repository->save($user);
         });

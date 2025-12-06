@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarCommand;
 use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarOutput;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\UserId;
 use App\Presentation\Shared\Adapter\SymfonyFileAdapter;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\UserAvatarInput;

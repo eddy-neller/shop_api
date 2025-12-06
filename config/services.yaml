@@ -13,6 +13,7 @@ parameters:
     mailerFrontLinkRegisterValidation: "%env(resolve:MAILER_URI_FRONT_REGISTER_VALIDATION)%"
     mailerFrontLinkResetPassword: "%env(resolve:MAILER_URI_FRONT_RESET_PASSWORD)%"
     mailer_to: "%env(resolve:MAILER_TO)%"
+    app.security.max_login_attempts: "%env(resolve:APP_MAX_LOGIN_ATTEMPTS)%"
 
     ###> symfony/mailer ###
     mailer_dsn: "%env(resolve:MAILER_DSN)%"

@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Service\Token;
 
 use App\Application\User\Port\TokenProviderInterface;
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Infrastructure\Service\Encoder\CustomEncoder;
 use App\Infrastructure\Service\User\TokenManager;
 

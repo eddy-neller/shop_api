@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\DataFixtures\test\User;
 
-use App\Domain\User\ValueObject\ActiveEmail;
-use App\Domain\User\ValueObject\ResetPassword;
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Security\ValueObject\ActiveEmail;
+use App\Domain\User\Security\ValueObject\ResetPassword;
+use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
 use App\Infrastructure\Entity\User\User;
 use DateTimeImmutable;

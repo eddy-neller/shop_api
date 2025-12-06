@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject;
 
-use App\Domain\User\ValueObject\HashedPassword;
+use App\Domain\User\Security\ValueObject\HashedPassword;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 

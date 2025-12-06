@@ -9,7 +9,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserOutput;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
-use App\Domain\User\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use LogicException;

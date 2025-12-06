@@ -11,22 +11,23 @@ use App\Domain\User\Event\UserCreatedByAdminEvent;
 use App\Domain\User\Event\UserDeletedEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
-use App\Domain\User\Exception\ActivationLimitReachedException;
-use App\Domain\User\Exception\ResetPasswordLimitReachedException;
-use App\Domain\User\Exception\UserLockedException;
-use App\Domain\User\ValueObject\ActiveEmail;
-use App\Domain\User\ValueObject\Avatar;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\Firstname;
-use App\Domain\User\ValueObject\HashedPassword;
-use App\Domain\User\ValueObject\Lastname;
-use App\Domain\User\ValueObject\Preferences;
-use App\Domain\User\ValueObject\ResetPassword;
-use App\Domain\User\ValueObject\RoleSet;
-use App\Domain\User\ValueObject\Security;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Exception\RateLimit\ActivationLimitReachedException;
+use App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException;
+use App\Domain\User\Exception\Security\UserLockedException;
+use App\Domain\User\Exception\UserDomainException;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\Firstname;
+use App\Domain\User\Identity\ValueObject\Lastname;
+use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\Username;
+use App\Domain\User\Preference\ValueObject\Preferences;
+use App\Domain\User\Profile\ValueObject\Avatar;
+use App\Domain\User\Security\ValueObject\ActiveEmail;
+use App\Domain\User\Security\ValueObject\HashedPassword;
+use App\Domain\User\Security\ValueObject\ResetPassword;
+use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\Security;
+use App\Domain\User\Security\ValueObject\UserStatus;
 use DateTimeImmutable;
 
 final class User
@@ -58,6 +59,10 @@ final class User
 
     public function equals(self $other): bool
     {
+        if (null === $this->id || null === $other->id) {
+            return false;
+        }
+
         return $this->id->equals($other->id);
     }
 
@@ -183,6 +188,9 @@ final class User
 
     public function requestActivation(string $token, DateTimeImmutable $expiresAt, DateTimeImmutable $now): void
     {
+        $this->assertNotLocked();
+        $this->refreshActivationIfExpired($now);
+
         if ($this->getActiveEmail()->getMailSent() >= self::MAX_TOKEN_REQUESTS) {
             throw new ActivationLimitReachedException();
         }
@@ -208,9 +216,11 @@ final class User
         $this->setActiveEmail(new ActiveEmail());
     }
 
-    public function activate(DateTimeImmutable $now): void
+    public function activate(string $token, DateTimeImmutable $now): void
     {
-        $this->setStatus($this->getStatus()->addFlag(UserStatus::ACTIVE));
+        $this->assertNotLocked();
+        $this->assertActivationTokenValid($token, $now);
+        $this->setStatus(UserStatus::active());
         $this->clearActivation();
         $this->setUpdatedAt($now);
 
@@ -225,6 +235,7 @@ final class User
     public function requestPasswordReset(string $token, DateTimeImmutable $expiresAt, DateTimeImmutable $now): void
     {
         $this->assertNotLocked();
+        $this->refreshResetPasswordIfExpired($now);
 
         if ($this->getResetPassword()->getMailSent() >= self::MAX_TOKEN_REQUESTS) {
             throw new ResetPasswordLimitReachedException();
@@ -245,8 +256,9 @@ final class User
         }
     }
 
-    public function completePasswordReset(HashedPassword $password, DateTimeImmutable $now): void
+    public function completePasswordReset(string $token, HashedPassword $password, DateTimeImmutable $now): void
     {
+        $this->assertResetPasswordTokenValid($token, $now);
         $this->setPassword($password);
         $this->setResetPassword(new ResetPassword());
         $this->setUpdatedAt($now);
@@ -340,14 +352,40 @@ final class User
         }
     }
 
+    public function registerWrongPasswordAttempt(int $maxAttempts, DateTimeImmutable $now): void
+    {
+        $attempts = $this->security->getTotalWrongPassword() + 1;
+        $this->security = $this->security->withTotalWrongPassword($attempts);
+
+        if ($attempts >= $maxAttempts) {
+            $this->setStatus(UserStatus::blocked());
+        }
+
+        $this->setUpdatedAt($now);
+    }
+
+    public function resetWrongPasswordAttempts(DateTimeImmutable $now): void
+    {
+        if (0 === $this->security->getTotalWrongPassword()) {
+            return;
+        }
+
+        $this->security = $this->security->withTotalWrongPassword(0);
+        if ($this->getStatus()->isBlocked()) {
+            $this->setStatus(UserStatus::active());
+        }
+
+        $this->setUpdatedAt($now);
+    }
+
     public function isActive(): bool
     {
-        return $this->getStatus()->hasFlag(UserStatus::ACTIVE);
+        return $this->getStatus()->isActive();
     }
 
     public function isLocked(): bool
     {
-        return $this->getStatus()->hasFlag(UserStatus::BLOCKED);
+        return $this->getStatus()->isBlocked();
     }
 
     public function getId(): ?UserId
@@ -490,9 +528,57 @@ final class User
         $this->updatedAt = $updatedAt;
     }
 
+    private function assertActivationTokenValid(string $token, DateTimeImmutable $now): void
+    {
+        $activeEmail = $this->getActiveEmail();
+        $ttl = $activeEmail->getTokenTtl() ?? 0;
+
+        if ($ttl <= 0 || $ttl <= $now->getTimestamp()) {
+            throw new UserDomainException("Token d'activation expiré.");
+        }
+
+        if ($activeEmail->getToken() !== $token) {
+            throw new UserDomainException("Token d'activation invalide.");
+        }
+    }
+
+    private function assertResetPasswordTokenValid(string $token, DateTimeImmutable $now): void
+    {
+        $resetPassword = $this->getResetPassword();
+        $ttl = $resetPassword->getTokenTtl() ?? 0;
+
+        if ($ttl <= 0 || $ttl <= $now->getTimestamp()) {
+            throw new UserDomainException('Token de réinitialisation expiré.');
+        }
+
+        if ($resetPassword->getToken() !== $token) {
+            throw new UserDomainException('Token de réinitialisation invalide.');
+        }
+    }
+
+    private function refreshActivationIfExpired(DateTimeImmutable $now): void
+    {
+        $activeEmail = $this->getActiveEmail();
+        $ttl = $activeEmail->getTokenTtl();
+
+        if (null !== $ttl && $ttl <= $now->getTimestamp()) {
+            $this->setActiveEmail(new ActiveEmail());
+        }
+    }
+
+    private function refreshResetPasswordIfExpired(DateTimeImmutable $now): void
+    {
+        $resetPassword = $this->getResetPassword();
+        $ttl = $resetPassword->getTokenTtl();
+
+        if (null !== $ttl && $ttl <= $now->getTimestamp()) {
+            $this->setResetPassword(new ResetPassword());
+        }
+    }
+
     private function assertNotLocked(): void
     {
-        if ($this->isLocked()) {
+        if ($this->getStatus()->isBlocked()) {
             throw new UserLockedException();
         }
     }

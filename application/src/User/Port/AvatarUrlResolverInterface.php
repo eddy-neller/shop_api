@@ -2,7 +2,7 @@
 
 namespace App\Application\User\Port;
 
-use App\Domain\User\ValueObject\Avatar;
+use App\Domain\User\Profile\ValueObject\Avatar;
 
 interface AvatarUrlResolverInterface
 {

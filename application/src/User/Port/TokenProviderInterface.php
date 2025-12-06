@@ -2,7 +2,7 @@
 
 namespace App\Application\User\Port;
 
-use App\Domain\User\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
 
 interface TokenProviderInterface
 {

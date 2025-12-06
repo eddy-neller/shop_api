@@ -9,19 +9,19 @@ use App\Domain\User\Event\UserActivatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
-use App\Domain\User\Exception\ActivationLimitReachedException;
-use App\Domain\User\Exception\ResetPasswordLimitReachedException;
-use App\Domain\User\Exception\UserLockedException;
+use App\Domain\User\Exception\RateLimit\ActivationLimitReachedException;
+use App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException;
+use App\Domain\User\Exception\Security\UserLockedException;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
-use App\Domain\User\ValueObject\ActiveEmail;
-use App\Domain\User\ValueObject\EmailAddress;
-use App\Domain\User\ValueObject\HashedPassword;
-use App\Domain\User\ValueObject\Preferences;
-use App\Domain\User\ValueObject\ResetPassword;
-use App\Domain\User\ValueObject\RoleSet;
-use App\Domain\User\ValueObject\UserId;
-use App\Domain\User\ValueObject\Username;
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Preference\ValueObject\Preferences;
+use App\Domain\User\Security\ValueObject\ActiveEmail;
+use App\Domain\User\Security\ValueObject\HashedPassword;
+use App\Domain\User\Security\ValueObject\ResetPassword;
+use App\Domain\User\Security\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\UserStatus;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
@@ -99,14 +99,28 @@ final class UserTest extends TestCase
         $user->requestActivation('token', new DateTimeImmutable('+1 day'), new DateTimeImmutable());
     }
 
+    public function testRequestActivationResetsCounterWhenPreviousTokenExpired(): void
+    {
+        $user = $this->createUser();
+        $expiredTtl = (new DateTimeImmutable('-1 hour'))->getTimestamp();
+        $this->setActiveEmail($user, new ActiveEmail(mailSent: 3, token: 'old', tokenTtl: $expiredTtl));
+
+        $now = new DateTimeImmutable();
+        $user->requestActivation('token', new DateTimeImmutable('+1 day'), $now);
+
+        $this->assertSame(1, $user->getActiveEmail()->getMailSent());
+        $this->assertSame('token', $user->getActiveEmail()->getToken());
+    }
+
     public function testActivateSetsUserActiveAndClearsActivationToken(): void
     {
         $user = $this->createUser();
-        $user->requestActivation('token', new DateTimeImmutable('+1 day'), new DateTimeImmutable());
+        $token = 'token';
+        $user->requestActivation($token, new DateTimeImmutable('+1 day'), new DateTimeImmutable());
         $user->clearDomainEvents(); // Clear previous events
 
         $now = new DateTimeImmutable();
-        $user->activate($now);
+        $user->activate($token, $now);
 
         $this->assertTrue($user->isActive());
         $this->assertNull($user->getActiveEmail()->getToken());
@@ -129,7 +143,7 @@ final class UserTest extends TestCase
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
-        $user->activate(new DateTimeImmutable());
+        $user->clearActivation(); // already inactive but clears TTL checks
         $user->clearDomainEvents();
 
         $token = 'reset-token';
@@ -174,15 +188,33 @@ final class UserTest extends TestCase
         $user->requestPasswordReset('token', new DateTimeImmutable('+15 minutes'), new DateTimeImmutable());
     }
 
+    public function testRequestPasswordResetResetsCounterWhenPreviousTokenExpired(): void
+    {
+        $user = $this->createActiveUser();
+        $expiredTtl = (new DateTimeImmutable('-1 hour'))->getTimestamp();
+        $this->setResetPassword($user, new ResetPassword(mailSent: 3, token: 'old', tokenTtl: $expiredTtl));
+
+        $now = new DateTimeImmutable();
+        $expiresAt = new DateTimeImmutable('+15 minutes');
+
+        $user->requestPasswordReset('token', $expiresAt, $now);
+
+        $this->assertSame(1, $user->getResetPassword()->getMailSent());
+        $this->assertSame('token', $user->getResetPassword()->getToken());
+        $this->assertSame($expiresAt->getTimestamp(), $user->getResetPassword()->getTokenTtl());
+    }
+
     public function testCompletePasswordResetChangesPasswordAndClearsToken(): void
     {
         $user = $this->createActiveUser();
-        $user->requestActivation('token', new DateTimeImmutable('+15 minutes'), new DateTimeImmutable());
+        $token = 'reset-token';
+        $expiresAt = new DateTimeImmutable('+15 minutes');
+        $user->requestPasswordReset($token, $expiresAt, new DateTimeImmutable());
 
         $newPassword = new HashedPassword('new-hashed-password');
         $now = new DateTimeImmutable();
 
-        $user->completePasswordReset($newPassword, $now);
+        $user->completePasswordReset($token, $newPassword, $now);
 
         $this->assertSame($newPassword, $user->getPassword());
         $this->assertNull($user->getResetPassword()->getToken());
@@ -213,7 +245,7 @@ final class UserTest extends TestCase
             preferences: Preferences::fromArray(['lang' => 'fr']),
             now: new DateTimeImmutable(),
         );
-        $user->activate(new DateTimeImmutable());
+        $user->clearActivation();
         $user->clearDomainEvents();
 
         $originalEmail = $user->getEmail();
@@ -253,7 +285,7 @@ final class UserTest extends TestCase
     public function testIsLockedReturnsTrueWhenUserBlocked(): void
     {
         $user = $this->createUser();
-        $this->setStatus($user, UserStatus::fromInt(UserStatus::BLOCKED));
+        $this->setStatus($user, UserStatus::blocked());
 
         $this->assertTrue($user->isLocked());
     }
@@ -325,10 +357,36 @@ final class UserTest extends TestCase
     private function createActiveUser(): User
     {
         $user = $this->createUser();
-        $user->activate(new DateTimeImmutable());
+        $token = 'token';
+        $user->requestActivation($token, new DateTimeImmutable('+1 day'), new DateTimeImmutable());
+        $user->activate($token, new DateTimeImmutable());
         $user->clearDomainEvents(); // Clear events
 
         return $user;
+    }
+
+    public function testRegisterWrongPasswordAttemptBlocksUserAfterThreshold(): void
+    {
+        $user = $this->createActiveUser();
+        $now = new DateTimeImmutable();
+
+        $user->registerWrongPasswordAttempt(2, $now);
+        $this->assertFalse($user->isLocked());
+
+        $user->registerWrongPasswordAttempt(2, $now);
+        $this->assertTrue($user->isLocked());
+    }
+
+    public function testResetWrongPasswordAttemptsClearsCounter(): void
+    {
+        $user = $this->createActiveUser();
+        $now = new DateTimeImmutable();
+
+        $user->registerWrongPasswordAttempt(5, $now);
+        $this->assertSame(1, $user->getSecurity()->getTotalWrongPassword());
+
+        $user->resetWrongPasswordAttempts($now);
+        $this->assertSame(0, $user->getSecurity()->getTotalWrongPassword());
     }
 
     private function setActiveEmail(User $user, ActiveEmail $activeEmail): void

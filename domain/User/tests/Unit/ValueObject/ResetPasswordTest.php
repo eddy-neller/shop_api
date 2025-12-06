@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject;
 
-use App\Domain\User\ValueObject\ResetPassword;
+use App\Domain\User\Security\ValueObject\ResetPassword;
 use PHPUnit\Framework\TestCase;
 
 final class ResetPasswordTest extends TestCase

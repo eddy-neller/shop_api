@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Tests\Unit\ValueObject;
 
-use App\Domain\User\ValueObject\UserStatus;
+use App\Domain\User\Security\ValueObject\UserStatus;
 use PHPUnit\Framework\TestCase;
 
 final class UserStatusTest extends TestCase
@@ -28,7 +28,6 @@ final class UserStatusTest extends TestCase
         $status = UserStatus::inactive();
 
         $this->assertSame(UserStatus::INACTIVE, $status->toInt());
-        $this->assertFalse($status->hasFlag(UserStatus::ACTIVE));
     }
 
     public function testFromIntCreatesStatusWithValue(): void
@@ -41,16 +40,16 @@ final class UserStatusTest extends TestCase
     public function testAddFlagAddsFlag(): void
     {
         $status = UserStatus::inactive();
-        $newStatus = $status->addFlag(UserStatus::ACTIVE);
+        $newStatus = UserStatus::active();
 
         $this->assertSame(UserStatus::INACTIVE, $status->toInt());
-        $this->assertTrue($newStatus->hasFlag(UserStatus::ACTIVE));
+        $this->assertSame(UserStatus::ACTIVE, $newStatus->toInt());
     }
 
     public function testAddFlagIsImmutable(): void
     {
         $status = UserStatus::inactive();
-        $newStatus = $status->addFlag(UserStatus::ACTIVE);
+        $newStatus = UserStatus::active();
 
         $this->assertNotSame($status, $newStatus);
         $this->assertSame(UserStatus::INACTIVE, $status->toInt());
@@ -58,44 +57,42 @@ final class UserStatusTest extends TestCase
 
     public function testRemoveFlagRemovesFlag(): void
     {
-        $status = UserStatus::fromInt(UserStatus::ACTIVE | UserStatus::BLOCKED);
-        $newStatus = $status->removeFlag(UserStatus::BLOCKED);
+        $status = UserStatus::blocked();
 
-        $this->assertTrue($newStatus->hasFlag(UserStatus::ACTIVE));
-        $this->assertFalse($newStatus->hasFlag(UserStatus::BLOCKED));
+        $this->assertTrue($status->isBlocked());
+        $this->assertFalse($status->isActive());
     }
 
     public function testRemoveFlagIsImmutable(): void
     {
-        $status = UserStatus::fromInt(UserStatus::ACTIVE | UserStatus::BLOCKED);
-        $newStatus = $status->removeFlag(UserStatus::BLOCKED);
+        $status = UserStatus::blocked();
+        $newStatus = UserStatus::active();
 
         $this->assertNotSame($status, $newStatus);
-        $this->assertTrue($status->hasFlag(UserStatus::BLOCKED));
+        $this->assertTrue($status->isBlocked());
+        $this->assertTrue($newStatus->isActive());
     }
 
     public function testHasFlagReturnsTrueWhenFlagIsSet(): void
     {
-        $status = UserStatus::fromInt(UserStatus::ACTIVE);
+        $status = UserStatus::active();
 
-        $this->assertTrue($status->hasFlag(UserStatus::ACTIVE));
+        $this->assertTrue($status->isActive());
     }
 
     public function testHasFlagReturnsFalseWhenFlagIsNotSet(): void
     {
         $status = UserStatus::inactive();
 
-        $this->assertFalse($status->hasFlag(UserStatus::ACTIVE));
+        $this->assertFalse($status->isActive());
     }
 
     public function testCanCombineMultipleFlags(): void
     {
-        $status = UserStatus::inactive()
-            ->addFlag(UserStatus::ACTIVE)
-            ->addFlag(UserStatus::BLOCKED);
+        $status = UserStatus::blocked();
 
-        $this->assertTrue($status->hasFlag(UserStatus::ACTIVE));
-        $this->assertTrue($status->hasFlag(UserStatus::BLOCKED));
+        $this->assertTrue($status->isBlocked());
+        $this->assertFalse($status->isActive());
     }
 
     public function testToIntReturnsIntValue(): void

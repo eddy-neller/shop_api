@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
-use App\Domain\User\ValueObject\RoleSet;
+use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Presentation\RouteRequirements;
 use App\Repository\NestedTreeRepository;
 use App\Security\Validator\Constraints as AppAssert;
