@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Tests\Unit\Notification\User;
 
+use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\Firstname;
 use App\Domain\User\Identity\ValueObject\UserId;
@@ -11,12 +12,13 @@ use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
 use App\Domain\User\Preference\ValueObject\Preferences;
 use App\Domain\User\Security\ValueObject\HashedPassword;
-use App\Infrastructure\Notification\Mailer\Mailer;
 use App\Infrastructure\Notification\User\UserNotifier;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class UserNotifierTest extends KernelTestCase
@@ -27,8 +29,8 @@ final class UserNotifierTest extends KernelTestCase
     /** @var ParameterBagInterface&MockObject */
     private ParameterBagInterface $parameterBag;
 
-    /** @var Mailer&MockObject */
-    private Mailer $mailer;
+    /** @var MessageBusInterface&MockObject */
+    private MessageBusInterface $bus;
 
     private UserNotifier $userNotifier;
 
@@ -38,12 +40,12 @@ final class UserNotifierTest extends KernelTestCase
 
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->parameterBag = $this->createMock(ParameterBagInterface::class);
-        $this->mailer = $this->createMock(Mailer::class);
+        $this->bus = $this->createMock(MessageBusInterface::class);
 
         $this->userNotifier = new UserNotifier(
             $this->translator,
             $this->parameterBag,
-            $this->mailer,
+            $this->bus,
         );
     }
 
@@ -65,18 +67,19 @@ final class UserNotifierTest extends KernelTestCase
             ['app.default_locale', 'en'],
         ]);
 
-        $this->mailer->expects($this->once())
-            ->method('sendEmail')
-            ->with(
-                'test@example.com',
-                $subject,
-                'emails/user/register-activation.html.twig',
-                [
-                    'firstname' => 'John',
-                    'link' => $expectedLink,
-                    'userLocale' => 'en',
-                ]
-            );
+        $this->bus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (SendEmailMessage $message) use ($subject, $expectedLink): bool {
+                return 'test@example.com' === $message->to
+                    && $subject === $message->subject
+                    && 'emails/user/register-activation.html.twig' === $message->template
+                    && [
+                        'firstname' => 'John',
+                        'link' => $expectedLink,
+                        'userLocale' => 'en',
+                    ] === $message->context;
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $this->userNotifier->sendActivationEmail($user, $encodedToken);
     }
@@ -99,18 +102,19 @@ final class UserNotifierTest extends KernelTestCase
             ['app.default_locale', 'en'],
         ]);
 
-        $this->mailer->expects($this->once())
-            ->method('sendEmail')
-            ->with(
-                'test@example.com',
-                $subject,
-                'emails/user/reset-password.html.twig',
-                [
-                    'firstname' => 'John',
-                    'link' => $expectedLink,
-                    'userLocale' => 'en',
-                ]
-            );
+        $this->bus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (SendEmailMessage $message) use ($subject, $expectedLink): bool {
+                return 'test@example.com' === $message->to
+                    && $subject === $message->subject
+                    && 'emails/user/reset-password.html.twig' === $message->template
+                    && [
+                        'firstname' => 'John',
+                        'link' => $expectedLink,
+                        'userLocale' => 'en',
+                    ] === $message->context;
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $this->userNotifier->sendResetPasswordEmail($user, $encodedToken);
     }
@@ -133,18 +137,19 @@ final class UserNotifierTest extends KernelTestCase
             ['app.default_locale', 'en'],
         ]);
 
-        $this->mailer->expects($this->once())
-            ->method('sendEmail')
-            ->with(
-                'test@example.com',
-                $subject,
-                'emails/user/register-activation.html.twig',
-                [
-                    'firstname' => 'John',
-                    'link' => $expectedLink,
-                    'userLocale' => 'fr',
-                ]
-            );
+        $this->bus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (SendEmailMessage $message) use ($subject, $expectedLink): bool {
+                return 'test@example.com' === $message->to
+                    && $subject === $message->subject
+                    && 'emails/user/register-activation.html.twig' === $message->template
+                    && [
+                        'firstname' => 'John',
+                        'link' => $expectedLink,
+                        'userLocale' => 'fr',
+                    ] === $message->context;
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $this->userNotifier->sendActivationEmail($user, $encodedToken);
     }
@@ -168,18 +173,19 @@ final class UserNotifierTest extends KernelTestCase
             ['app.default_locale', 'en'],
         ]);
 
-        $this->mailer->expects($this->once())
-            ->method('sendEmail')
-            ->with(
-                'test@example.com',
-                $subject,
-                'emails/user/register-activation.html.twig',
-                [
-                    'firstname' => 'John',
-                    'link' => $expectedLink,
-                    'userLocale' => 'en',
-                ]
-            );
+        $this->bus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (SendEmailMessage $message) use ($subject, $expectedLink): bool {
+                return 'test@example.com' === $message->to
+                    && $subject === $message->subject
+                    && 'emails/user/register-activation.html.twig' === $message->template
+                    && [
+                        'firstname' => 'John',
+                        'link' => $expectedLink,
+                        'userLocale' => 'en',
+                    ] === $message->context;
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $this->userNotifier->sendActivationEmail($user, $encodedToken);
     }
@@ -206,18 +212,19 @@ final class UserNotifierTest extends KernelTestCase
             ['app.default_locale', 'en'],
         ]);
 
-        $this->mailer->expects($this->once())
-            ->method('sendEmail')
-            ->with(
-                'test@example.com',
-                $subject,
-                'emails/user/register-activation.html.twig',
-                [
-                    'firstname' => 'John',
-                    'link' => $expectedLink,
-                    'userLocale' => 'en',
-                ]
-            );
+        $this->bus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (SendEmailMessage $message) use ($subject, $expectedLink): bool {
+                return 'test@example.com' === $message->to
+                    && $subject === $message->subject
+                    && 'emails/user/register-activation.html.twig' === $message->template
+                    && [
+                        'firstname' => 'John',
+                        'link' => $expectedLink,
+                        'userLocale' => 'en',
+                    ] === $message->context;
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $this->userNotifier->sendActivationEmail($user, $encodedToken);
     }
@@ -240,18 +247,19 @@ final class UserNotifierTest extends KernelTestCase
             ['app.default_locale', 'en'],
         ]);
 
-        $this->mailer->expects($this->once())
-            ->method('sendEmail')
-            ->with(
-                'test@example.com',
-                $subject,
-                'emails/user/register-activation.html.twig',
-                [
-                    'firstname' => null,
-                    'link' => $expectedLink,
-                    'userLocale' => 'en',
-                ]
-            );
+        $this->bus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(static function (SendEmailMessage $message) use ($subject, $expectedLink): bool {
+                return 'test@example.com' === $message->to
+                    && $subject === $message->subject
+                    && 'emails/user/register-activation.html.twig' === $message->template
+                    && [
+                        'firstname' => null,
+                        'link' => $expectedLink,
+                        'userLocale' => 'en',
+                    ] === $message->context;
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $this->userNotifier->sendActivationEmail($user, $encodedToken);
     }

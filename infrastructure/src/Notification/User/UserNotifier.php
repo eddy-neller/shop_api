@@ -2,10 +2,11 @@
 
 namespace App\Infrastructure\Notification\User;
 
+use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Application\User\Port\UserNotifierInterface;
 use App\Domain\User\Model\User;
-use App\Infrastructure\Notification\Mailer\Mailer;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class UserNotifier implements UserNotifierInterface
@@ -17,7 +18,7 @@ final class UserNotifier implements UserNotifierInterface
     public function __construct(
         private readonly TranslatorInterface $translator,
         private readonly ParameterBagInterface $bag,
-        private readonly Mailer $mailer,
+        private readonly MessageBusInterface $bus,
     ) {
     }
 
@@ -61,12 +62,12 @@ final class UserNotifier implements UserNotifierInterface
             'userLocale' => $locale,
         ];
 
-        $this->mailer->sendEmail(
-            $user->getEmail()->toString(),
-            $subject,
-            $template,
-            $payload
-        );
+        $this->bus->dispatch(new SendEmailMessage(
+            to: $user->getEmail()->toString(),
+            subject: $subject,
+            template: $template,
+            context: $payload,
+        ));
     }
 
     private function resolveLocale(User $user): string

@@ -7,6 +7,7 @@ namespace App\Presentation\Tests\Api\User;
 use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\DataFixtures\test\User\UserFixtures;
+use App\Infrastructure\Service\InfoCodes;
 use App\Infrastructure\Service\User\TokenManager;
 use App\Tests\Api\BaseTest;
 use Faker\Factory;
@@ -31,6 +32,123 @@ final class UserTest extends BaseTest
         parent::setUp();
 
         $this->iri = $this->findIriByHttp(self::URL_API_OPE, self::CRITERIA_IRI, asAdmin: true);
+    }
+
+    public static function provideLoginSuccess(): Generator
+    {
+        yield 'Admin login' => [
+            [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'email' => 'user_admin@en-develop.fr',
+                    'password' => 'user_admin',
+                ],
+            ],
+            [
+                BaseTest::ASSERTION_TYPE['SERIALIZATION'] => [
+                    'hasKey' => [
+                        'token',
+                    ],
+                ],
+                BaseTest::ASSERTION_TYPE['NOT_NULL'] => [
+                    'token',
+                ],
+            ],
+        ];
+    }
+
+    #[DataProvider('provideLoginSuccess')]
+    public function testLoginSuccess(
+        array $options,
+        array $asserts,
+    ): void {
+        $this->testSuccess(
+            Request::METHOD_POST,
+            self::URL_LOGIN,
+            $options,
+            Response::HTTP_OK,
+            $asserts,
+        );
+    }
+
+    public static function provideLoginException(): Generator
+    {
+        yield 'Bad credentials' => [
+            [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'email' => 'user_admin@en-develop.fr',
+                    'password' => 'wrong_password',
+                ],
+            ],
+            [
+                'class' => ClientExceptionInterface::class,
+                'code' => Response::HTTP_UNAUTHORIZED,
+                'message' => 'HTTP 401 returned',
+            ],
+        ];
+    }
+
+    #[DataProvider('provideLoginException')]
+    public function testLoginException(
+        array $options,
+        array $exception,
+    ): void {
+        $this->testException(
+            Request::METHOD_POST,
+            self::URL_LOGIN,
+            $options,
+            $exception,
+        );
+    }
+
+    public static function provideLoginLock(): Generator
+    {
+        yield 'Lock after max attempts' => [
+            'user_member_9@en-develop.fr',
+            'wrong_password',
+        ];
+    }
+
+    #[DataProvider('provideLoginLock')]
+    public function testLoginLockAfterTooManyAttempts(string $email, string $password): void
+    {
+        $maxAttempts = (int) self::getContainer()->getParameter('app.security.max_login_attempts');
+
+        for ($attempt = 1; $attempt <= $maxAttempts; ++$attempt) {
+            $response = $this->request(
+                Request::METHOD_POST,
+                self::URL_LOGIN,
+                [
+                    'headers' => [
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => [
+                        'email' => $email,
+                        'password' => $password,
+                    ],
+                ]
+            );
+
+            $this->assertNotNull($response);
+
+            $status = $response->getStatusCode();
+            $payload = json_decode($response->getContent(false), true, 512, JSON_THROW_ON_ERROR);
+
+            if ($attempt < $maxAttempts) {
+                $this->assertSame(Response::HTTP_UNAUTHORIZED, $status);
+                $this->assertSame(InfoCodes::JWT['BAD_CREDENTIALS'], $payload['message'] ?? null);
+
+                continue;
+            }
+
+            $this->assertSame(Response::HTTP_LOCKED, $status);
+            $this->assertSame(InfoCodes::JWT['ACCOUNT_LOCKED'], $payload['message'] ?? null);
+        }
     }
 
     public static function provideColUser(): Generator

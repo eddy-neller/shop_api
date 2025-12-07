@@ -31,7 +31,6 @@ use App\Presentation\User\Dto\UserRegisterInput;
 use App\Presentation\User\State\Me\UserMeAvatarProcessor;
 use App\Presentation\User\State\Me\UserMePasswordUpdateProcessor;
 use App\Presentation\User\State\Me\UserMeProvider;
-use App\Presentation\User\State\OtherUsersProvider;
 use App\Presentation\User\State\PasswordResetCheckProcessor;
 use App\Presentation\User\State\PasswordResetConfirmProcessor;
 use App\Presentation\User\State\PasswordResetRequestProcessor;
@@ -169,18 +168,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
             output: false,
             name: 'users-me-update-password',
             processor: UserMePasswordUpdateProcessor::class,
-        ),
-        new GetCollection(
-            uriTemplate: '/users/me/other-users',
-            openapi: new Model\Operation(
-                summary: 'Get other users.',
-                description: 'Get other users.',
-                security: [['ApiKeyAuth' => []]],
-            ),
-            paginationEnabled: false,
-            security: "is_granted('IS_AUTHENTICATED_FULLY')",
-            name: 'users-me-other-users',
-            provider: OtherUsersProvider::class,
         ),
         new GetCollection(
             uriTemplate: '/users',

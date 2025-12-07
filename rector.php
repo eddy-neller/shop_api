@@ -15,6 +15,7 @@ use Rector\Doctrine\Bundle230\Rector\Class_\AddAnnotationToRepositoryRector;
 use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\AddInstanceofAssertForNullableInstanceRector;
 use Rector\PHPUnit\CodeQuality\Rector\MethodCall\AssertEmptyNullableObjectToAssertInstanceofRector;
+use Rector\PHPUnit\CodeQuality\Rector\MethodCall\WithCallbackIdenticalToStandaloneAssertsRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Set\ValueObject\SetList;
 use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
@@ -59,5 +60,6 @@ return static function (RectorConfig $rectorConfig): void {
         AddAnnotationToRepositoryRector::class,
         FlipTypeControlToUseExclusiveTypeRector::class,
         AssertEmptyNullableObjectToAssertInstanceofRector::class,
+        WithCallbackIdenticalToStandaloneAssertsRector::class,
     ]);
 };

@@ -51,21 +51,28 @@
             <directory>infrastructure/tests/Unit/Service/User</directory>
         </testsuite>
 
-        <!--<testsuite name="api.shop">
+        <testsuite name="api.shop">
             <directory>tests/Api/Shop</directory>
-        </testsuite>-->
+        </testsuite>
         <testsuite name="api.user">
             <directory>presentation/tests/Api/User</directory>
         </testsuite>
 
-        <testsuite name="unit.state.sendmail">
+        <testsuite name="pres.state.sendmail">
             <directory>presentation/tests/Unit/State/SendMail</directory>
         </testsuite>
-        <testsuite name="unit.state.shared">
+        <testsuite name="pres.state.shared">
             <directory>presentation/tests/Unit/State/Shared</directory>
         </testsuite>
-        <testsuite name="unit.state.user">
+        <testsuite name="pres.state.user">
             <directory>presentation/tests/Unit/State/User</directory>
+        </testsuite>
+
+        <testsuite name="unit.command">
+            <directory>tests/Unit/Command</directory>
+        </testsuite>
+        <testsuite name="unit.repository">
+            <directory>tests/Unit/Repository</directory>
         </testsuite>
     </testsuites>
 

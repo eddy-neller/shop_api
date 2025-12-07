@@ -16,3 +16,10 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 ###< symfony/mailer ###
+
+###> symfony/messenger with rabbitmq ###
+  rabbitmq:
+    ports:
+      - "20908:5672"   # AMQP protocol
+      - "20909:15672" # Management UI
+###< symfony/messenger with rabbitmq ###

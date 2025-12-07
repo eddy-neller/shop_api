@@ -23,7 +23,30 @@ services:
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
 
+  ###> symfony/messenger with rabbitmq ###
+  rabbitmq:
+    container_name: en_shop_api_rabbitmq
+    build:
+      context: ./docker/rabbitmq
+      dockerfile: ./Dockerfile
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+  ###< symfony/messenger with rabbitmq ###
+
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
 ###< doctrine/doctrine-bundle ###
+  ###> symfony/messenger with rabbitmq ###
+  rabbitmq_data:
+  ###< symfony/messenger with rabbitmq ###

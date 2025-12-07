@@ -108,6 +108,28 @@ make phpcsfixer_dry # PHP-CS-Fixer en dry-run
     -   DB de test dédiée, initialisée par `make install`,
     -   ne **jamais** réutiliser la DB de dev pour les tests.
 
+### 1.4.1 Suites PHPUnit
+
+Suites déclarées dans `phpunit.dist.xml` (pour `make unit-suite s=...`) :
+
+-   `appli.usecase.user` → `application/tests/Unit/User/UseCase` (cas d’usage Application/User)
+-   `domain.user` → `domain/User/tests/Unit` (logique métier User)
+-   `infra.command.user` → `infrastructure/tests/Unit/Command/User` (commandes Symfony côté Infra)
+-   `infra.notif.user` → `infrastructure/tests/Unit/Notification/User` (adapters de notification User)
+-   `infra.persist` → `infrastructure/tests/Unit/Persistence` (persistence/Doctrine)
+-   `infra.service.encoder` → `infrastructure/tests/Unit/Service/Encoder` (encodeurs/hashing)
+-   `infra.service.token` → `infrastructure/tests/Unit/Service/Token` (génération/validation tokens)
+-   `infra.service.user` → `infrastructure/tests/Unit/Service/User` (services User Infra)
+-   `pres.state.sendmail` → `presentation/tests/Unit/State/SendMail` (processors/providers SendMail)
+-   `pres.state.shared` → `presentation/tests/Unit/State/Shared` (state génériques Presentation)
+-   `pres.state.user` → `presentation/tests/Unit/State/User` (state User côté Presentation)
+-   `api.shop` → `tests/Api/Shop` (tests API Platform Shop)
+-   `api.user` → `presentation/tests/Api/User` (tests API Platform User)
+-   `unit.command` → `tests/Unit/Command` (commandes Symfony côté Legacy)
+-   `unit.repository` → `tests/Unit/Repository` (repositories custom)
+
+**Règle d’exécution :** toute modification impactant un périmètre couvert par l’une de ces suites doit déclencher systématiquement le test correspondant (`make unit-suite s=...`) avant livraison. Exception actuelle : les suites API (`presentation/tests/Api/*`) ne peuvent pas encore être lancées dans l’environnement courant.
+
 ### 1.7. Rappels pour les imports PHP
 
 -   Quand un fichier change de namespace ou de dossier, **ajoute/ajuste les imports `use`** plutôt que d’utiliser des classes pleinement qualifiées dans le code (évite les `new \App\...` en plein corps).

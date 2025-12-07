@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Tests\Unit\State\SendMail;
 
 use ApiPlatform\Metadata\Operation;
+use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Presentation\SendMail\Dto\SendMailInput;
 use App\Presentation\SendMail\Dto\SendMailOutput;
 use App\Presentation\SendMail\State\SendMailProcessor;
@@ -14,18 +15,18 @@ use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 use stdClass;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 final class SendMailProcessorTest extends KernelTestCase
 {
     private SendMailProcessor $sendMailProcessor;
 
-    /** @var MailerInterface&MockObject */
-    private MockObject $mailer;
+    /** @var MessageBusInterface&MockObject */
+    private MockObject $bus;
 
     /** @var ParameterBagInterface&MockObject */
     private MockObject $parameterBag;
@@ -38,13 +39,13 @@ final class SendMailProcessorTest extends KernelTestCase
 
     protected function setUp(): void
     {
-        $this->mailer = $this->createMock(MailerInterface::class);
+        $this->bus = $this->createMock(MessageBusInterface::class);
         $this->parameterBag = $this->createMock(ParameterBagInterface::class);
         $this->data = $this->createMock(SendMailInput::class);
         $this->request = $this->createMock(Request::class);
 
         $this->sendMailProcessor = new SendMailProcessor(
-            $this->mailer,
+            $this->bus,
             $this->parameterBag
         );
     }
@@ -85,18 +86,23 @@ final class SendMailProcessorTest extends KernelTestCase
                 ['mailer_to', 'admin@example.com'],
             ]);
 
-        $this->mailer
+        $this->bus
             ->expects($this->once())
-            ->method('send')
-            ->with($this->callback(function (TemplatedEmail $email) {
-                $this->assertSame('john@example.com', $email->getFrom()[0]->getAddress());
-                $this->assertSame('John Doe', $email->getFrom()[0]->getName());
-                $this->assertSame('admin@example.com', $email->getTo()[0]->getAddress());
-                $this->assertSame('Message from John Doe: Test Subject', $email->getSubject());
-                $this->assertSame('emails/en_sendmail.html.twig', $email->getHtmlTemplate());
+            ->method('dispatch')
+            ->with($this->callback(function (SendEmailMessage $message) {
+                $this->assertSame('admin@example.com', $message->to);
+                $this->assertSame('Message from John Doe: Test Subject', $message->subject);
+                $this->assertSame('emails/en_sendmail.html.twig', $message->template);
+                $this->assertSame([
+                    'name' => 'John Doe',
+                    'emailFrom' => 'john@example.com',
+                    'subject' => 'Test Subject',
+                    'message' => 'Test Message',
+                ], $message->context);
 
                 return true;
-            }));
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
 
@@ -128,14 +134,15 @@ final class SendMailProcessorTest extends KernelTestCase
                 ['mailer_to', 'admin@example.com'],
             ]);
 
-        $this->mailer
+        $this->bus
             ->expects($this->once())
-            ->method('send')
-            ->with($this->callback(function (TemplatedEmail $email) {
-                $this->assertSame('emails/fr_sendmail.html.twig', $email->getHtmlTemplate());
+            ->method('dispatch')
+            ->with($this->callback(function (SendEmailMessage $message) {
+                $this->assertSame('emails/fr_sendmail.html.twig', $message->template);
 
                 return true;
-            }));
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
 
@@ -158,14 +165,15 @@ final class SendMailProcessorTest extends KernelTestCase
             ->with('mailer_to')
             ->willReturn('admin@example.com');
 
-        $this->mailer
+        $this->bus
             ->expects($this->once())
-            ->method('send')
-            ->with($this->callback(function (TemplatedEmail $email) {
-                $this->assertSame('emails/en_sendmail.html.twig', $email->getHtmlTemplate());
+            ->method('dispatch')
+            ->with($this->callback(function (SendEmailMessage $message) {
+                $this->assertSame('emails/en_sendmail.html.twig', $message->template);
 
                 return true;
-            }));
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
 
@@ -194,14 +202,15 @@ final class SendMailProcessorTest extends KernelTestCase
                 ['mailer_to', 'admin@example.com'],
             ]);
 
-        $this->mailer
+        $this->bus
             ->expects($this->once())
-            ->method('send')
-            ->with($this->callback(function (TemplatedEmail $email) {
-                $this->assertSame('emails/en_sendmail.html.twig', $email->getHtmlTemplate());
+            ->method('dispatch')
+            ->with($this->callback(function (SendEmailMessage $message) {
+                $this->assertSame('emails/en_sendmail.html.twig', $message->template);
 
                 return true;
-            }));
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
 
@@ -232,10 +241,10 @@ final class SendMailProcessorTest extends KernelTestCase
                 ['mailer_to', 'admin@example.com'],
             ]);
 
-        $this->mailer
+        $this->bus
             ->expects($this->once())
-            ->method('send')
-            ->willThrowException(new Exception('Mailer error'));
+            ->method('dispatch')
+            ->willThrowException(new Exception('Messenger error'));
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to send email. Please try again later.');
@@ -267,18 +276,18 @@ final class SendMailProcessorTest extends KernelTestCase
                 ['mailer_to', 'admin@example.com'],
             ]);
 
-        $this->mailer
+        $this->bus
             ->expects($this->once())
-            ->method('send')
-            ->with($this->callback(function (TemplatedEmail $email) {
-                $emailContext = $email->getContext();
-                $this->assertSame('Alice Johnson', $emailContext['name']);
-                $this->assertSame('alice@example.com', $emailContext['emailFrom']);
-                $this->assertSame('Important Subject', $emailContext['subject']);
-                $this->assertSame('Important message content', $emailContext['message']);
+            ->method('dispatch')
+            ->with($this->callback(function (SendEmailMessage $message) {
+                $this->assertSame('Alice Johnson', $message->context['name']);
+                $this->assertSame('alice@example.com', $message->context['emailFrom']);
+                $this->assertSame('Important Subject', $message->context['subject']);
+                $this->assertSame('Important message content', $message->context['message']);
 
                 return true;
-            }));
+            }))
+            ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
         $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
 

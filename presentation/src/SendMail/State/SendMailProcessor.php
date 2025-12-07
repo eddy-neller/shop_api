@@ -4,22 +4,21 @@ namespace App\Presentation\SendMail\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Presentation\SendMail\Dto\SendMailInput;
 use App\Presentation\SendMail\Dto\SendMailOutput;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use LogicException;
 use RuntimeException;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Throwable;
 
 readonly class SendMailProcessor implements ProcessorInterface
 {
     public function __construct(
-        private MailerInterface $mailer,
+        private MessageBusInterface $bus,
         private ParameterBagInterface $parameterBag,
     ) {
     }
@@ -36,20 +35,18 @@ readonly class SendMailProcessor implements ProcessorInterface
             ? $request->getPreferredLanguage($this->parameterBag->get('app.enabled_locales'))
             : 'en';
 
-        $email = new TemplatedEmail()
-            ->from(new Address($data->email, $data->name))
-            ->to($this->parameterBag->get('mailer_to'))
-            ->subject(sprintf('Message from %s: %s', $data->name, $data->subject))
-            ->htmlTemplate('emails/' . $acceptLanguage . '_sendmail.html.twig')
-            ->context([
-                'name' => $data->name,
-                'emailFrom' => $data->email,
-                'subject' => $data->subject,
-                'message' => $data->message,
-            ]);
-
         try {
-            $this->mailer->send($email);
+            $this->bus->dispatch(new SendEmailMessage(
+                to: $this->parameterBag->get('mailer_to'),
+                subject: sprintf('Message from %s: %s', $data->name, $data->subject),
+                template: 'emails/' . $acceptLanguage . '_sendmail.html.twig',
+                context: [
+                    'name' => $data->name,
+                    'emailFrom' => $data->email,
+                    'subject' => $data->subject,
+                    'message' => $data->message,
+                ],
+            ));
 
             return new SendMailOutput('Email sent successfully');
         } catch (Throwable) {
