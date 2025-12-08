@@ -149,12 +149,10 @@ L’idée est de montrer que l’API a été pensée pour **grandir proprement**
 
 ---
 
-## 📄 Licence / type de projet
+## 📄 Licence
 
-Ce projet est publié sous **licence MIT** (voir le fichier `LICENSE` à la racine du dépôt).  
-Il peut donc être librement consulté, utilisé et adapté, dans le respect des termes de la licence.
-
-Même s’il est utilisé ici comme **projet de portfolio**, il est structuré et licencié comme un vrai projet open‑source professionnel.
+Ce projet est publié sous **licence propriétaire** (voir le fichier `LICENSE` à la racine du dépôt).
+Tous droits réservés. Ce code est fourni à titre d'exemple pour un portfolio et ne peut être utilisé, modifié ou distribué sans autorisation.
 
 ---
 
