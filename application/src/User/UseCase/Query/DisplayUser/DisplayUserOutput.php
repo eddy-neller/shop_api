@@ -6,10 +6,10 @@ namespace App\Application\User\UseCase\Query\DisplayUser;
 
 use App\Domain\User\Model\User;
 
-final class DisplayUserOutput
+final readonly class DisplayUserOutput
 {
     public function __construct(
-        public readonly User $user,
+        public User $user,
     ) {
     }
 }

@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 
 #[AsDecorator(decorates: 'api_platform.serializer.context_builder')]
-readonly class AutoGroup implements SerializerContextBuilderInterface
+final readonly class AutoGroup implements SerializerContextBuilderInterface
 {
     public function __construct(
         #[AutowireDecorated]
@@ -36,15 +36,11 @@ readonly class AutoGroup implements SerializerContextBuilderInterface
 
     /**
      * Create custom groups for a given operation.
-     *
-     * Note :
-     * API Platform operations such as itemOperation and collectionOperation.
-     * subresourceOperations are not handled.
      */
     private function getDefaultGroups(object $operation, bool $normalization): array
     {
         /* The shortName is basically the entity name converted in camel case */
-        $shortName = (new CamelCaseToSnakeCaseNameConverter())->normalize($operation->getShortName());
+        $shortName = new CamelCaseToSnakeCaseNameConverter()->normalize($operation->getShortName());
         $operationName = $operation->getName();
         $readOrWrite = $normalization ? 'read' : 'write';
         $itemOrCol = $operation instanceof GetCollection ? 'col' : 'item';

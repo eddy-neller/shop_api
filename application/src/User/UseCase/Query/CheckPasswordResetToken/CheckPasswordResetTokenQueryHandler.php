@@ -8,11 +8,11 @@ use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
-final class CheckPasswordResetTokenQueryHandler
+final readonly class CheckPasswordResetTokenQueryHandler
 {
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
-        private readonly TokenProviderInterface $tokenProvider,
+        private UserRepositoryInterface $repository,
+        private TokenProviderInterface $tokenProvider,
     ) {
     }
 

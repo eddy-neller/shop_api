@@ -17,18 +17,18 @@ use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
 use App\Domain\User\Preference\ValueObject\Preferences;
 
-final class RegisterUserCommandHandler
+final readonly class RegisterUserCommandHandler
 {
     use DateIntervalTrait;
 
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
-        private readonly PasswordHasherInterface $passwordHasher,
-        private readonly TokenProviderInterface $tokenProvider,
-        private readonly ClockInterface $clock,
-        private readonly TransactionalInterface $transactional,
-        private readonly ConfigInterface $config,
-        private readonly UserUniquenessCheckerInterface $uniquenessChecker,
+        private UserRepositoryInterface $repository,
+        private PasswordHasherInterface $passwordHasher,
+        private TokenProviderInterface $tokenProvider,
+        private ClockInterface $clock,
+        private TransactionalInterface $transactional,
+        private ConfigInterface $config,
+        private UserUniquenessCheckerInterface $uniquenessChecker,
     ) {
     }
 

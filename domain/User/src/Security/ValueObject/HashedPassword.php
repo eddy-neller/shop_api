@@ -4,10 +4,10 @@ namespace App\Domain\User\Security\ValueObject;
 
 use InvalidArgumentException;
 
-final class HashedPassword
+final readonly class HashedPassword
 {
     public function __construct(
-        private readonly string $value,
+        private string $value,
     ) {
         if ('' === trim($value)) {
             throw new InvalidArgumentException('Le mot de passe haché ne peut pas être vide.');

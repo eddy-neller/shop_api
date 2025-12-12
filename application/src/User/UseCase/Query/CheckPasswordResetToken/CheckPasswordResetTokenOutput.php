@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Query\CheckPasswordResetToken;
 
-final class CheckPasswordResetTokenOutput
+final readonly class CheckPasswordResetTokenOutput
 {
     public function __construct(
-        public readonly bool $isValid,
+        public bool $isValid,
     ) {
     }
 }

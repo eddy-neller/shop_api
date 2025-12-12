@@ -21,7 +21,6 @@ class UsernameNotExistsValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, UsernameNotExists::class);
         }
 
-        /* Custom constraints should ignore null and empty values to allow  other constraints (NotBlank, NotNull, etc.) to take care of that. */
         if (empty($value)) {
             return;
         }

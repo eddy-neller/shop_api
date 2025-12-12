@@ -10,20 +10,20 @@ use Symfony\Component\Mime\Address;
 use Throwable;
 use Twig\Environment;
 
-class Mailer
+readonly class Mailer
 {
     public function __construct(
-        private readonly Environment $twig,
-        private readonly ParameterBagInterface $parameter,
-        private readonly MailerInterface $mailer,
-        private readonly ?LoggerInterface $logger = null,
+        private Environment $twig,
+        private ParameterBagInterface $parameter,
+        private MailerInterface $mailer,
+        private ?LoggerInterface $logger = null,
     ) {
     }
 
     public function sendEmail(string $to, string $subject, string $template, array $context, ?bool $response = null): bool
     {
         try {
-            $email = (new TemplatedEmail())
+            $email = new TemplatedEmail()
                 ->from(new Address($this->parameter->get('mailer_reply'), $this->parameter->get('app_title')))
                 ->to($to)
                 ->subject($subject)

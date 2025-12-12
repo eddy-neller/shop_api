@@ -9,7 +9,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 #[AsEventListener(event: KernelEvents::REQUEST)]
-readonly class LocaleListener
+final readonly class LocaleListener
 {
     public function __construct(
         #[Autowire('@stof_doctrine_extensions.listener.translatable')]

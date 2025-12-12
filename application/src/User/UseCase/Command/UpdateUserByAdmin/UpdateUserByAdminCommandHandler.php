@@ -16,13 +16,13 @@ use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
 
-final class UpdateUserByAdminCommandHandler
+final readonly class UpdateUserByAdminCommandHandler
 {
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
-        private readonly PasswordHasherInterface $passwordHasher,
-        private readonly ClockInterface $clock,
-        private readonly TransactionalInterface $transactional,
+        private UserRepositoryInterface $repository,
+        private PasswordHasherInterface $passwordHasher,
+        private ClockInterface $clock,
+        private TransactionalInterface $transactional,
     ) {
     }
 

@@ -8,10 +8,10 @@ use App\Application\Shared\Port\ConfigInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-final class ParameterBagConfig implements ConfigInterface
+final readonly class ParameterBagConfig implements ConfigInterface
 {
     public function __construct(
-        private readonly ParameterBagInterface $parameterBag,
+        private ParameterBagInterface $parameterBag,
     ) {
     }
 

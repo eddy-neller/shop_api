@@ -7,7 +7,6 @@ namespace App\Presentation\User\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\User\UseCase\Query\DisplayUser\DisplayUserOutput;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
 use App\Domain\User\Identity\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
@@ -32,7 +31,6 @@ readonly class UserGetProvider implements ProviderInterface
 
         $query = new DisplayUserQuery($userId);
 
-        /** @var DisplayUserOutput $output */
         $output = $this->queryBus->dispatch($query);
 
         return $this->userResourcePresenter->toResource($output->user);

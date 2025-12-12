@@ -6,7 +6,6 @@ use InvalidArgumentException;
 
 final class RoleSet
 {
-    // Constantes pour les rôles disponibles
     public const string ROLE_USER = 'ROLE_USER';
 
     public const string ROLE_MODERATEUR = 'ROLE_MODERATEUR';
@@ -49,9 +48,6 @@ final class RoleSet
         $this->roles = array_values(array_unique($roles));
     }
 
-    /**
-     * @return string[]
-     */
     public function all(): array
     {
         return $this->roles;

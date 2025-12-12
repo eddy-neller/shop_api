@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminCommand;
-use App\Application\User\UseCase\Command\UpdateUserByAdmin\UpdateUserByAdminOutput;
 use App\Domain\User\Identity\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\UserPatchInput;
@@ -40,7 +39,6 @@ readonly class UserPatchProcessor implements ProcessorInterface
             lastname: $data->lastname,
         );
 
-        /** @var UpdateUserByAdminOutput $output */
         $output = $this->commandBus->dispatch($command);
 
         return $this->userResourcePresenter->toResource($output->user);

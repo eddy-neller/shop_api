@@ -28,7 +28,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
 
     private User&MockObject $user;
 
-    private UserMePasswordUpdateProcessor $userMePasswordUpdateProcessor;
+    private UserMePasswordUpdateProcessor $processor;
 
     protected function setUp(): void
     {
@@ -37,7 +37,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
         $this->operation = $this->createMock(Operation::class);
         $this->user = $this->createMock(User::class);
 
-        $this->userMePasswordUpdateProcessor = new UserMePasswordUpdateProcessor(
+        $this->processor = new UserMePasswordUpdateProcessor(
             $this->security,
             $this->commandBus,
         );
@@ -65,7 +65,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
                 return true;
             }));
 
-        $result = $this->userMePasswordUpdateProcessor->process($input, $this->operation);
+        $result = $this->processor->process($input, $this->operation);
 
         $this->assertNull($result);
     }
@@ -77,7 +77,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
-        $this->userMePasswordUpdateProcessor->process($invalidInput, $this->operation);
+        $this->processor->process($invalidInput, $this->operation);
     }
 
     public function testProcessThrowsLogicExceptionForNullInput(): void
@@ -85,7 +85,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
-        $this->userMePasswordUpdateProcessor->process(null, $this->operation);
+        $this->processor->process(null, $this->operation);
     }
 
     public function testProcessThrowsLogicExceptionForStringInput(): void
@@ -93,7 +93,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
-        $this->userMePasswordUpdateProcessor->process('invalid', $this->operation);
+        $this->processor->process('invalid', $this->operation);
     }
 
     public function testProcessThrowsLogicExceptionForArrayInput(): void
@@ -101,7 +101,7 @@ final class UserMePasswordUpdateProcessorTest extends KernelTestCase
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
 
-        $this->userMePasswordUpdateProcessor->process(['newPassword' => 'test'], $this->operation);
+        $this->processor->process(['newPassword' => 'test'], $this->operation);
     }
 
     private function createValidUserMePasswordUpdateInput(): UserMePasswordUpdateInput

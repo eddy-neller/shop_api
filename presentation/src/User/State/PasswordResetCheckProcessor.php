@@ -5,7 +5,6 @@ namespace App\Presentation\User\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\User\UseCase\Query\CheckPasswordResetToken\CheckPasswordResetTokenOutput;
 use App\Application\User\UseCase\Query\CheckPasswordResetToken\CheckPasswordResetTokenQuery;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\PasswordResetCheckInput;
@@ -26,7 +25,7 @@ readonly class PasswordResetCheckProcessor implements ProcessorInterface
         }
 
         $query = new CheckPasswordResetTokenQuery($data->token);
-        /** @var CheckPasswordResetTokenOutput $output */
+
         $output = $this->queryBus->dispatch($query);
 
         if (!$output->isValid) {

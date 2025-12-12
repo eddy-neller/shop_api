@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter
  * Expose tous les champs réservés aux admins : published, statistiques, métadonnées, etc.
  */
 #[AsDecorator(decorates: 'api_platform.serializer.context_builder')]
-readonly class AdminGroup implements SerializerContextBuilderInterface
+final readonly class AdminGroup implements SerializerContextBuilderInterface
 {
     public function __construct(
         #[AutowireDecorated]
@@ -30,12 +30,11 @@ readonly class AdminGroup implements SerializerContextBuilderInterface
     {
         $context = $this->decorated->createFromRequest($request, $normalization, $extractedAttributes);
 
-        // Ajouter le groupe 'admin' uniquement si l'utilisateur est admin
         if ($this->security->isGranted(RoleSet::ROLE_ADMIN)) {
             $operation = $context['operation'] ?? null;
 
             if ($operation) {
-                $shortName = (new CamelCaseToSnakeCaseNameConverter())->normalize($operation->getShortName());
+                $shortName = new CamelCaseToSnakeCaseNameConverter()->normalize($operation->getShortName());
 
                 // Ajouter le groupe {shortName}:admin (ex: partner:admin, site:admin)
                 $adminGroup = [sprintf('%s:admin', $shortName)];

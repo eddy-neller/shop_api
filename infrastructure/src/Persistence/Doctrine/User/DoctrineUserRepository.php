@@ -12,14 +12,14 @@ use App\Domain\User\Model\User as DomainUser;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class DoctrineUserRepository implements UserRepositoryInterface
+final readonly class DoctrineUserRepository implements UserRepositoryInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly UserRepository $repository,
-        private readonly UserMapper $mapper,
-        private readonly UuidGeneratorInterface $uuidGenerator,
-        private readonly EventDispatcherInterface $eventDispatcher,
+        private EntityManagerInterface $em,
+        private UserRepository $repository,
+        private UserMapper $mapper,
+        private UuidGeneratorInterface $uuidGenerator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

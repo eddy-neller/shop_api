@@ -9,10 +9,5 @@ use App\Domain\User\Identity\ValueObject\UserId;
 
 interface AvatarUploaderInterface
 {
-    /**
-     * Upload un fichier avatar pour un utilisateur.
-     *
-     * @return array{fileName: ?string, url: ?string}
-     */
     public function upload(UserId $userId, FileInterface $file): array;
 }

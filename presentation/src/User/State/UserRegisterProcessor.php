@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\RegisterUser\RegisterUserCommand;
-use App\Application\User\UseCase\Command\RegisterUser\RegisterUserOutput;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\UserRegisterInput;
 use App\Presentation\User\Presenter\UserResourcePresenter;
@@ -33,7 +32,6 @@ readonly class UserRegisterProcessor implements ProcessorInterface
             preferences: ['lang' => $data->preferences->lang],
         );
 
-        /** @var RegisterUserOutput $output */
         $output = $this->commandBus->dispatch($command);
 
         return $this->userResourcePresenter->toResource($output->user);

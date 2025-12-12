@@ -2,9 +2,10 @@
 
 namespace App\Presentation\User\Validator;
 
+use Attribute;
 use Symfony\Component\Validator\Constraint;
 
-#[\Attribute] class UsernameNotExists extends Constraint
+#[Attribute] class UsernameNotExists extends Constraint
 {
     public string $message = 'This username is already in use. Please choose another.';
 

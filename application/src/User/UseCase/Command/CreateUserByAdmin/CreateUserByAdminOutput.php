@@ -6,10 +6,10 @@ namespace App\Application\User\UseCase\Command\CreateUserByAdmin;
 
 use App\Domain\User\Model\User;
 
-final class CreateUserByAdminOutput
+final readonly class CreateUserByAdminOutput
 {
     public function __construct(
-        public readonly User $user,
+        public User $user,
     ) {
     }
 }

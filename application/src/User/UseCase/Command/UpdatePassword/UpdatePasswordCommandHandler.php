@@ -10,13 +10,13 @@ use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
 
-final class UpdatePasswordCommandHandler
+final readonly class UpdatePasswordCommandHandler
 {
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
-        private readonly PasswordHasherInterface $passwordHasher,
-        private readonly ClockInterface $clock,
-        private readonly TransactionalInterface $transactional,
+        private UserRepositoryInterface $repository,
+        private PasswordHasherInterface $passwordHasher,
+        private ClockInterface $clock,
+        private TransactionalInterface $transactional,
     ) {
     }
 

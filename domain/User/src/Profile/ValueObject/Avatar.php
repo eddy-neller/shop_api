@@ -4,12 +4,12 @@ namespace App\Domain\User\Profile\ValueObject;
 
 use DateTimeImmutable;
 
-final class Avatar
+final readonly class Avatar
 {
     public function __construct(
-        private readonly ?string $fileName = null,
-        private readonly ?string $url = null,
-        private readonly ?DateTimeImmutable $updatedAt = null,
+        private ?string $fileName = null,
+        private ?string $url = null,
+        private ?DateTimeImmutable $updatedAt = null,
     ) {
     }
 

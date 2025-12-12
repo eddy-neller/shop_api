@@ -8,14 +8,14 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Vich\UploaderBundle\Storage\StorageInterface;
 
-class ResolveFileUrlNormalizer implements NormalizerInterface
+final readonly class ResolveFileUrlNormalizer implements NormalizerInterface
 {
     private const string ALREADY_CALLED = 'FILE_URL_NORMALIZER_ALREADY_CALLED';
 
     public function __construct(
         #[Autowire(service: 'api_platform.serializer.normalizer.item')]
-        private readonly NormalizerInterface $normalizer,
-        private readonly StorageInterface $storage,
+        private NormalizerInterface $normalizer,
+        private StorageInterface $storage,
     ) {
     }
 

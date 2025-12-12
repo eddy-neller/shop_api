@@ -256,7 +256,7 @@ phpcsfixer_fix:
 ## Run phpmd tests
 .PHONY: phpmd
 phpmd:
-	@$(APP) sh -c "vendor/bin/phpmd src text ruleset.xml"
+	@$(APP) sh -c "vendor/bin/phpmd application,domain,infrastructure,presentation,src text ruleset.xml"
 
 ## Run rector
 .PHONY: rector

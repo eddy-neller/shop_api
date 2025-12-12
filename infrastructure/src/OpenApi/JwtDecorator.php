@@ -9,11 +9,11 @@ use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 
 #[AsDecorator(decorates: 'api_platform.openapi.factory')]
-class JwtDecorator implements OpenApiFactoryInterface
+final readonly class JwtDecorator implements OpenApiFactoryInterface
 {
     public function __construct(
         #[AutowireDecorated]
-        private readonly OpenApiFactoryInterface $decorated,
+        private OpenApiFactoryInterface $decorated,
     ) {
     }
 

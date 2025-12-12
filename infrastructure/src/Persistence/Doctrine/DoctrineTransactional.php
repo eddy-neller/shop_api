@@ -5,10 +5,10 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\Shared\Port\TransactionalInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class DoctrineTransactional implements TransactionalInterface
+final readonly class DoctrineTransactional implements TransactionalInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 

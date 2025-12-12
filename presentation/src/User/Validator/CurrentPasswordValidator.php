@@ -17,9 +17,6 @@ class CurrentPasswordValidator extends ConstraintValidator
     ) {
     }
 
-    /**
-     * Checks if the passed value is valid.
-     */
     public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof CurrentPassword) {

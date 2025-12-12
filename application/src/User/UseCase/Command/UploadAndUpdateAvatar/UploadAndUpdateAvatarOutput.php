@@ -6,10 +6,10 @@ namespace App\Application\User\UseCase\Command\UploadAndUpdateAvatar;
 
 use App\Domain\User\Model\User;
 
-final class UploadAndUpdateAvatarOutput
+final readonly class UploadAndUpdateAvatarOutput
 {
     public function __construct(
-        public readonly User $user,
+        public User $user,
     ) {
     }
 }

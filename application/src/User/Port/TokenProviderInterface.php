@@ -10,8 +10,5 @@ interface TokenProviderInterface
 
     public function encode(string $token, EmailAddress $email): string;
 
-    /**
-     * @return array{email: string, token: string}
-     */
     public function split(string $encodedToken): array;
 }

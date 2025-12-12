@@ -61,9 +61,6 @@ trait UserMeSecurityTrait
     /**
      * Extrait le UserId du domaine depuis l'utilisateur authentifié.
      *
-     * Cette méthode suppose que l'utilisateur a une méthode getId()
-     * qui retourne un objet avec une méthode toString().
-     *
      * @throws AccessDeniedException Si l'ID ne peut pas être converti
      */
     protected function getUserIdFromAuthenticatedUser(UserInterface $user): UserId

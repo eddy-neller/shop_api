@@ -12,14 +12,14 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
-final class ConfirmPasswordResetCommandHandler
+final readonly class ConfirmPasswordResetCommandHandler
 {
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
-        private readonly TokenProviderInterface $tokenProvider,
-        private readonly PasswordHasherInterface $passwordHasher,
-        private readonly ClockInterface $clock,
-        private readonly TransactionalInterface $transactional,
+        private UserRepositoryInterface $repository,
+        private TokenProviderInterface $tokenProvider,
+        private PasswordHasherInterface $passwordHasher,
+        private ClockInterface $clock,
+        private TransactionalInterface $transactional,
     ) {
     }
 

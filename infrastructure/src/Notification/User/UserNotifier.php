@@ -9,16 +9,16 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-final class UserNotifier implements UserNotifierInterface
+final readonly class UserNotifier implements UserNotifierInterface
 {
     private const string TEMPLATE_REGISTER_ACTIVATION = 'emails/user/register-activation.html.twig';
 
     private const string TEMPLATE_RESET_PASSWORD = 'emails/user/reset-password.html.twig';
 
     public function __construct(
-        private readonly TranslatorInterface $translator,
-        private readonly ParameterBagInterface $bag,
-        private readonly MessageBusInterface $bus,
+        private TranslatorInterface $translator,
+        private ParameterBagInterface $bag,
+        private MessageBusInterface $bus,
     ) {
     }
 

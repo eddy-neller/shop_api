@@ -21,7 +21,6 @@ class EmailNotExistsValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, EmailNotExists::class);
         }
 
-        /* Custom constraints should ignore null and empty values to allow  other constraints (NotBlank, NotNull, etc.) to take care of that. */
         if (empty($value)) {
             return;
         }

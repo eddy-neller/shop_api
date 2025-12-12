@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarCommand;
-use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarOutput;
 use App\Presentation\Shared\Adapter\SymfonyFileAdapter;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\Me\UserMeAvatarInput;
@@ -37,14 +36,13 @@ readonly class UserMeAvatarProcessor implements ProcessorInterface
         $user = $this->getCurrentUserOrThrow();
         $userId = $this->getUserIdFromAuthenticatedUser($user);
 
-        // Adapter le File Symfony en FileInterface
         $fileAdapter = new SymfonyFileAdapter($data->avatarFile);
 
         $command = new UploadAndUpdateAvatarCommand(
             userId: $userId,
             avatarFile: $fileAdapter,
         );
-        /** @var UploadAndUpdateAvatarOutput $output */
+
         $output = $this->commandBus->dispatch($command);
 
         return $this->userResourcePresenter->toResource($output->user);

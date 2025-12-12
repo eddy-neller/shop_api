@@ -2,9 +2,10 @@
 
 namespace App\Presentation\User\Validator;
 
+use Attribute;
 use Symfony\Component\Validator\Constraint;
 
-#[\Attribute] class CurrentPassword extends Constraint
+#[Attribute] class CurrentPassword extends Constraint
 {
     public string $message = 'Invalid password.';
 

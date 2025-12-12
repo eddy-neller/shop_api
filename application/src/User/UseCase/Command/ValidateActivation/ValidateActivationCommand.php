@@ -6,10 +6,10 @@ namespace App\Application\User\UseCase\Command\ValidateActivation;
 
 use App\Application\Shared\CQRS\Command\CommandInterface;
 
-final class ValidateActivationCommand implements CommandInterface
+final readonly class ValidateActivationCommand implements CommandInterface
 {
     public function __construct(
-        public readonly string $token,
+        public string $token,
     ) {
     }
 }

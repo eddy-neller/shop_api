@@ -18,14 +18,14 @@ use App\Domain\User\Preference\ValueObject\Preferences;
 use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
 
-final class CreateUserByAdminCommandHandler
+final readonly class CreateUserByAdminCommandHandler
 {
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
-        private readonly PasswordHasherInterface $passwordHasher,
-        private readonly ClockInterface $clock,
-        private readonly TransactionalInterface $transactional,
-        private readonly UserUniquenessCheckerInterface $uniquenessChecker,
+        private UserRepositoryInterface $repository,
+        private PasswordHasherInterface $passwordHasher,
+        private ClockInterface $clock,
+        private TransactionalInterface $transactional,
+        private UserUniquenessCheckerInterface $uniquenessChecker,
     ) {
     }
 

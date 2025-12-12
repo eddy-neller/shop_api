@@ -11,10 +11,10 @@ use App\Presentation\User\ApiResource\UserResource;
 /**
  * Adapter/Presenter qui transforme un DomainUser en UserResource.
  */
-final class UserResourcePresenter
+final readonly class UserResourcePresenter
 {
     public function __construct(
-        private readonly AvatarUrlResolverInterface $avatarUrlResolver,
+        private AvatarUrlResolverInterface $avatarUrlResolver,
     ) {
     }
 

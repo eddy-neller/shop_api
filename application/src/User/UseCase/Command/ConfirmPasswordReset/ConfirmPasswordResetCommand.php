@@ -6,11 +6,11 @@ namespace App\Application\User\UseCase\Command\ConfirmPasswordReset;
 
 use App\Application\Shared\CQRS\Command\CommandInterface;
 
-final class ConfirmPasswordResetCommand implements CommandInterface
+final readonly class ConfirmPasswordResetCommand implements CommandInterface
 {
     public function __construct(
-        public readonly string $token,
-        public readonly string $newPassword,
+        public string $token,
+        public string $newPassword,
     ) {
     }
 }

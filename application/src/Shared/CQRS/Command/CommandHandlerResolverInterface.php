@@ -9,10 +9,5 @@ namespace App\Application\Shared\CQRS\Command;
  */
 interface CommandHandlerResolverInterface
 {
-    /**
-     * Retourne un callable capable de traiter la commande.
-     *
-     * @return callable(CommandInterface):mixed
-     */
     public function resolve(CommandInterface $command): callable;
 }

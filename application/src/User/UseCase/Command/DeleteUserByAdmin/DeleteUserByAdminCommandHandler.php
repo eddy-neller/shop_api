@@ -9,12 +9,12 @@ use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
 
-final class DeleteUserByAdminCommandHandler
+final readonly class DeleteUserByAdminCommandHandler
 {
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
-        private readonly ClockInterface $clock,
-        private readonly TransactionalInterface $transactional,
+        private UserRepositoryInterface $repository,
+        private ClockInterface $clock,
+        private TransactionalInterface $transactional,
     ) {
     }
 

@@ -8,11 +8,11 @@ use App\Application\Shared\CQRS\Command\CommandInterface;
 use App\Application\Shared\Port\FileInterface;
 use App\Domain\User\Identity\ValueObject\UserId;
 
-final class UploadAndUpdateAvatarCommand implements CommandInterface
+final readonly class UploadAndUpdateAvatarCommand implements CommandInterface
 {
     public function __construct(
-        public readonly UserId $userId,
-        public readonly FileInterface $avatarFile,
+        public UserId $userId,
+        public FileInterface $avatarFile,
     ) {
     }
 }

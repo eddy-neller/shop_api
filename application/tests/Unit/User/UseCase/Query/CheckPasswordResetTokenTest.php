@@ -18,6 +18,7 @@ use App\Domain\User\Security\ValueObject\ResetPassword;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 final class CheckPasswordResetTokenTest extends TestCase
 {
@@ -167,8 +168,7 @@ final class CheckPasswordResetTokenTest extends TestCase
             tokenTtl: $ttl,
         );
 
-        $reflection = new \ReflectionProperty(User::class, 'resetPassword');
-        $reflection->setAccessible(true);
+        $reflection = new ReflectionProperty(User::class, 'resetPassword');
         $reflection->setValue($user, $resetPassword);
 
         return $user;

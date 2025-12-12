@@ -9,9 +9,9 @@ use App\Infrastructure\Notification\Mailer\Mailer;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final class SendEmailMessageHandler
+final readonly class SendEmailMessageHandler
 {
-    public function __construct(private readonly Mailer $mailer)
+    public function __construct(private Mailer $mailer)
     {
     }
 

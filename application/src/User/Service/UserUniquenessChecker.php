@@ -11,10 +11,10 @@ use App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\Username;
 
-final class UserUniquenessChecker implements UserUniquenessCheckerInterface
+final readonly class UserUniquenessChecker implements UserUniquenessCheckerInterface
 {
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
+        private UserRepositoryInterface $repository,
     ) {
     }
 

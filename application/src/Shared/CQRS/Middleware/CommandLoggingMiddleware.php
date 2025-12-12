@@ -8,9 +8,6 @@ use App\Application\Shared\CQRS\Command\CommandInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-/**
- * Middleware de logging pour les commandes.
- */
 final class CommandLoggingMiddleware implements CommandMiddlewareInterface
 {
     public function __construct(

@@ -8,9 +8,6 @@ use App\Application\Shared\CQRS\Query\QueryInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-/**
- * Middleware de logging pour les requêtes de lecture.
- */
 final class QueryLoggingMiddleware implements QueryMiddlewareInterface
 {
     public function __construct(

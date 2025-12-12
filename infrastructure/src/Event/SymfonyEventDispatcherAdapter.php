@@ -8,10 +8,10 @@ use App\Application\Shared\Port\EventDispatcherInterface;
 use App\Domain\SharedKernel\Event\DomainEventInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface as SymfonyEventDispatcher;
 
-final class SymfonyEventDispatcherAdapter implements EventDispatcherInterface
+final readonly class SymfonyEventDispatcherAdapter implements EventDispatcherInterface
 {
     public function __construct(
-        private readonly SymfonyEventDispatcher $eventDispatcher,
+        private SymfonyEventDispatcher $eventDispatcher,
     ) {
     }
 

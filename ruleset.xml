@@ -62,4 +62,9 @@
     <exclude-pattern>*/DataFixtures/*</exclude-pattern>
     <exclude-pattern>*/EventListener/*</exclude-pattern>
     <exclude-pattern>*/SendMail/State/*</exclude-pattern>
+    <!-- Ignore Some Classes until phpmd supports method calls on inline new without extra parentheses -->
+    <exclude-pattern>*/AdminGroup.php</exclude-pattern>
+    <exclude-pattern>*/AutoGroup.php</exclude-pattern>
+    <exclude-pattern>*/Mailer.php</exclude-pattern>
+    <exclude-pattern>*/RefreshTokenRepositoryTest.php</exclude-pattern>
 </ruleset>

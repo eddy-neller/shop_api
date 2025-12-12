@@ -12,16 +12,16 @@ use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
-final class RequestPasswordResetCommandHandler
+final readonly class RequestPasswordResetCommandHandler
 {
     use DateIntervalTrait;
 
     public function __construct(
-        private readonly UserRepositoryInterface $repository,
-        private readonly TokenProviderInterface $tokenProvider,
-        private readonly ClockInterface $clock,
-        private readonly TransactionalInterface $transactional,
-        private readonly ConfigInterface $config,
+        private UserRepositoryInterface $repository,
+        private TokenProviderInterface $tokenProvider,
+        private ClockInterface $clock,
+        private TransactionalInterface $transactional,
+        private ConfigInterface $config,
     ) {
     }
 

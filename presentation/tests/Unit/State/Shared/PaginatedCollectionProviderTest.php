@@ -19,14 +19,14 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
 
     private Operation&MockObject $operation;
 
-    private PaginatedCollectionProvider $paginatedCollectionProvider;
+    private PaginatedCollectionProvider $paginColProvider;
 
     protected function setUp(): void
     {
         $this->provider = $this->createMock(ProviderInterface::class);
         $this->operation = $this->createMock(Operation::class);
 
-        $this->paginatedCollectionProvider = new PaginatedCollectionProvider($this->provider);
+        $this->paginColProvider = new PaginatedCollectionProvider($this->provider);
     }
 
     public function testProvideWithPaginatorInterfaceSetsAttributesAndReturnsArray(): void
@@ -43,7 +43,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($paginator);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($expectedArray, $result);
         $this->assertSame($totalItems, $request->attributes->get('_total_items'));
@@ -61,7 +61,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($paginator);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($expectedArray, $result);
     }
@@ -77,7 +77,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($expectedArray);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($expectedArray, $result);
         $this->assertSame(4, $request->attributes->get('_total_items'));
@@ -94,7 +94,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($expectedArray);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($expectedArray, $result);
     }
@@ -110,7 +110,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($iterable);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($iterable, $result);
         $this->assertSame(3, $request->attributes->get('_total_items'));
@@ -127,7 +127,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($iterable);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($iterable, $result);
     }
@@ -143,7 +143,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($expectedObject);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($expectedObject, $result);
     }
@@ -158,7 +158,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn(null);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertNull($result);
     }
@@ -174,7 +174,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($expectedArray);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($expectedArray, $result);
         $this->assertSame(0, $request->attributes->get('_total_items'));
@@ -195,7 +195,7 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturn($paginator);
 
-        $result = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($expectedArray, $result);
         $this->assertSame($totalItems, $request->attributes->get('_total_items'));
@@ -213,8 +213,8 @@ final class PaginatedCollectionProviderTest extends KernelTestCase
             ->with($this->operation, [], $context)
             ->willReturnOnConsecutiveCalls($expectedArray1, $expectedArray2);
 
-        $result1 = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
-        $result2 = $this->paginatedCollectionProvider->provide($this->operation, [], $context);
+        $result1 = $this->paginColProvider->provide($this->operation, [], $context);
+        $result2 = $this->paginColProvider->provide($this->operation, [], $context);
 
         $this->assertSame($expectedArray1, $result1);
         $this->assertSame($expectedArray2, $result2);

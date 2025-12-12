@@ -8,17 +8,10 @@ use App\Application\Shared\Port\FileInterface;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-/**
- * Adapter qui wrap un File Symfony pour l'adapter à FileInterface.
- * Permet de convertir un File Symfony (reçu de l'API) en FileInterface pour la couche Application.
- *
- * Cet adapter est dans Presentation car c'est là qu'on reçoit les fichiers Symfony
- * et qu'on doit les convertir pour la couche Application.
- */
-final class SymfonyFileAdapter implements FileInterface
+final readonly class SymfonyFileAdapter implements FileInterface
 {
     public function __construct(
-        private readonly File $file,
+        private File $file,
     ) {
     }
 

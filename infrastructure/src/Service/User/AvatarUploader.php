@@ -13,11 +13,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\File;
 
-final class AvatarUploader implements AvatarUploaderInterface
+final readonly class AvatarUploader implements AvatarUploaderInterface
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly UserRepository $userRepository,
+        private EntityManagerInterface $em,
+        private UserRepository $userRepository,
     ) {
     }
 

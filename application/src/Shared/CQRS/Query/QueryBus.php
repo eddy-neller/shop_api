@@ -6,9 +6,6 @@ namespace App\Application\Shared\CQRS\Query;
 
 use App\Application\Shared\CQRS\Middleware\QueryMiddlewareInterface;
 
-/**
- * Implémentation simple d'un QueryBus avec chaîne de middlewares.
- */
 final class QueryBus implements QueryBusInterface
 {
     /**
@@ -30,9 +27,7 @@ final class QueryBus implements QueryBusInterface
     }
 
     /**
-     * @param callable(QueryInterface):mixed $handler
-     *
-     * @return callable(QueryInterface):mixed
+     * Construit la chaîne de middlewares (pattern chain of responsibility).
      */
     private function buildMiddlewarePipeline(callable $handler): callable
     {

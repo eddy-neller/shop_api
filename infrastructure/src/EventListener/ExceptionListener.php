@@ -17,13 +17,13 @@ use Symfony\Component\HttpKernel\KernelEvents;
  *
  * @codeCoverageIgnore
  */
-class ExceptionListener
+final readonly class ExceptionListener
 {
     private const array ENV = ['dev', 'test'];
 
     public function __construct(
-        private readonly ParameterBagInterface $parameterBag,
-        private readonly LoggerInterface $logger,
+        private ParameterBagInterface $parameterBag,
+        private LoggerInterface $logger,
     ) {
     }
 

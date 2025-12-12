@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminCommand;
-use App\Application\User\UseCase\Command\CreateUserByAdmin\CreateUserByAdminOutput;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\UserPostInput;
 use App\Presentation\User\Presenter\UserResourcePresenter;
@@ -36,7 +35,6 @@ readonly class UserPostProcessor implements ProcessorInterface
             lastname: $data->lastname,
         );
 
-        /** @var CreateUserByAdminOutput $output */
         $output = $this->commandBus->dispatch($command);
 
         return $this->userResourcePresenter->toResource($output->user);

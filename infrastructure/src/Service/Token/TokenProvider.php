@@ -7,10 +7,10 @@ use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Infrastructure\Service\Encoder\CustomEncoder;
 use App\Infrastructure\Service\User\TokenManager;
 
-final class TokenProvider implements TokenProviderInterface
+final readonly class TokenProvider implements TokenProviderInterface
 {
     public function __construct(
-        private readonly TokenManager $tokenManager,
+        private TokenManager $tokenManager,
     ) {
     }
 

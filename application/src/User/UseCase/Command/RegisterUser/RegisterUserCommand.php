@@ -9,13 +9,13 @@ use App\Application\Shared\CQRS\Command\CommandInterface;
 /**
  * @param array{lang?: string}|null $preferences
  */
-final class RegisterUserCommand implements CommandInterface
+final readonly class RegisterUserCommand implements CommandInterface
 {
     public function __construct(
-        public readonly string $email,
-        public readonly string $username,
-        public readonly string $plainPassword,
-        public readonly ?array $preferences = null,
+        public string $email,
+        public string $username,
+        public string $plainPassword,
+        public ?array $preferences = null,
     ) {
     }
 }

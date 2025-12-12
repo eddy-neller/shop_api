@@ -7,7 +7,7 @@ use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 #[AsEventListener(event: KernelEvents::RESPONSE)]
-readonly class PaginationHeaderListener
+final readonly class PaginationHeaderListener
 {
     public function __invoke(ResponseEvent $event): void
     {

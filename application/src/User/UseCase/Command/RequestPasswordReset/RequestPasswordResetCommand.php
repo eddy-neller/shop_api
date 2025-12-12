@@ -6,10 +6,10 @@ namespace App\Application\User\UseCase\Command\RequestPasswordReset;
 
 use App\Application\Shared\CQRS\Command\CommandInterface;
 
-final class RequestPasswordResetCommand implements CommandInterface
+final readonly class RequestPasswordResetCommand implements CommandInterface
 {
     public function __construct(
-        public readonly string $email,
+        public string $email,
     ) {
     }
 }

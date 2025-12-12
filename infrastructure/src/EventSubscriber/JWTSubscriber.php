@@ -26,7 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
-readonly class JWTSubscriber implements EventSubscriberInterface
+final readonly class JWTSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private RequestStack $requestStack,

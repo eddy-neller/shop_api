@@ -2,9 +2,10 @@
 
 namespace App\Presentation\User\Validator;
 
+use Attribute;
 use Symfony\Component\Validator\Constraint;
 
-#[\Attribute] class EmailNotExists extends Constraint
+#[Attribute] class EmailNotExists extends Constraint
 {
     public string $message = 'This email is already registered. Please use a different email or sign in.';
 

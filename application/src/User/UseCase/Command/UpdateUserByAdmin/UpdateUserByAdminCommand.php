@@ -7,20 +7,20 @@ namespace App\Application\User\UseCase\Command\UpdateUserByAdmin;
 use App\Application\Shared\CQRS\Command\CommandInterface;
 use App\Domain\User\Identity\ValueObject\UserId;
 
-final class UpdateUserByAdminCommand implements CommandInterface
+final readonly class UpdateUserByAdminCommand implements CommandInterface
 {
     /**
      * @param string[]|null $roles
      */
     public function __construct(
-        public readonly UserId $userId,
-        public readonly ?string $email = null,
-        public readonly ?string $username = null,
-        public readonly ?string $plainPassword = null,
-        public readonly ?array $roles = null,
-        public readonly ?int $status = null,
-        public readonly ?string $firstname = null,
-        public readonly ?string $lastname = null,
+        public UserId $userId,
+        public ?string $email = null,
+        public ?string $username = null,
+        public ?string $plainPassword = null,
+        public ?array $roles = null,
+        public ?int $status = null,
+        public ?string $firstname = null,
+        public ?string $lastname = null,
     ) {
     }
 }

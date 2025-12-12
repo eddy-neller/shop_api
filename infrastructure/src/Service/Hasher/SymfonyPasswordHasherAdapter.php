@@ -7,10 +7,10 @@ use App\Domain\User\Security\ValueObject\HashedPassword;
 use App\Infrastructure\Entity\User\User;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-final class SymfonyPasswordHasherAdapter implements PasswordHasherInterface
+final readonly class SymfonyPasswordHasherAdapter implements PasswordHasherInterface
 {
     public function __construct(
-        private readonly UserPasswordHasherInterface $passwordHasher,
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 

@@ -5,7 +5,6 @@ namespace App\Presentation\User\State\Me;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\User\UseCase\Query\DisplayUser\DisplayUserOutput;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use App\Presentation\User\Security\UserMeSecurityTrait;
@@ -28,7 +27,7 @@ readonly class UserMeProvider implements ProviderInterface
         $userId = $this->getUserIdFromAuthenticatedUser($currentUser);
 
         $query = new DisplayUserQuery($userId);
-        /** @var DisplayUserOutput $output */
+
         $output = $this->queryBus->dispatch($query);
 
         return $this->userResourcePresenter->toResource($output->user);

@@ -6,12 +6,6 @@ namespace App\Application\Shared\CQRS\Command;
 
 use App\Application\Shared\CQRS\Middleware\CommandMiddlewareInterface;
 
-/**
- * Implémentation simple d'un CommandBus avec chaîne de middlewares.
- *
- * Objectif : fournir un point d'entrée unique pour les commandes
- * afin de brancher facilement du cross-cutting (logs, métriques, etc.).
- */
 final class CommandBus implements CommandBusInterface
 {
     /**
@@ -34,10 +28,6 @@ final class CommandBus implements CommandBusInterface
 
     /**
      * Construit la chaîne de middlewares (pattern chain of responsibility).
-     *
-     * @param callable(CommandInterface):mixed $handler
-     *
-     * @return callable(CommandInterface):mixed
      */
     private function buildMiddlewarePipeline(callable $handler): callable
     {
@@ -45,7 +35,7 @@ final class CommandBus implements CommandBusInterface
 
         /**
          * On inverse pour que le premier middleware de la liste
-         * soit exécuté en premier dans la chaîne.
+         * soit exécuté en premier.
          */
         $middlewares = is_array($this->middlewares) ? $this->middlewares : iterator_to_array($this->middlewares);
         $middlewares = array_reverse($middlewares);
