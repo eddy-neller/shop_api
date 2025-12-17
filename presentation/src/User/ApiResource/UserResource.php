@@ -16,7 +16,6 @@ use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Infrastructure\Entity\User\User;
 use App\Presentation\RouteRequirements;
-use App\Presentation\Shared\State\PaginatedCollectionProvider;
 use App\Presentation\User\Dto\Me\UserMeAvatarInput;
 use App\Presentation\User\Dto\Me\UserMePasswordUpdateInput;
 use App\Presentation\User\Dto\PasswordResetCheckInput;
@@ -36,6 +35,7 @@ use App\Presentation\User\State\PasswordResetConfirmProcessor;
 use App\Presentation\User\State\PasswordResetRequestProcessor;
 use App\Presentation\User\State\UserActivationRequestProcessor;
 use App\Presentation\User\State\UserActivationValidationProcessor;
+use App\Presentation\User\State\UserAdminCollectionProvider;
 use App\Presentation\User\State\UserAvatarProcessor;
 use App\Presentation\User\State\UserDeleteProcessor;
 use App\Presentation\User\State\UserGetProvider;
@@ -52,7 +52,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Get(
             uriTemplate: '/users/{id}',
             requirements: ['id' => RouteRequirements::UUID],
-            name: 'users-get',
+            name: self::PREFIX_NAME . 'get',
             provider: UserGetProvider::class,
         ),
         new Get(
@@ -61,7 +61,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 security: [['ApiKeyAuth' => []]]
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
-            name: 'users-me',
+            name: self::PREFIX_NAME . 'me',
             provider: UserMeProvider::class,
         ),
         new Patch(
@@ -78,7 +78,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             security: "is_granted('ROLE_ADMIN')",
             input: UserPatchInput::class,
-            name: 'users-patch',
+            name: self::PREFIX_NAME . 'patch',
             processor: UserPatchProcessor::class,
         ),
         new Delete(
@@ -91,7 +91,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 security: [['ApiKeyAuth' => []]]
             ),
             security: "is_granted('ROLE_ADMIN')",
-            name: 'users-delete',
+            name: self::PREFIX_NAME . 'delete',
             processor: UserDeleteProcessor::class,
         ),
         new Post(
@@ -119,7 +119,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: UserMeAvatarInput::class,
-            name: 'users-me-avatar',
+            name: self::PREFIX_NAME . 'me-avatar',
             processor: UserMeAvatarProcessor::class,
         ),
         new Post(
@@ -148,7 +148,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             security: "is_granted('ROLE_ADMIN')",
             input: UserAvatarInput::class,
-            name: 'users-avatar',
+            name: self::PREFIX_NAME . 'avatar',
             processor: UserAvatarProcessor::class,
         ),
         new Patch(
@@ -166,7 +166,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: UserMePasswordUpdateInput::class,
             output: false,
-            name: 'users-me-update-password',
+            name: self::PREFIX_NAME . 'me-update-password',
             processor: UserMePasswordUpdateProcessor::class,
         ),
         new GetCollection(
@@ -178,8 +178,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             paginationClientItemsPerPage: true,
             security: "is_granted('ROLE_ADMIN')",
-            name: 'users-admin-col',
-            provider: PaginatedCollectionProvider::class,
+            name: self::PREFIX_NAME . 'admin-col',
+            provider: UserAdminCollectionProvider::class,
         ),
         new Post(
             uriTemplate: '/users',
@@ -194,7 +194,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             security: "is_granted('ROLE_ADMIN')",
             input: UserPostInput::class,
-            name: 'users-admin-create',
+            name: self::PREFIX_NAME . 'admin-create',
             processor: UserPostProcessor::class,
         ),
         new Post(
@@ -208,7 +208,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 ),
             ),
             input: UserRegisterInput::class,
-            name: 'users-register',
+            name: self::PREFIX_NAME . 'register',
             processor: UserRegisterProcessor::class,
         ),
         new Post(
@@ -224,7 +224,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             input: UserActivationRequestInput::class,
             output: false,
-            name: 'users-register-resend',
+            name: self::PREFIX_NAME . 'register-resend',
             processor: UserActivationRequestProcessor::class,
         ),
         new Post(
@@ -240,7 +240,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             input: UserActivationValidationInput::class,
             output: false,
-            name: 'users-register-validation',
+            name: self::PREFIX_NAME . 'register-validation',
             processor: UserActivationValidationProcessor::class,
         ),
         new Post(
@@ -256,7 +256,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             input: PasswordResetRequestInput::class,
             output: false,
-            name: 'users-password-reset-request',
+            name: self::PREFIX_NAME . 'password-reset-request',
             processor: PasswordResetRequestProcessor::class,
         ),
         new Post(
@@ -272,7 +272,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             input: PasswordResetCheckInput::class,
             output: false,
-            name: 'users-password-reset-check',
+            name: self::PREFIX_NAME . 'password-reset-check',
             processor: PasswordResetCheckProcessor::class,
         ),
         new Post(
@@ -288,7 +288,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ),
             input: PasswordResetConfirmInput::class,
             output: false,
-            name: 'users-password-reset-confirm',
+            name: self::PREFIX_NAME . 'password-reset-confirm',
             processor: PasswordResetConfirmProcessor::class,
         ),
     ],
@@ -299,6 +299,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiFilter(OrderFilter::class, properties: ['username', 'email', 'createdAt'])]
 final class UserResource
 {
+    private const string PREFIX_NAME = 'users-';
+
     #[Groups(['user:read'])]
     public string $id;
 

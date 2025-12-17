@@ -8,7 +8,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\Exception\UserDomainException;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\Firstname;
 use App\Domain\User\Identity\ValueObject\Lastname;
@@ -31,7 +31,7 @@ final readonly class UpdateUserByAdminCommandHandler
         $user = $this->repository->findById($command->userId);
 
         if (null === $user) {
-            throw new UserDomainException('Utilisateur introuvable.');
+            throw new UserNotFoundException('User not found.');
         }
 
         return $this->transactional->transactional(function () use ($user, $command): UpdateUserByAdminOutput {

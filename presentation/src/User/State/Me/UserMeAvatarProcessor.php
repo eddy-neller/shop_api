@@ -7,7 +7,7 @@ namespace App\Presentation\User\State\Me;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
-use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarCommand;
+use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
 use App\Presentation\Shared\Adapter\SymfonyFileAdapter;
 use App\Presentation\Shared\State\PresentationErrorCode;
 use App\Presentation\User\Dto\Me\UserMeAvatarInput;
@@ -33,14 +33,17 @@ readonly class UserMeAvatarProcessor implements ProcessorInterface
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
+        if (null === $data->avatarFile) {
+            throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
+        }
+
         $user = $this->getCurrentUserOrThrow();
         $userId = $this->getUserIdFromAuthenticatedUser($user);
+        $avatarFile = new SymfonyFileAdapter($data->avatarFile);
 
-        $fileAdapter = new SymfonyFileAdapter($data->avatarFile);
-
-        $command = new UploadAndUpdateAvatarCommand(
+        $command = new UpdateAvatarCommand(
             userId: $userId,
-            avatarFile: $fileAdapter,
+            avatarFile: $avatarFile,
         );
 
         $output = $this->commandBus->dispatch($command);

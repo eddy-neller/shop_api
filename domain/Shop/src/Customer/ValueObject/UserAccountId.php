@@ -2,37 +2,35 @@
 
 namespace App\Domain\Shop\Customer\ValueObject;
 
-use App\Domain\Shop\Shared\ValueObject\UuidValidationTrait;
+use App\Domain\SharedKernel\ValueObject\Uuid;
 
 /**
  * Represents the identity of an account in the User bounded context.
  */
-final class UserAccountId
+final readonly class UserAccountId
 {
-    use UuidValidationTrait;
-
     private function __construct(
-        private readonly string $value,
+        private Uuid $value,
     ) {
     }
 
     public static function fromString(string $value): self
     {
-        return new self(self::assertUuid($value, 'UserAccountId'));
+        return new self(Uuid::fromString($value, 'UserAccountId'));
     }
 
     public function equals(self $other): bool
     {
-        return $this->value === $other->value;
+        return $this->value->equals($other->value);
     }
 
     public function toString(): string
     {
-        return $this->value;
+        return $this->value->toString();
     }
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value->toString();
     }
 }

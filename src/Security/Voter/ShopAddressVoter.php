@@ -7,6 +7,7 @@ use App\Entity\Shop\Address;
 use App\Infrastructure\Entity\User\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
@@ -34,7 +35,7 @@ class ShopAddressVoter extends Voter
         return in_array($attribute, self::GROUPS) && $subject instanceof Address;
     }
 
-    protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
+    protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         $user = $token->getUser();
 

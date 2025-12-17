@@ -2,14 +2,15 @@
 
 namespace App\Infrastructure\DataFixtures\dev\User;
 
+use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
 use App\Infrastructure\Entity\User\User;
-use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserFixtures extends Fixture implements FixtureGroupInterface
@@ -61,6 +62,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 
         foreach ($usersData as $userData) {
             $user = new User();
+            $user->setId(Uuid::uuid4());
             $user->firstname = $userData['firstname'] ?? $faker->firstName();
             $user->lastname = $userData['lastname'] ?? $faker->lastName();
 
@@ -73,10 +75,8 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
             $user->setEmail($userData['email'] ?? $faker->unique()->safeEmail());
 
             $user->setAvatarName($userData['avatarName'] ?? null);
-            $avatarDate = isset($userData['avatarName']) ? $faker->dateTimeBetween('now') : null;
-            $user->setAvatarUpdatedAt($avatarDate ? DateTimeImmutable::createFromMutable($avatarDate) : null);
 
-            $user->setRoles($userData['roles'] ?? ['ROLE_USER']);
+            $user->setRoles($userData['roles'] ?? [RoleSet::ROLE_USER]);
             $user->setStatus(UserStatus::ACTIVE);
 
             $timestamps = $this->generateTimestamps();

@@ -4,7 +4,7 @@ namespace App\Domain\Shop\Shared\ValueObject;
 
 use InvalidArgumentException;
 
-final class Money
+final readonly class Money
 {
     private function __construct(
         private int $amount,

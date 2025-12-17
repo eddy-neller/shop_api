@@ -1,0 +1,101 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Persistence\Doctrine\Shop\Catalog;
+
+use App\Application\Shared\Port\FileInterface;
+use App\Application\Shared\Port\UuidGeneratorInterface;
+use App\Application\Shop\Port\ProductRepositoryInterface;
+use App\Domain\Shop\Catalog\Model\Product as DomainProduct;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
+use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
+use App\Infrastructure\Entity\Shop\Product as DoctrineProduct;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+/**
+ * @codeCoverageIgnore
+ */
+final readonly class DoctrineProductRepository implements ProductRepositoryInterface
+{
+    public function __construct(
+        private EntityManagerInterface $em,
+        private UuidGeneratorInterface $uuidGenerator,
+        private ProductMapper $mapper,
+    ) {
+    }
+
+    public function nextIdentity(): ProductId
+    {
+        return ProductId::fromString($this->uuidGenerator->generate());
+    }
+
+    public function save(DomainProduct $product): void
+    {
+        $entity = $this->findEntity($product->getId());
+        $entity = $this->mapper->toDoctrine($product, $entity);
+
+        $category = $this->findCategoryEntity($product->getCategoryId());
+        if (null !== $category) {
+            $entity->setCategory($category);
+        }
+
+        $this->em->persist($entity);
+        $this->em->flush();
+    }
+
+    public function delete(DomainProduct $product): void
+    {
+        $entity = $this->findEntity($product->getId());
+        if (null === $entity) {
+            return;
+        }
+
+        $this->em->remove($entity);
+        $this->em->flush();
+    }
+
+    public function findById(ProductId $id): ?DomainProduct
+    {
+        $entity = $this->findEntity($id);
+
+        return null === $entity ? null : $this->mapper->toDomain($entity);
+    }
+
+    public function updateImage(ProductId $id, FileInterface $file): ?DomainProduct
+    {
+        $entity = $this->findEntity($id);
+        if (null === $entity) {
+            return null;
+        }
+
+        $uploadedFile = new UploadedFile(
+            $file->getPathname(),
+            $file->getClientOriginalName(),
+            '' !== $file->getMimeType() ? $file->getMimeType() : null,
+            UPLOAD_ERR_OK,
+            true,
+        );
+
+        $entity->setImageFile($uploadedFile);
+        $this->em->flush();
+
+        return $this->mapper->toDomain($entity);
+    }
+
+    private function findEntity(ProductId $id): ?DoctrineProduct
+    {
+        $entity = $this->em->getRepository(DoctrineProduct::class)->find($id->toString());
+
+        return $entity instanceof DoctrineProduct ? $entity : null;
+    }
+
+    private function findCategoryEntity(CategoryId $id): ?DoctrineCategory
+    {
+        $entity = $this->em->getRepository(DoctrineCategory::class)->find($id->toString());
+
+        return $entity instanceof DoctrineCategory ? $entity : null;
+    }
+}

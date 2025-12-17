@@ -65,7 +65,7 @@ class GenerateUserImagesCommand extends Command
             }
 
             $user->setAvatarName($avatar);
-            $user->setAvatarUpdatedAt(new DateTimeImmutable());
+            $user->setUpdatedAt(new DateTimeImmutable());
 
             ++$count;
             $io->progressAdvance();

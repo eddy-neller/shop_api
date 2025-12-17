@@ -8,6 +8,7 @@ use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -95,6 +96,7 @@ final class UserRepositoryTest extends KernelTestCase
     private function createUser(array $data = []): User
     {
         $user = new User();
+        $user->setId($data['id'] ?? Uuid::uuid4());
         $user->firstname = $data['firstname'] ?? 'John';
         $user->lastname = $data['lastname'] ?? 'Doe';
         $user->setUsername($data['username'] ?? 'johndoe');

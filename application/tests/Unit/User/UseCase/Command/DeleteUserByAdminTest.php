@@ -89,7 +89,7 @@ final class DeleteUserByAdminTest extends TestCase
             ->method('delete');
 
         $this->expectException(UserDomainException::class);
-        $this->expectExceptionMessage('Utilisateur introuvable.');
+        $this->expectExceptionMessage('User not found.');
 
         $this->handler->handle($command);
     }

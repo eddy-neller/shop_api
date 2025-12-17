@@ -2,34 +2,32 @@
 
 namespace App\Domain\Shop\Ordering\ValueObject;
 
-use App\Domain\Shop\Shared\ValueObject\UuidValidationTrait;
+use App\Domain\SharedKernel\ValueObject\Uuid;
 
-final class OrderId
+final readonly class OrderId
 {
-    use UuidValidationTrait;
-
     private function __construct(
-        private readonly string $value,
+        private Uuid $value,
     ) {
     }
 
     public static function fromString(string $value): self
     {
-        return new self(self::assertUuid($value, 'OrderId'));
+        return new self(Uuid::fromString($value, 'OrderId'));
     }
 
     public function equals(self $other): bool
     {
-        return $this->value === $other->value;
+        return $this->value->equals($other->value);
     }
 
     public function toString(): string
     {
-        return $this->value;
+        return $this->value->toString();
     }
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->value->toString();
     }
 }

@@ -1,15 +1,13 @@
 <?php
 
-namespace App\Domain\User\Profile\ValueObject;
+declare(strict_types=1);
 
-use DateTimeImmutable;
+namespace App\Domain\User\Profile\ValueObject;
 
 final readonly class Avatar
 {
     public function __construct(
         private ?string $fileName = null,
-        private ?string $url = null,
-        private ?DateTimeImmutable $updatedAt = null,
     ) {
     }
 
@@ -18,31 +16,10 @@ final readonly class Avatar
         return $this->fileName;
     }
 
-    public function url(): ?string
-    {
-        return $this->url;
-    }
-
-    public function updatedAt(): ?DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function withFile(?string $fileName, ?DateTimeImmutable $updatedAt = null): self
+    public function withFile(?string $fileName): self
     {
         return new self(
             fileName: $fileName,
-            url: $this->url,
-            updatedAt: $updatedAt ?? new DateTimeImmutable(),
-        );
-    }
-
-    public function withUrl(?string $url): self
-    {
-        return new self(
-            fileName: $this->fileName,
-            url: $url,
-            updatedAt: $this->updatedAt,
         );
     }
 }

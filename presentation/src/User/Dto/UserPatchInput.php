@@ -4,27 +4,34 @@ namespace App\Presentation\User\Dto;
 
 use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
+use App\Presentation\User\Validator as AppAssert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class UserPatchInput
 {
-    #[Assert\Email(message: 'Invalid email address.')]
-    #[Assert\Length(
-        min: 4,
-        max: 100,
-        minMessage: 'The email must be at least {{ limit }} characters long.',
-        maxMessage: 'The email must be at most {{ limit }} characters long.'
-    )]
+    #[Assert\Sequentially([
+        new Assert\Email(),
+        new Assert\Length(
+            min: 4,
+            max: 100,
+            minMessage: 'The email must be at least {{ limit }} characters long.',
+            maxMessage: 'The email must be at most {{ limit }} characters long.'
+        ),
+        new AppAssert\EmailNotExists(),
+    ])]
     #[Groups(groups: ['user:admin'])]
     public ?string $email = null;
 
-    #[Assert\Length(
-        min: 2,
-        max: 20,
-        minMessage: 'The username must be at least {{ limit }} characters long.',
-        maxMessage: 'The username must be at most {{ limit }} characters long.'
-    )]
+    #[Assert\Sequentially([
+        new Assert\Length(
+            min: 2,
+            max: 20,
+            minMessage: 'The username must be at least {{ limit }} characters long.',
+            maxMessage: 'The username must be at most {{ limit }} characters long.'
+        ),
+        new AppAssert\UsernameNotExists(),
+    ])]
     #[Groups(groups: ['user:admin'])]
     public ?string $username = null;
 

@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Shop\Catalog\Model;
 
+use App\Domain\SharedKernel\ValueObject\Slug;
+use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
-use App\Domain\Shop\Shared\ValueObject\Slug;
+use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
@@ -11,8 +15,8 @@ final class Category
 {
     private function __construct(
         private CategoryId $id,
-        private string $title,
-        private ?string $description,
+        private CategoryTitle $title,
+        private ?CategoryDescription $description,
         private Slug $slug,
         private ?CategoryId $parentId,
         private int $productCount,
@@ -24,16 +28,12 @@ final class Category
 
     public static function create(
         CategoryId $id,
-        string $title,
+        CategoryTitle $title,
         Slug $slug,
         DateTimeImmutable $now,
         ?CategoryId $parentId = null,
-        ?string $description = null,
-        int $level = 0,
+        ?CategoryDescription $description = null,
     ): self {
-        self::assertTitle($title);
-        self::assertLevel($level);
-
         return new self(
             id: $id,
             title: $title,
@@ -41,7 +41,7 @@ final class Category
             slug: $slug,
             parentId: $parentId,
             productCount: 0,
-            level: $level,
+            level: 0,
             createdAt: $now,
             updatedAt: $now,
         );
@@ -49,16 +49,15 @@ final class Category
 
     public static function reconstitute(
         CategoryId $id,
-        string $title,
+        CategoryTitle $title,
         Slug $slug,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt,
         ?CategoryId $parentId = null,
-        ?string $description = null,
+        ?CategoryDescription $description = null,
         int $productCount = 0,
         int $level = 0,
     ): self {
-        self::assertTitle($title);
         self::assertLevel($level);
 
         if ($productCount < 0) {
@@ -78,24 +77,27 @@ final class Category
         );
     }
 
-    public function rename(string $title, DateTimeImmutable $now): void
+    public function delete(DateTimeImmutable $now): void
     {
-        self::assertTitle($title);
+        $this->touch($now);
+    }
+
+    public function rename(CategoryTitle $title, Slug $slug, DateTimeImmutable $now): void
+    {
         $this->title = $title;
+        $this->slug = $slug;
         $this->touch($now);
     }
 
-    public function describe(?string $description, DateTimeImmutable $now): void
+    public function describe(?CategoryDescription $description, DateTimeImmutable $now): void
     {
-        $this->description = null === $description ? null : trim($description);
+        $this->description = $description;
         $this->touch($now);
     }
 
-    public function moveTo(?CategoryId $parentId, int $level, DateTimeImmutable $now): void
+    public function moveTo(?CategoryId $parentId, DateTimeImmutable $now): void
     {
-        self::assertLevel($level);
         $this->parentId = $parentId;
-        $this->level = $level;
         $this->touch($now);
     }
 
@@ -120,12 +122,12 @@ final class Category
         return $this->id;
     }
 
-    public function getTitle(): string
+    public function getTitle(): CategoryTitle
     {
         return $this->title;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): ?CategoryDescription
     {
         return $this->description;
     }
@@ -158,15 +160,6 @@ final class Category
     public function getUpdatedAt(): DateTimeImmutable
     {
         return $this->updatedAt;
-    }
-
-    private static function assertTitle(string $title): void
-    {
-        $trimmed = trim($title);
-
-        if ('' === $trimmed) {
-            throw new InvalidArgumentException('Category title cannot be empty.');
-        }
     }
 
     private static function assertLevel(int $level): void

@@ -7,7 +7,7 @@ namespace App\Application\User\UseCase\Command\DeleteUserByAdmin;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\Exception\UserDomainException;
+use App\Domain\User\Exception\UserNotFoundException;
 
 final readonly class DeleteUserByAdminCommandHandler
 {
@@ -23,7 +23,7 @@ final readonly class DeleteUserByAdminCommandHandler
         $user = $this->repository->findById($command->userId);
 
         if (null === $user) {
-            throw new UserDomainException('Utilisateur introuvable.');
+            throw new UserNotFoundException('User not found.');
         }
 
         $this->transactional->transactional(function () use ($user): void {

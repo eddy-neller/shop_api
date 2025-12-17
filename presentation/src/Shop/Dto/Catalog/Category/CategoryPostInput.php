@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Presentation\Shop\Dto\Catalog\Category;
+
+use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
+use App\Presentation\Shop\Validator\Catalog\ShopCategoryNotExists;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+
+final class CategoryPostInput
+{
+    #[Groups(['shop_category:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'The title must be at least {{ limit }} characters long.',
+        maxMessage: 'The title must be at most {{ limit }} characters long.'
+    )]
+    #[ShopCategoryNotExists]
+    public string $title;
+
+    #[Groups(['shop_category:write'])]
+    #[Assert\Length(
+        min: 2,
+        max: 1000,
+        minMessage: 'The description must be at least {{ limit }} characters long.',
+        maxMessage: 'The description must be at most {{ limit }} characters long.'
+    )]
+    public ?string $description = null;
+
+    #[Groups(['shop_category:write'])]
+    public ?CategoryResource $parent = null;
+}

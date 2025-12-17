@@ -52,6 +52,14 @@ services:
         resource: "../application/src/User/UseCase/Query/**/*QueryHandler.php"
         tags: ["app.cqrs.query_handler"]
 
+    App\Application\Shop\UseCase\Command\:
+        resource: "../application/src/Shop/UseCase/Command/**/*CommandHandler.php"
+        tags: ["app.cqrs.command_handler"]
+
+    App\Application\Shop\UseCase\Query\:
+        resource: "../application/src/Shop/UseCase/Query/**/*QueryHandler.php"
+        tags: ["app.cqrs.query_handler"]
+
     # CQRS - Configuration des resolvers avec injection manuelle des ServiceLocators
     App\Application\Shared\CQRS\Command\CommandHandlerResolver:
         arguments:

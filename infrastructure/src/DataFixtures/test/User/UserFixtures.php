@@ -4,6 +4,7 @@ namespace App\Infrastructure\DataFixtures\test\User;
 
 use App\Domain\User\Security\ValueObject\ActiveEmail;
 use App\Domain\User\Security\ValueObject\ResetPassword;
+use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\DataFixtures\DataFixturesTrait;
 use App\Infrastructure\Entity\User\User;
@@ -12,6 +13,7 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserFixtures extends Fixture implements FixtureGroupInterface
@@ -81,6 +83,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 
         foreach ($usersData as $userData) {
             $user = new User();
+            $user->setId(Uuid::uuid4());
             $user->firstname = $faker->firstName();
             $user->lastname = $faker->lastName();
 
@@ -93,9 +96,8 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
             $user->setEmail($userData['email']);
 
             $user->setAvatarName('avatar.png');
-            $user->setAvatarUpdatedAt(DateTimeImmutable::createFromMutable($faker->dateTimeBetween('now')));
 
-            $user->setRoles($userData['roles'] ?? ['ROLE_USER']);
+            $user->setRoles($userData['roles'] ?? [RoleSet::ROLE_USER]);
             $user->setStatus(UserStatus::ACTIVE);
 
             $timestamps = $this->generateTimestamps();
@@ -122,6 +124,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
         $faker = Factory::create();
 
         $activationUser = new User();
+        $activationUser->setId(Uuid::uuid4());
         $activationUser->firstname = $faker->firstName();
         $activationUser->lastname = $faker->lastName();
         $activationUser->setUsername('user_activation');
@@ -134,7 +137,6 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
         $activationUser->setStatus(UserStatus::INACTIVE);
 
         $activationUser->setAvatarName('avatar.png');
-        $activationUser->setAvatarUpdatedAt(DateTimeImmutable::createFromMutable($faker->dateTimeBetween('now')));
 
         $timestamps = $this->generateTimestamps();
         $activationUser->setCreatedAt($timestamps['createdAt']);

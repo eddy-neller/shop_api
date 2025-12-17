@@ -6,6 +6,7 @@ namespace App\Application\User\UseCase\Command\RegisterWrongPasswordAttempt;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
@@ -15,6 +16,7 @@ final readonly class RegisterWrongPasswordAttemptCommandHandler
         private UserRepositoryInterface $repository,
         private ClockInterface $clock,
         private ConfigInterface $config,
+        private TransactionalInterface $transactional,
     ) {
     }
 
@@ -27,9 +29,12 @@ final readonly class RegisterWrongPasswordAttemptCommandHandler
             return;
         }
 
-        $maxAttempts = (int) $this->config->get('app.security.max_login_attempts');
-        $user->registerWrongPasswordAttempt($maxAttempts, $this->clock->now());
+        $this->transactional->transactional(function () use ($user): void {
+            $now = $this->clock->now();
+            $maxAttempts = (int) $this->config->get('app.security.max_login_attempts');
+            $user->registerWrongPasswordAttempt($maxAttempts, $now);
 
-        $this->repository->save($user);
+            $this->repository->save($user);
+        });
     }
 }

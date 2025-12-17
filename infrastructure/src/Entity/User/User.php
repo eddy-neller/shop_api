@@ -11,17 +11,17 @@ use App\Entity\Shop\Address;
 use App\Entity\Shop\Order;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use DateTimeImmutable;
+use Deprecated;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Ramsey\Uuid\Doctrine\UuidGenerator;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Table(name: '`user`')]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -30,8 +30,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     protected UuidInterface $id;
 
     #[ORM\Column(type: Types::STRING, nullable: true)]
@@ -74,9 +72,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public ?File $avatarFile = null;
 
     public ?string $avatarUrl = null;
-
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    private ?DateTimeImmutable $avatarUpdatedAt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $lastVisit;
@@ -195,6 +190,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return null;
     }
 
+    #[Deprecated]
     public function eraseCredentials(): void
     {
     }
@@ -290,12 +286,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function setAvatarFile(?File $image = null): self
+    public function setAvatarFile(?File $avatarFile = null): self
     {
-        $this->avatarFile = $image;
-        if ($image instanceof File) {
+        $this->avatarFile = $avatarFile;
+
+        if (null !== $avatarFile) {
             // It is required that at least one field changes if you are using doctrine otherwise the event listeners won't be called and the file is lost.
-            $this->avatarUpdatedAt = new DateTimeImmutable();
+            $this->updatedAt = new DateTimeImmutable();
         }
 
         return $this;
@@ -316,18 +313,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getAvatarName(): ?string
     {
         return $this->avatarName;
-    }
-
-    public function getAvatarUpdatedAt(): ?DateTimeImmutable
-    {
-        return $this->avatarUpdatedAt;
-    }
-
-    public function setAvatarUpdatedAt(?DateTimeImmutable $date): self
-    {
-        $this->avatarUpdatedAt = $date;
-
-        return $this;
     }
 
     public function getLastVisit(): DateTimeImmutable

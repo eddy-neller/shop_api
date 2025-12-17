@@ -4,40 +4,31 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Command\UpdateAvatar;
 
-use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
-use App\Domain\User\Profile\ValueObject\Avatar;
+use App\Domain\User\Exception\UserNotFoundException;
 
 final readonly class UpdateAvatarCommandHandler
 {
     public function __construct(
         private UserRepositoryInterface $repository,
-        private ClockInterface $clock,
         private TransactionalInterface $transactional,
     ) {
     }
 
     public function handle(UpdateAvatarCommand $command): UpdateAvatarOutput
     {
-        $user = $this->repository->findById($command->userId);
-
-        if (null === $user) {
-            throw new UserDomainException('Utilisateur introuvable.');
+        if (!$command->avatarFile->isValid()) {
+            throw new UserDomainException('Fichier avatar invalide.');
         }
 
-        return $this->transactional->transactional(function () use ($user, $command): UpdateAvatarOutput {
-            $now = $this->clock->now();
-            $avatar = new Avatar(
-                fileName: $command->avatarFileName,
-                url: $command->avatarUrl,
-                updatedAt: $now,
-            );
+        return $this->transactional->transactional(function () use ($command): UpdateAvatarOutput {
+            $user = $this->repository->updateAvatar($command->userId, $command->avatarFile);
 
-            $user->updateAvatar($avatar, $now);
-
-            $this->repository->save($user);
+            if (null === $user) {
+                throw new UserNotFoundException('User not found.', 404);
+            }
 
             return new UpdateAvatarOutput($user);
         });

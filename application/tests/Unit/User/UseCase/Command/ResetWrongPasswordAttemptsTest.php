@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\User\UseCase\Command;
 
 use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\ResetWrongPasswordAttempts\ResetWrongPasswordAttemptsCommand;
 use App\Application\User\UseCase\Command\ResetWrongPasswordAttempts\ResetWrongPasswordAttemptsCommandHandler;
@@ -26,16 +27,20 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
 
     private ClockInterface&MockObject $clock;
 
+    private TransactionalInterface&MockObject $transactional;
+
     private ResetWrongPasswordAttemptsCommandHandler $handler;
 
     protected function setUp(): void
     {
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
+        $this->transactional = $this->createMock(TransactionalInterface::class);
 
         $this->handler = new ResetWrongPasswordAttemptsCommandHandler(
             repository: $this->repository,
             clock: $this->clock,
+            transactional: $this->transactional,
         );
     }
 
@@ -58,6 +63,12 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
             ->method('save')
             ->with($user);
 
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(static function (callable $callback) {
+                return $callback();
+            });
+
         $this->handler->handle($command);
 
         $this->assertSame(0, $user->getSecurity()->getTotalWrongPassword());
@@ -73,6 +84,7 @@ final class ResetWrongPasswordAttemptsTest extends TestCase
 
         $this->clock->expects($this->never())->method('now');
         $this->repository->expects($this->never())->method('save');
+        $this->transactional->expects($this->never())->method('transactional');
 
         $this->handler->handle($command);
     }

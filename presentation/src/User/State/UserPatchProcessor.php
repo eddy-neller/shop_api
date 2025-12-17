@@ -26,6 +26,10 @@ readonly class UserPatchProcessor implements ProcessorInterface
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
+        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
+            throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
+        }
+
         $userId = UserId::fromString($uriVariables['id']);
 
         $command = new UpdateUserByAdminCommand(

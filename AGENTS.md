@@ -1,10 +1,146 @@
-# 🧭 Architecture & Repository Guidelines
+# AGENTS.md
+
+> Guide pour humains **et** agents (Copilot/Cursor/LLM) : conventions, architecture, workflow, règles de contribution.
+> Objectif : garder un code **lisible**, **testable**, **orienté métier**, et une API **robuste**.
 
 ---
 
-## 1. Repository Guidelines
+## Stack & versions
 
-### 1.1. Project Structure & Module Organization
+* **PHP**: 8.4 (`declare(strict_types=1);` partout)
+* **Symfony**: 7.3
+* **API Platform**: 4.2
+* **Doctrine ORM** + Migrations
+* **Tests**: PHPUnit + DAMA DoctrineTestBundle
+* **Qualité** : PHPStan, PHP-CS-Fixer, Rector, PhpMD
+
+---
+
+## Global Guidelines
+
+### Stack & versions
+
+**Do**
+
+-   Cibler PHP `8.4.*`, Symfony `7.3.*`, API Platform `4.2.*` (cf. `composer.json`).
+-   Utiliser les attributs PHP (Doctrine mapping, API Platform Metadata, listeners/decorators Symfony).
+
+**Don't**
+
+-   Introduire des dépendances qui imposent PHP `< 8`, Symfony `< 7` ou API Platform `< 4`.
+
+---
+
+### Conventions PHP (générales)
+
+**Do**
+
+-   Ajouter `declare(strict_types=1);` dans tout nouveau fichier PHP.
+-   Préférer des services `final` et `readonly` (handlers, providers, processors, adapters).
+-   Garder des types explicites (propriétés/retours) ; `mixed` uniquement aux frontières (ex. `ProcessorInterface`, `ProviderInterface`).
+
+**Don't**
+
+-   Introduire des propriétés dynamiques ou des tableaux “fourre-tout” non typés sans justification claire.
+
+---
+
+### API Platform (ressources & opérations)
+
+**Do**
+
+-   Définir `shortName` au niveau `#[ApiResource]` et un `name` stable sur chaque `Operation` (utile pour les groupes auto et l’OpenAPI).
+-   Utiliser `App\Presentation\RouteRequirements::UUID` pour les paramètres `{id}` UUID.
+-   Pour les endpoints sécurisés, déclarer `security` et compléter l’OpenAPI avec `security: [['ApiKeyAuth' => []]]` (schéma ajouté par `App\Infrastructure\OpenApi\JwtDecorator`).
+-   Pour les collections paginées, utiliser `App\Presentation\Shared\State\PaginatedCollectionProvider` afin d’exposer `X-Total-Count` / `X-Total-Pages`.
+
+**Don't**
+
+-   Ajouter des endpoints “hors API Platform” si une `ApiResource` + `Provider/Processor` suffit.
+
+---
+
+### Providers / Processors (State)
+
+**Do**
+
+-   Valider le type du `$data` (ou la présence des `$uriVariables`) et lever `LogicException(App\Presentation\Shared\State\PresentationErrorCode::INVALID_INPUT->value)` si incohérent.
+-   Construire un `...Command` / `...Query` et dispatcher via `CommandBusInterface` / `QueryBusInterface` (pas d’appel direct à `handle()`).
+-   Convertir les outputs Domain en ressources exposées via un Presenter (ex. `App\Presentation\User\Presenter\UserResourcePresenter`).
+
+**Don't**
+
+-   Mettre de la logique de rendu (mapping/formatage) dans un handler Application ; faire la transformation côté Presentation (Presenter).
+
+---
+
+### Sérialisation & groupes
+
+**Do**
+
+-   Respecter la convention `snake_case` des groupes basés sur `shortName` (ex. `send_mail:write`, `user:read`).
+-   Pour les champs “admin-only”, utiliser le groupe `{shortName}:admin` (ajouté dynamiquement par `App\Infrastructure\Serializer\ContextBuilder\AdminGroup` si l’utilisateur a `ROLE_ADMIN`).
+
+**Don't**
+
+-   Créer des groupes ad-hoc non liés au `shortName`/opération (difficiles à maintenir et à déboguer).
+
+---
+
+### Pagination (headers)
+
+**Do**
+
+-   Laisser `App\Infrastructure\EventListener\PaginationHeaderListener` produire `X-Total-Count` / `X-Total-Pages` via les attributs Request `_total_items` / `_total_pages` (posés par `PaginatedCollectionProvider`).
+
+**Don't**
+
+-   Recalculer ou poser manuellement ces headers dans un Processor/Provider.
+
+---
+
+### Uploads & fichiers (multipart)
+
+**Do**
+
+-   Déclarer `inputFormats: ['multipart' => ['multipart/form-data']]` et documenter le `RequestBody` OpenAPI (champ `format: binary`).
+-   Adapter `File|UploadedFile` (Symfony) en `FileInterface` via `App\Presentation\Shared\Adapter\SymfonyFileAdapter` avant d’appeler l’Application.
+-   S’appuyer sur `App\Infrastructure\Service\Encoder\MultipartDecoder` et `App\Infrastructure\Serializer\Denormalizer\UploadedFileDenormalizer` pour la désérialisation multipart.
+-   Pour exposer les URLs de fichiers, s’appuyer sur `App\Infrastructure\Serializer\Normalizer\ResolveFileUrlNormalizer` + Vich (pas de calcul d’URL à la main dans les ressources).
+
+**Don't**
+
+-   Faire transiter `UploadedFile` dans Application/Domain (adapter à la frontière).
+
+---
+
+### Messenger (asynchrone)
+
+**Do**
+
+-   Déclarer les messages (DTO immuables) dans `application/src/Shared/Messenger/Message`.
+-   Implémenter les handlers Messenger côté Infrastructure (`#[AsMessageHandler]`) et router les messages via `config/packages/messenger.yaml`.
+
+**Don't**
+
+-   Mettre de la logique métier dans un handler Messenger : garder l’orchestration métier dans les use-cases (Application), le handler Messenger ne fait que l’adaptation/IO.
+
+---
+
+### Sécurité (JWT, /me, voters)
+
+**Do**
+
+-   Pour les endpoints `/me`, utiliser `App\Presentation\User\Security\UserMeSecurityTrait` afin de garantir le comportement 401/403 attendu (entry point JWT).
+-   Centraliser les rôles via `App\Domain\User\Security\ValueObject\RoleSet` (ex. `RoleSet::ROLE_ADMIN`) dans les expressions `security`.
+
+**Don't**
+
+-   Lever une exception HTTP “directe” pour `/me` quand on attend une authentification (préférer l’exception Security utilisée dans le trait).
+
+---
+
+### Project Structure
 
 **Domain-driven layout :**
 
@@ -26,7 +162,6 @@
     -   DTOs HTTP,
     -   Processors / Providers,
     -   Presenters, validators, sécurité.
--   `src/` – bootstrap Symfony partagé (Kernel, config Symfony, bundles, etc.).
 
 **HTTP/UI :**
 
@@ -37,41 +172,42 @@
 
 **Tests & tooling :**
 
--   `tests/` :
-    -   reflète les bounded contexts / features (User, Shop, etc.).
 -   `migrations/` :
     -   migrations Doctrine.
 -   Docker & Make :
     -   `docker*/`, `docker-compose*.yml`,
     -   `Makefile`, `makefile.conf(.dist)`.
 
+**Infra :**
+-   `config/` - configuration Symfony.
+-   `docker/` – config Docker.
+
+**Legacy :**
+
+-   `src/` :
+    – code legacy.
+-   `tests/` :
+    - tests legacy.
+
 ---
 
-### 1.2. Build, Test, and Development Commands
+### Build and Development Commands
 
 Utiliser **`make`** pour éviter les lignes de commande trop longues (Docker = runtime par défaut) :
 
 ```bash
 make install        # build images, containers, vendors, init DB dev+test
 make up / down      # docker-compose up/down; down-hard pour prune images/volumes
+
 make serve-start    # Symfony local server si non Docker
 make serve-stop
-
-make unit                       # full PHPUnit suite
-make unit-filter f=ClassNameTest   # test ciblé
-make unit-suite s=api.catalog      # suite ciblée
-make unit-coverage             # HTML coverage dans coverage/
-
-make stan           # PHPStan
-make phpcs          # PHPCS
-make phpcsfixer_dry # PHP-CS-Fixer en dry-run
 ```
 
 ---
 
-### 1.3. Coding Style & Naming
+### Coding Style & Naming
 
--   PSR-12 via PHPCS / PHP-CS-Fixer :
+-   PSR-12 + conventions Symfony via PHPCS / PHP-CS-Fixer :
 
     -   indentation 4 espaces,
     -   1 classe par fichier,
@@ -83,36 +219,44 @@ make phpcsfixer_dry # PHP-CS-Fixer en dry-run
 
         -   ex. `RegisterUserCommandHandler`, `DisplayUserQueryHandler`, `UserRepositoryInterface`.
 
-    -   Propriétés / paramètres : `camelCase`.
+    -   Méthodes / Propriétés / paramètres : `camelCase`.
+    -   Constantes : `UPPER_SNAKE_CASE`
     -   Clés d’env / config : `SNAKE_CASE`.
 
--   Avant commit :
-
-    -   lancer `make phpcsfixer_dry`,
-    -   ne pas committer `var/`, `coverage/`, cache, etc.
+```bash
+make stan           # PHPStan
+make phpcsfixer_dry # PHP-CS-Fixer en dry-run
+make phpcsfixer_fix # PHP-CS-Fixer
+make phpcs          # PHPCS
+make phpmd          # PHPMD
+make rector-dry     # refacto assistée en dry-run
+make rector         # refacto assistée
+```
 
 ---
 
-### 1.4. Testing Guidelines
+### Testing Guidelines
 
 -   Config PHPUnit : `phpunit.dist.xml`.
--   Tests dans `tests/.../*Test.php`, en miroir des bounded contexts / features.
 -   Utiliser :
 
-    -   `make unit-filter f=SomethingTest`,
-    -   `make unit-suite s=...`,
-    -   `make unit-coverage` pour les changements métier sensibles.
+```bash
+make unit                       # full PHPUnit suite
+make unit-filter f=ClassNameTest   # test ciblé
+make unit-suite s=api.catalog      # suite ciblée
+make unit-coverage             # HTML coverage dans coverage/
+```
 
 -   Base de données :
 
     -   DB de test dédiée, initialisée par `make install`,
     -   ne **jamais** réutiliser la DB de dev pour les tests.
 
-### 1.4.1 Suites PHPUnit
-
 Suites déclarées dans `phpunit.dist.xml` (pour `make unit-suite s=...`) :
 
 -   `appli.usecase.user` → `application/tests/Unit/User/UseCase` (cas d’usage Application/User)
+-   `domain.shared` → `domain/SharedKernel/tests/Unit` (logique métier SharedKernel)
+-   `domain.shop` → `domain/Shop/tests/Unit` (logique métier Shop)
 -   `domain.user` → `domain/User/tests/Unit` (logique métier User)
 -   `infra.command.user` → `infrastructure/tests/Unit/Command/User` (commandes Symfony côté Infra)
 -   `infra.notif.user` → `infrastructure/tests/Unit/Notification/User` (adapters de notification User)
@@ -130,7 +274,9 @@ Suites déclarées dans `phpunit.dist.xml` (pour `make unit-suite s=...`) :
 
 **Règle d’exécution :** toute modification impactant un périmètre couvert par l’une de ces suites doit déclencher systématiquement le test correspondant (`make unit-suite s=...`) avant livraison. Exception actuelle : les suites API (`presentation/tests/Api/*`) ne peuvent pas encore être lancées dans l’environnement courant.
 
-### 1.7. Rappels pour les imports PHP
+---
+
+### Imports PHP
 
 -   Quand un fichier change de namespace ou de dossier, **ajoute/ajuste les imports `use`** plutôt que d’utiliser des classes pleinement qualifiées dans le code (évite les `new \App\...` en plein corps).
 -   Vérifie le haut de fichier après un move/rename pour conserver la lisibilité (`use App\Domain\User\Identity\ValueObject\Username;` plutôt que `\App\Domain\User\Identity\ValueObject\Username` inline).
@@ -138,10 +284,18 @@ Suites déclarées dans `phpunit.dist.xml` (pour `make unit-suite s=...`) :
 
 ---
 
-### 1.5. Commits & Pull Requests
+### Git & PR workflow
+
+**Branching :**
+
+* `main` : stable
+* `feat/*` : features
+* `fix/*` : corrections
+* `chore/*` : maintenance/outillage
 
 **Commits :**
 
+-   Style impératif : “Add …”, “Fix …”, “Refactor …”
 -   Sujet court, impératif (≤ 70 chars) :
 
     -   ex. `Add CQRS handler for user registration`.
@@ -152,30 +306,9 @@ Suites déclarées dans `phpunit.dist.xml` (pour `make unit-suite s=...`) :
     -   breaking changes,
     -   décisions d’architecture.
 
-**Pull Requests :**
-
--   Décrire clairement :
-
-    -   **scope** (ce qui est inclus),
-    -   **risque / impact** (tech + métier),
-    -   **tests réalisés**.
-
--   Lier les issues/tickets.
--   Ajouter des screenshots / extraits d’API si :
-
-    -   la Presentation change,
-    -   les contrats publics (DTO/API) changent.
-
-Avant d’ouvrir une PR, exécuter au minimum :
-
--   `make stan`
--   `make phpcs`
--   `make unit` (ou suite ciblée)
--   Documenter tout check volontairement ignoré.
-
 ---
 
-### 1.6. Security & Configuration
+### Security & Configuration
 
 -   Ne jamais committer de secrets :
 
@@ -190,6 +323,22 @@ Avant d’ouvrir une PR, exécuter au minimum :
         -   `docker-compose*.yml`
 
     -   pour garder les environnements alignés (local, CI, prod).
+
+---
+
+### Performance & observabilité
+
+* Collections toujours paginées
+* Éviter N+1 (joins / fetch modes / DTO read model)
+* Cache (HTTP / Symfony Cache) si pertinent
+* Logs structurés et corrélables (request id si possible)
+
+---
+
+### Docs attendues
+
+* `README.md` : quickstart, env, commandes, architecture courte
+* `docs/` : conventions globales
 
 ---
 
@@ -273,6 +422,8 @@ domain/
     -   `App\Infrastructure\*`,
     -   `App\Presentation\*`,
     -   Symfony, Doctrine, API Platform, Ramsey, HTTP.
+
+-   Le Domain est l’unique source de vérité pour la génération d’ID (création via factory methods et VOs), l’Application ne fait que fournir les UUID via les Ports.
 
 ### 3.3. Entités & Agrégats
 
@@ -817,43 +968,3 @@ Presentation ne crée ni n’injecte de Handlers.
 -   [ ] Input HTTP → Input DTO → Command/Query – pas de Domain direct dans les endpoints.
 -   [ ] Output Application/Domain → Presenter → Resource API.
 -   [ ] Validation & sécurité gérées ici, pas dans Application/Infra.
-
----
-
-## 8. Quick Global Checklist – Nouvelle Feature
-
-Avant de merger une nouvelle feature :
-
-1. **Structure & couches**
-
-    - [ ] Le code est au bon endroit (Domain vs Application vs Infrastructure vs Presentation).
-    - [ ] Les dépendances respectent le diagramme de couches.
-
-2. **Domain**
-
-    - [ ] Logique métier dans Domain (pas dans Application/Infra/Presentation).
-    - [ ] VOs immuables, agrégats encapsulés, timestamps gérés proprement.
-
-3. **Application**
-
-    - [ ] Use cases modélisés via Command/Query + Handler.
-    - [ ] Handlers n’utilisent que Domain + Ports.
-    - [ ] Temps via `ClockInterface`.
-
-4. **Infrastructure**
-
-    - [ ] Tous les Ports utilisés ont une implémentation Infrastructure.
-    - [ ] Mapping Domain ↔ Persistence géré par des mappers dédiés.
-
-5. **Presentation**
-
-    - [ ] Utilisation exclusive des Buses CQRS.
-    - [ ] Validation & sécurité cohérentes.
-    - [ ] Aucun accès direct aux repos / services Infra.
-
-6. **Qualité**
-
-    - [ ] `make stan` OK.
-    - [ ] `make phpcs` OK.
-    - [ ] `make unit` (ou suites ciblées) OK.
-    - [ ] Doc / commentaires à jour pour les cas d’usage et endpoints modifiés.

@@ -7,6 +7,7 @@ namespace App\Infrastructure\Tests\Unit\Service\Encoder;
 use App\Infrastructure\Service\Encoder\MultipartDecoder;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 final class MultipartDecoderTest extends KernelTestCase
@@ -60,5 +61,24 @@ final class MultipartDecoderTest extends KernelTestCase
         $result = $this->multipartDecoder->decode('data', 'multipart');
 
         $this->assertNull($result);
+    }
+
+    public function testDecodeTransformsJsonElementsOnly(): void
+    {
+        $request = new Request([], [
+            'payload' => json_encode(['foo' => 'bar'], JSON_THROW_ON_ERROR),
+            'plain' => 'value',
+            'jsonString' => json_encode('baz', JSON_THROW_ON_ERROR),
+        ]);
+
+        $this->requestStack->method('getCurrentRequest')
+            ->willReturn($request);
+
+        $result = $this->multipartDecoder->decode('data', 'multipart');
+
+        $this->assertIsArray($result);
+        $this->assertSame(['foo' => 'bar'], $result['payload']);
+        $this->assertSame('value', $result['plain']);
+        $this->assertSame('"baz"', $result['jsonString']);
     }
 }

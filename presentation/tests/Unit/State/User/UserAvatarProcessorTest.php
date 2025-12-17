@@ -6,9 +6,10 @@ namespace App\Presentation\Tests\Unit\State\User;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\Shared\Port\FileInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
-use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarCommand;
-use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarOutput;
+use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
+use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarOutput;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\UserId;
 use App\Domain\User\Identity\ValueObject\Username;
@@ -26,7 +27,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
 use stdClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class UserAvatarProcessorTest extends KernelTestCase
 {
@@ -58,13 +59,16 @@ final class UserAvatarProcessorTest extends KernelTestCase
         $userIdVO = UserId::fromString($userId);
         $uriVariables = ['id' => $userId];
         $domainUser = $this->createDomainUser();
-        $output = new UploadAndUpdateAvatarOutput($domainUser);
+        $output = new UpdateAvatarOutput($domainUser);
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->willReturnCallback(function ($command) use ($userIdVO, $output): UploadAndUpdateAvatarOutput {
-                $this->assertInstanceOf(UploadAndUpdateAvatarCommand::class, $command);
+            ->willReturnCallback(function ($command) use ($userIdVO, $output): UpdateAvatarOutput {
+                $this->assertInstanceOf(UpdateAvatarCommand::class, $command);
                 $this->assertTrue($command->userId->equals($userIdVO));
+                $this->assertInstanceOf(FileInterface::class, $command->avatarFile);
+                $this->assertSame('avatar.jpg', $command->avatarFile->getClientOriginalName());
+                $this->assertTrue($command->avatarFile->isValid());
 
                 return $output;
             });
@@ -109,11 +113,45 @@ final class UserAvatarProcessorTest extends KernelTestCase
         $this->userAvatarProcessor->process('invalid', $this->operation, $uriVariables);
     }
 
+    public function testProcessThrowsLogicExceptionWhenAvatarFileIsMissing(): void
+    {
+        $input = new UserAvatarInput();
+        $uriVariables = ['id' => Uuid::uuid4()->toString()];
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userAvatarProcessor->process($input, $this->operation, $uriVariables);
+    }
+
+    public function testProcessThrowsLogicExceptionWhenUriVariableMissing(): void
+    {
+        $input = $this->createValidUserAvatarInput();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userAvatarProcessor->process($input, $this->operation, []);
+    }
+
+    public function testProcessThrowsLogicExceptionWhenUriVariableIsNotString(): void
+    {
+        $input = $this->createValidUserAvatarInput();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userAvatarProcessor->process($input, $this->operation, ['id' => 123]);
+    }
+
     private function createValidUserAvatarInput(): UserAvatarInput
     {
         $input = new UserAvatarInput();
-        /** @var File&MockObject $mockFile */
-        $mockFile = $this->createMock(File::class);
+        /** @var UploadedFile&MockObject $mockFile */
+        $mockFile = $this->createMock(UploadedFile::class);
+        $mockFile->method('getClientOriginalName')->willReturn('avatar.jpg');
+        $mockFile->method('getClientOriginalExtension')->willReturn('jpg');
+        $mockFile->method('isValid')->willReturn(true);
         $input->avatarFile = $mockFile;
 
         return $input;

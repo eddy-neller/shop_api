@@ -17,7 +17,7 @@ use App\Infrastructure\Entity\User\User;
 use App\Presentation\RouteRequirements;
 use App\Presentation\Shared\State\PaginatedCollectionProvider;
 use App\Repository\Shop\AddressRepository;
-use DateTimeInterface;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -197,15 +197,15 @@ class Address implements HasOwnerInterface
     private string $phone;
 
     #[Groups(['shop_address:read'])]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'create')]
     #[ApiFilter(filterClass: OrderFilter::class)]
-    protected DateTimeInterface $createdAt;
+    protected DateTimeImmutable $createdAt;
 
     #[Groups(['shop_address:item:read'])]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'update')]
-    protected DateTimeInterface $updatedAt;
+    protected DateTimeImmutable $updatedAt;
 
     public function __toString(): string
     {
@@ -338,22 +338,22 @@ class Address implements HasOwnerInterface
         return $this;
     }
 
-    public function getCreatedAt(): DateTimeInterface
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(DateTimeInterface $createdAt): void
+    public function setCreatedAt(DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
 
-    public function getUpdatedAt(): DateTimeInterface
+    public function getUpdatedAt(): DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(DateTimeInterface $updatedAt): void
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
     }

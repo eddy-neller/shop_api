@@ -9,7 +9,7 @@
 > Structure actuelle de la couche Domain :
 >
 > -   `Domain/User` : agrégat `User` et VOs organisés par sous-domaines internes `Identity/`, `Security/`, `Preference/`, `Profile/`, exceptions regroupées par catégorie.
-> -   `Domain/Shop` : sous-contextes `Catalog/`, `Customer/`, `Shipping/`, `Ordering/`, `Shared/` (VOs communs `Money`, `Slug`, `UuidValidationTrait`), sans dépendance aux frameworks.
+> -   `Domain/Shop` : sous-contextes `Catalog/`, `Customer/`, `Shipping/`, `Ordering/`, `Shared/` (VOs communs `Money`, `Slug`, `Uuid`), sans dépendance aux frameworks.
 
 ### 1. **Indépendance totale des frameworks** ⭐⭐⭐⭐⭐
 
@@ -414,7 +414,7 @@ Domain/
 │   ├── Customer/     # Customer, Address
 │   ├── Shipping/     # Carrier
 │   ├── Ordering/     # Order, OrderLine + Domain Events (OrderPlacedEvent, OrderPaidEvent)
-│   └── Shared/       # Money, Slug, UuidValidationTrait
+│   └── Shared/       # Money, Slug, Uuid
 └── SharedKernel/      # Shared Kernel
     └── Event/         # DomainEventInterface, DomainEventTrait
 ```

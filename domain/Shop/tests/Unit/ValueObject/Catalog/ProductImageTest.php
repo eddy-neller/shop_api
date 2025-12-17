@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Shop\Tests\Unit\ValueObject\Catalog;
+
+use App\Domain\Shop\Catalog\ValueObject\ProductImage;
+use PHPUnit\Framework\TestCase;
+
+final class ProductImageTest extends TestCase
+{
+    public function testConstructorStoresFileName(): void
+    {
+        $image = new ProductImage('image.jpg');
+
+        $this->assertSame('image.jpg', $image->fileName());
+    }
+
+    public function testConstructorAllowsNull(): void
+    {
+        $image = new ProductImage();
+
+        $this->assertNull($image->fileName());
+    }
+
+    public function testWithFileReturnsNewInstance(): void
+    {
+        $image = new ProductImage('old.jpg');
+
+        $updated = $image->withFile('new.jpg');
+
+        $this->assertNotSame($image, $updated);
+        $this->assertSame('old.jpg', $image->fileName());
+        $this->assertSame('new.jpg', $updated->fileName());
+    }
+
+    public function testWithFileAllowsClearingFileName(): void
+    {
+        $image = new ProductImage('old.jpg');
+
+        $updated = $image->withFile(null);
+
+        $this->assertNull($updated->fileName());
+    }
+}

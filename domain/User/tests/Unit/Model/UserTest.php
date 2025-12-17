@@ -102,7 +102,9 @@ final class UserTest extends TestCase
     public function testRequestActivationResetsCounterWhenPreviousTokenExpired(): void
     {
         $user = $this->createUser();
-        $expiredTtl = (new DateTimeImmutable('-1 hour'))->getTimestamp();
+        $date = new DateTimeImmutable('-1 hour');
+
+        $expiredTtl = $date->getTimestamp();
         $this->setActiveEmail($user, new ActiveEmail(mailSent: 3, token: 'old', tokenTtl: $expiredTtl));
 
         $now = new DateTimeImmutable();
@@ -191,7 +193,9 @@ final class UserTest extends TestCase
     public function testRequestPasswordResetResetsCounterWhenPreviousTokenExpired(): void
     {
         $user = $this->createActiveUser();
-        $expiredTtl = (new DateTimeImmutable('-1 hour'))->getTimestamp();
+        $date = new DateTimeImmutable('-1 hour');
+
+        $expiredTtl = $date->getTimestamp();
         $this->setResetPassword($user, new ResetPassword(mailSent: 3, token: 'old', tokenTtl: $expiredTtl));
 
         $now = new DateTimeImmutable();
@@ -387,6 +391,23 @@ final class UserTest extends TestCase
 
         $user->resetWrongPasswordAttempts($now);
         $this->assertSame(0, $user->getSecurity()->getTotalWrongPassword());
+    }
+
+    public function testResetWrongPasswordAttemptsUnblocksUser(): void
+    {
+        $user = $this->createActiveUser();
+        $now = new DateTimeImmutable();
+
+        $user->registerWrongPasswordAttempt(1, $now);
+        $this->assertTrue($user->isLocked());
+
+        $resetNow = new DateTimeImmutable('+1 minute');
+        $user->resetWrongPasswordAttempts($resetNow);
+
+        $this->assertFalse($user->isLocked());
+        $this->assertTrue($user->isActive());
+        $this->assertSame(0, $user->getSecurity()->getTotalWrongPassword());
+        $this->assertSame($resetNow, $user->getUpdatedAt());
     }
 
     private function setActiveEmail(User $user, ActiveEmail $activeEmail): void

@@ -9,7 +9,7 @@ use App\Domain\User\Security\ValueObject\UserStatus;
 use App\Infrastructure\DataFixtures\test\User\UserFixtures;
 use App\Infrastructure\Service\InfoCodes;
 use App\Infrastructure\Service\User\TokenManager;
-use App\Tests\Api\BaseTest;
+use App\Presentation\Tests\Api\BaseTest;
 use Faker\Factory;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;

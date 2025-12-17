@@ -115,7 +115,6 @@ final class RefreshTokenRepositoryTest extends KernelTestCase
 
         $invalidTokens = $this->repo->findInvalid();
 
-        $this->assertIsArray($invalidTokens);
         $this->assertCount(0, $invalidTokens);
 
         // Cleanup

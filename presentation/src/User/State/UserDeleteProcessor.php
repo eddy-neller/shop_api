@@ -19,16 +19,12 @@ readonly class UserDeleteProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): null
     {
-        if (!isset($uriVariables['id'])) {
+        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $userId = UserId::fromString($uriVariables['id']);
-
-        $command = new DeleteUserByAdminCommand(
-            userId: $userId,
-        );
-        $this->commandBus->dispatch($command);
+        $this->commandBus->dispatch(new DeleteUserByAdminCommand($userId));
 
         return null;
     }

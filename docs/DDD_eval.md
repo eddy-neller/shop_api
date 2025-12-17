@@ -11,7 +11,7 @@
 **Changements principaux** :
 
 1. ✅ **Découpage User par sous-domaines internes** : `Identity/`, `Security/`, `Preference/`, `Profile/` + exceptions regroupées (`RateLimit/`, `Uniqueness/`, `Security/`).
-2. ✅ **Contexte Shop complété** : sous-contextes `Catalog/`, `Ordering/`, `Shipping/`, `Customer/`, `Shared/` (VOs `Money`, `Slug`, `UuidValidationTrait`), agrégats `Product`, `Category`, `Order`, `OrderLine`, `Carrier`, `Address` avec factory methods et gestion explicite des timestamps.
+2. ✅ **Contexte Shop complété** : sous-contextes `Catalog/`, `Ordering/`, `Shipping/`, `Customer/`, `Shared/` (VOs `Money`, `Slug`, `Uuid`), agrégats `Product`, `Category`, `Order`, `OrderLine`, `Carrier`, `Address` avec factory methods et gestion explicite des timestamps.
 3. ✅ **Gestion explicite des timestamps** : Toutes les méthodes métier sensibles reçoivent `DateTimeImmutable $now` et gèrent `updatedAt` (User, Product, Category, Order, Carrier, Address).
 4. ✅ **Immutabilité de createdAt** : Pas de setter public, timestamps posés en factory.
 5. ✅ **Domain Events en place** : événements User (inscription, activation, reset…) et Shop (`OrderPlacedEvent`, `OrderPaidEvent`) via `DomainEventTrait`.
@@ -824,7 +824,7 @@ final class Username
     -   `Ordering/` : `Order` (agrégat racine), `OrderLine` (entité), Domain Events (`OrderPlacedEvent`, `OrderPaidEvent`)
     -   `Shipping/` : `Carrier` avec prix via `Money`
     -   `Customer/` : `Address` lié à `UserId`
-    -   `Shared/` : VOs partagés (`Money`, `Slug`, `UuidValidationTrait`)
+    -   `Shared/` : VOs partagés (`Money`, `Slug`, `Uuid`)
 -   ✅ Invariants de devise/quantité adressés dans `Order`.
 -   ✅ Factory methods et reconstitution pour tous les agrégats Shop.
 -   ✅ Gestion explicite des timestamps (`DateTimeImmutable $now`) dans toutes les méthodes métier.
@@ -1001,7 +1001,7 @@ domain/
 │   │       └── ValueObject/
 │   │           ├── Money.php
 │   │           ├── Slug.php
-│   │           └── UuidValidationTrait.php
+│   │           └── Uuid.php
 │
 └── SharedKernel/                  # Shared Kernel
     └── src/

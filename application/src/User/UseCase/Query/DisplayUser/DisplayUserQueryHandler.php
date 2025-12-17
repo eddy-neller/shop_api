@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\User\UseCase\Query\DisplayUser;
 
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\Exception\UserDomainException;
+use App\Domain\User\Exception\UserNotFoundException;
 
 final readonly class DisplayUserQueryHandler
 {
@@ -19,7 +19,7 @@ final readonly class DisplayUserQueryHandler
         $user = $this->repository->findById($query->userId);
 
         if (null === $user) {
-            throw new UserDomainException('Utilisateur introuvable.');
+            throw new UserNotFoundException('User not found.');
         }
 
         return new DisplayUserOutput($user);

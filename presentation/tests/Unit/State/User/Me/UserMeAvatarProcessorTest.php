@@ -6,9 +6,10 @@ namespace App\Presentation\Tests\Unit\State\User\Me;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
+use App\Application\Shared\Port\FileInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
-use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarCommand;
-use App\Application\User\UseCase\Command\UploadAndUpdateAvatar\UploadAndUpdateAvatarOutput;
+use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
+use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarOutput;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\UserId;
 use App\Domain\User\Identity\ValueObject\Username;
@@ -28,7 +29,7 @@ use Ramsey\Uuid\Uuid;
 use stdClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class UserMeAvatarProcessorTest extends KernelTestCase
 {
@@ -65,7 +66,7 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
         $input = $this->createValidUserMeAvatarInput();
         $userId = Uuid::uuid4();
         $domainUser = $this->createDomainUser();
-        $output = new UploadAndUpdateAvatarOutput($domainUser);
+        $output = new UpdateAvatarOutput($domainUser);
 
         $this->user->expects($this->once())
             ->method('getId')
@@ -77,8 +78,14 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->isInstanceOf(UploadAndUpdateAvatarCommand::class))
-            ->willReturn($output);
+            ->willReturnCallback(function ($command) use ($output): UpdateAvatarOutput {
+                $this->assertInstanceOf(UpdateAvatarCommand::class, $command);
+                $this->assertInstanceOf(FileInterface::class, $command->avatarFile);
+                $this->assertSame('avatar.jpg', $command->avatarFile->getClientOriginalName());
+                $this->assertTrue($command->avatarFile->isValid());
+
+                return $output;
+            });
 
         $this->avatarUrlResolver->expects($this->once())
             ->method('resolve')
@@ -123,11 +130,24 @@ final class UserMeAvatarProcessorTest extends KernelTestCase
         $this->userMeAvatarProcessor->process(['avatarFile' => 'test'], $this->operation);
     }
 
+    public function testProcessThrowsLogicExceptionWhenAvatarFileIsMissing(): void
+    {
+        $input = new UserMeAvatarInput();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userMeAvatarProcessor->process($input, $this->operation);
+    }
+
     private function createValidUserMeAvatarInput(): UserMeAvatarInput
     {
         $input = new UserMeAvatarInput();
-        /** @var File&MockObject $mockFile */
-        $mockFile = $this->createMock(File::class);
+        /** @var UploadedFile&MockObject $mockFile */
+        $mockFile = $this->createMock(UploadedFile::class);
+        $mockFile->method('getClientOriginalName')->willReturn('avatar.jpg');
+        $mockFile->method('getClientOriginalExtension')->willReturn('jpg');
+        $mockFile->method('isValid')->willReturn(true);
         $input->avatarFile = $mockFile;
 
         return $input;

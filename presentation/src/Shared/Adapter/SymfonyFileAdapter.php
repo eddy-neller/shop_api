@@ -22,27 +22,33 @@ final readonly class SymfonyFileAdapter implements FileInterface
 
     public function getMimeType(): string
     {
-        return $this->file->getMimeType() ?? 'application/octet-stream';
+        $mimeType = $this->file->getMimeType();
+
+        return $mimeType ?? '';
     }
 
     public function getSize(): int
     {
-        return $this->file->getSize();
+        $size = $this->file->getSize();
+
+        return is_int($size) ? $size : 0;
     }
 
     public function getClientOriginalName(): string
     {
-        // Si c'est un UploadedFile, on récupère le nom original
         if ($this->file instanceof UploadedFile) {
             return $this->file->getClientOriginalName();
         }
 
-        // Sinon, on utilise le nom du fichier
         return $this->file->getFilename();
     }
 
     public function getExtension(): string
     {
+        if ($this->file instanceof UploadedFile) {
+            return $this->file->getClientOriginalExtension();
+        }
+
         return $this->file->getExtension();
     }
 
@@ -52,6 +58,6 @@ final readonly class SymfonyFileAdapter implements FileInterface
             return $this->file->isValid();
         }
 
-        return $this->file->isFile() && $this->file->isReadable();
+        return $this->file->isFile();
     }
 }

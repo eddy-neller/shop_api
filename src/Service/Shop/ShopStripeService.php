@@ -3,7 +3,7 @@
 namespace App\Service\Shop;
 
 use App\Entity\Shop\Order;
-use App\Entity\Shop\Product;
+use App\Infrastructure\Entity\Shop\Product;
 use App\Infrastructure\Entity\User\User;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;

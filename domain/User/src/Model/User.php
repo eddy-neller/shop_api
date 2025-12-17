@@ -37,7 +37,7 @@ final class User
     private const int MAX_TOKEN_REQUESTS = 3;
 
     private function __construct(
-        private readonly ?UserId $id,
+        private UserId $id,
         private Username $username,
         private ?Firstname $firstname,
         private ?Lastname $lastname,
@@ -59,10 +59,6 @@ final class User
 
     public function equals(self $other): bool
     {
-        if (null === $this->id || null === $other->id) {
-            return false;
-        }
-
         return $this->id->equals($other->id);
     }
 
@@ -202,13 +198,11 @@ final class User
             lastAttempt: $now,
         ));
 
-        if (null !== $this->id) {
-            $this->recordEvent(new ActivationEmailRequestedEvent(
-                userId: $this->id,
-                email: $this->email,
-                occurredOn: $now,
-            ));
-        }
+        $this->recordEvent(new ActivationEmailRequestedEvent(
+            userId: $this->id,
+            email: $this->email,
+            occurredOn: $now,
+        ));
     }
 
     public function clearActivation(): void
@@ -224,12 +218,10 @@ final class User
         $this->clearActivation();
         $this->setUpdatedAt($now);
 
-        if (null !== $this->id) {
-            $this->recordEvent(new UserActivatedEvent(
-                userId: $this->id,
-                occurredOn: $now,
-            ));
-        }
+        $this->recordEvent(new UserActivatedEvent(
+            userId: $this->id,
+            occurredOn: $now,
+        ));
     }
 
     public function requestPasswordReset(string $token, DateTimeImmutable $expiresAt, DateTimeImmutable $now): void
@@ -247,13 +239,11 @@ final class User
             tokenTtl: $expiresAt->getTimestamp(),
         ));
 
-        if (null !== $this->id) {
-            $this->recordEvent(new PasswordResetRequestedEvent(
-                userId: $this->id,
-                email: $this->email,
-                occurredOn: $now,
-            ));
-        }
+        $this->recordEvent(new PasswordResetRequestedEvent(
+            userId: $this->id,
+            email: $this->email,
+            occurredOn: $now,
+        ));
     }
 
     public function completePasswordReset(string $token, HashedPassword $password, DateTimeImmutable $now): void
@@ -263,22 +253,18 @@ final class User
         $this->setResetPassword(new ResetPassword());
         $this->setUpdatedAt($now);
 
-        if (null !== $this->id) {
-            $this->recordEvent(new PasswordResetCompletedEvent(
-                userId: $this->id,
-                occurredOn: $now,
-            ));
-        }
+        $this->recordEvent(new PasswordResetCompletedEvent(
+            userId: $this->id,
+            occurredOn: $now,
+        ));
     }
 
     public function delete(DateTimeImmutable $now): void
     {
-        if (null !== $this->id) {
-            $this->recordEvent(new UserDeletedEvent(
-                userId: $this->id,
-                occurredOn: $now,
-            ));
-        }
+        $this->recordEvent(new UserDeletedEvent(
+            userId: $this->id,
+            occurredOn: $now,
+        ));
     }
 
     public function changePassword(HashedPassword $password, DateTimeImmutable $now): void
@@ -343,12 +329,10 @@ final class User
         if ($hasChanges) {
             $this->setUpdatedAt($now);
 
-            if (null !== $this->id) {
-                $this->recordEvent(new UserUpdatedByAdminEvent(
-                    userId: $this->id,
-                    occurredOn: $now,
-                ));
-            }
+            $this->recordEvent(new UserUpdatedByAdminEvent(
+                userId: $this->id,
+                occurredOn: $now,
+            ));
         }
     }
 
@@ -388,7 +372,7 @@ final class User
         return $this->getStatus()->isBlocked();
     }
 
-    public function getId(): ?UserId
+    public function getId(): UserId
     {
         return $this->id;
     }

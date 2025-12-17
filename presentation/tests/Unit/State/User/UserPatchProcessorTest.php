@@ -107,6 +107,26 @@ final class UserPatchProcessorTest extends KernelTestCase
         $this->userPatchProcessor->process('invalid', $this->operation);
     }
 
+    public function testProcessThrowsLogicExceptionWhenUriVariableMissing(): void
+    {
+        $input = $this->createValidUserPatchInput();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userPatchProcessor->process($input, $this->operation, []);
+    }
+
+    public function testProcessThrowsLogicExceptionWhenUriVariableIsNotString(): void
+    {
+        $input = $this->createValidUserPatchInput();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(PresentationErrorCode::INVALID_INPUT->value);
+
+        $this->userPatchProcessor->process($input, $this->operation, ['id' => 123]);
+    }
+
     public function testProcessWithDifferentUserId(): void
     {
         $input = $this->createValidUserPatchInput();

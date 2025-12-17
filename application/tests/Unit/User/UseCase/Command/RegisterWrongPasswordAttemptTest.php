@@ -6,6 +6,7 @@ namespace App\Application\Tests\Unit\User\UseCase\Command;
 
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
+use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\RegisterWrongPasswordAttempt\RegisterWrongPasswordAttemptCommand;
 use App\Application\User\UseCase\Command\RegisterWrongPasswordAttempt\RegisterWrongPasswordAttemptCommandHandler;
@@ -27,6 +28,8 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
 
     private ConfigInterface&MockObject $config;
 
+    private TransactionalInterface&MockObject $transactional;
+
     private RegisterWrongPasswordAttemptCommandHandler $handler;
 
     protected function setUp(): void
@@ -34,11 +37,13 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->config = $this->createMock(ConfigInterface::class);
+        $this->transactional = $this->createMock(TransactionalInterface::class);
 
         $this->handler = new RegisterWrongPasswordAttemptCommandHandler(
             repository: $this->repository,
             clock: $this->clock,
             config: $this->config,
+            transactional: $this->transactional,
         );
     }
 
@@ -65,6 +70,12 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
             ->method('save')
             ->with($user);
 
+        $this->transactional->expects($this->exactly(2))
+            ->method('transactional')
+            ->willReturnCallback(static function (callable $callback) {
+                return $callback();
+            });
+
         $this->handler->handle($command);
         $this->assertSame(1, $user->getSecurity()->getTotalWrongPassword());
 
@@ -85,6 +96,7 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
             ->willReturn(null);
 
         $this->repository->expects($this->never())->method('save');
+        $this->transactional->expects($this->never())->method('transactional');
 
         $this->handler->handle($command);
     }

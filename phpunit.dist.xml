@@ -20,24 +20,31 @@
     <testsuites>
         <testsuite name="appli.usecase.user">
             <directory>application/tests/Unit/User/UseCase</directory>
+            <directory>application/tests/Unit/User/Service</directory>
+        </testsuite>
+        <testsuite name="appli.usecase.shop">
+            <directory>application/tests/Unit/Shop/UseCase</directory>
         </testsuite>
 
+        <testsuite name="domain.shared">
+            <directory>domain/SharedKernel/tests/Unit</directory>
+        </testsuite>
+        <testsuite name="domain.shop">
+            <directory>domain/Shop/tests/Unit</directory>
+        </testsuite>
         <testsuite name="domain.user">
             <directory>domain/User/tests/Unit</directory>
         </testsuite>
 
-        <!--<testsuite name="unit.command.shop">
-            <directory>tests/Unit/Command/Shop</directory>
-        </testsuite>-->
+        <testsuite name="infra.command.shop">
+            <directory>infrastructure/tests/Unit/Command/Shop</directory>
+        </testsuite>
         <testsuite name="infra.command.user">
             <directory>infrastructure/tests/Unit/Command/User</directory>
         </testsuite>
         <testsuite name="infra.notif.user">
             <directory>infrastructure/tests/Unit/Notification/User</directory>
         </testsuite>
-        <!--<testsuite name="unit.repository">
-            <directory>tests/Unit/Repository</directory>
-        </testsuite>-->
         <testsuite name="infra.persist">
             <directory>infrastructure/tests/Unit/Persistence</directory>
         </testsuite>
@@ -51,28 +58,24 @@
             <directory>infrastructure/tests/Unit/Service/User</directory>
         </testsuite>
 
-        <testsuite name="api.shop">
-            <directory>tests/Api/Shop</directory>
-        </testsuite>
-        <testsuite name="api.user">
-            <directory>presentation/tests/Api/User</directory>
-        </testsuite>
-
         <testsuite name="pres.state.sendmail">
             <directory>presentation/tests/Unit/State/SendMail</directory>
         </testsuite>
         <testsuite name="pres.state.shared">
             <directory>presentation/tests/Unit/State/Shared</directory>
         </testsuite>
+        <testsuite name="pres.state.shop">
+            <directory>presentation/tests/Unit/State/Shop</directory>
+        </testsuite>
         <testsuite name="pres.state.user">
             <directory>presentation/tests/Unit/State/User</directory>
         </testsuite>
 
-        <testsuite name="unit.command">
-            <directory>tests/Unit/Command</directory>
+        <testsuite name="api.shop">
+            <directory>presentation/tests/Api/Shop</directory>
         </testsuite>
-        <testsuite name="unit.repository">
-            <directory>tests/Unit/Repository</directory>
+        <testsuite name="api.user">
+            <directory>presentation/tests/Api/User</directory>
         </testsuite>
     </testsuites>
 
@@ -82,7 +85,10 @@
             restrictWarnings="true"
     >
         <include>
+            <directory>application/src/Shop</directory>
             <directory>application/src/User</directory>
+            <directory>domain/SharedKernel/src</directory>
+            <directory>domain/Shop/src</directory>
             <directory>domain/User/src</directory>
             <directory>infrastructure/src</directory>
             <directory>presentation/src</directory>

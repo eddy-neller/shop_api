@@ -104,7 +104,7 @@ final class ValidateActivationTest extends TestCase
             ->willReturn(null);
 
         $this->expectException(UserDomainException::class);
-        $this->expectExceptionMessage('Utilisateur introuvable pour ce token.');
+        $this->expectExceptionMessage('User not found for this token.');
 
         $this->handler->handle($command);
     }
@@ -128,7 +128,7 @@ final class ValidateActivationTest extends TestCase
             ->willReturn($user);
 
         $this->expectException(UserDomainException::class);
-        $this->expectExceptionMessage('Utilisateur introuvable pour ce token.');
+        $this->expectExceptionMessage('User not found for this token.');
 
         $this->handler->handle($command);
     }

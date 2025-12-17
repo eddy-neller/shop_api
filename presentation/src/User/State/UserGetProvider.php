@@ -23,15 +23,12 @@ readonly class UserGetProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|object|null
     {
-        if (!isset($uriVariables['id'])) {
+        if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);
         }
 
         $userId = UserId::fromString($uriVariables['id']);
-
-        $query = new DisplayUserQuery($userId);
-
-        $output = $this->queryBus->dispatch($query);
+        $output = $this->queryBus->dispatch(new DisplayUserQuery($userId));
 
         return $this->userResourcePresenter->toResource($output->user);
     }

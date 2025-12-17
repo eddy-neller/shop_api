@@ -8,7 +8,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
-use App\Domain\User\Exception\UserDomainException;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
 final readonly class ValidateActivationCommandHandler
@@ -30,7 +30,7 @@ final readonly class ValidateActivationCommandHandler
         $user = $this->repository->findByActivationToken($rawToken);
 
         if (null === $user || !$user->getEmail()->equals($email)) {
-            throw new UserDomainException('Utilisateur introuvable pour ce token.');
+            throw new UserNotFoundException('User not found for this token.');
         }
 
         $this->transactional->transactional(function () use ($user, $rawToken): void {

@@ -11,6 +11,7 @@ use Rector\CodeQuality\Rector\If_\ExplicitBoolCompareRector;
 use Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector;
 use Rector\CodingStyle\Rector\If_\NullableCompareToNullRector;
 use Rector\Config\RectorConfig;
+use Rector\DeadCode\Rector\FunctionLike\NarrowWideUnionReturnTypeRector;
 use Rector\Doctrine\Bundle230\Rector\Class_\AddAnnotationToRepositoryRector;
 use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\PHPUnit\CodeQuality\Rector\ClassMethod\AddInstanceofAssertForNullableInstanceRector;
@@ -61,5 +62,6 @@ return static function (RectorConfig $rectorConfig): void {
         FlipTypeControlToUseExclusiveTypeRector::class,
         AssertEmptyNullableObjectToAssertInstanceofRector::class,
         WithCallbackIdenticalToStandaloneAssertsRector::class,
+        NarrowWideUnionReturnTypeRector::class,
     ]);
 };

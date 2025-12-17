@@ -6,5 +6,5 @@ namespace App\Presentation\Shared\State;
 
 enum PresentationErrorCode: string
 {
-    case INVALID_INPUT = 'INVINP0';
+    case INVALID_INPUT = 'Invalid input.';
 }

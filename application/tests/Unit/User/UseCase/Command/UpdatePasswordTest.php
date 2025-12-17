@@ -88,7 +88,7 @@ final class UpdatePasswordTest extends TestCase
             ->willReturn(null);
 
         $this->expectException(UserDomainException::class);
-        $this->expectExceptionMessage('Utilisateur introuvable.');
+        $this->expectExceptionMessage('User not found.');
 
         $this->handler->handle($command);
     }

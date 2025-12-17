@@ -2,6 +2,7 @@
 
 namespace App\Application\User\Port;
 
+use App\Application\Shared\Port\FileInterface;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\UserId;
 use App\Domain\User\Identity\ValueObject\Username;
@@ -25,8 +26,5 @@ interface UserRepositoryInterface
 
     public function findByUsername(Username $username): ?User;
 
-    /**
-     * @return User[]
-     */
-    public function findAll(): array;
+    public function updateAvatar(UserId $id, FileInterface $file): ?User;
 }

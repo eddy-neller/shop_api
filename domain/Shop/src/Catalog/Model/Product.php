@@ -2,25 +2,27 @@
 
 namespace App\Domain\Shop\Catalog\Model;
 
+use App\Domain\SharedKernel\ValueObject\Slug;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
+use App\Domain\Shop\Catalog\ValueObject\ProductDescription;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
+use App\Domain\Shop\Catalog\ValueObject\ProductImage;
+use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
+use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
-use App\Domain\Shop\Shared\ValueObject\Slug;
 use DateTimeImmutable;
-use InvalidArgumentException;
 
 final class Product
 {
     private function __construct(
         private ProductId $id,
-        private string $title,
-        private string $subtitle,
-        private string $description,
+        private ProductTitle $title,
+        private ProductSubtitle $subtitle,
+        private ProductDescription $description,
         private Money $price,
         private Slug $slug,
         private CategoryId $categoryId,
-        private ?string $imageName,
-        private ?DateTimeImmutable $imageUpdatedAt,
+        private ProductImage $image,
         private DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {
@@ -28,18 +30,14 @@ final class Product
 
     public static function create(
         ProductId $id,
-        string $title,
-        string $subtitle,
-        string $description,
+        ProductTitle $title,
+        ProductSubtitle $subtitle,
+        ProductDescription $description,
         Money $price,
         Slug $slug,
         CategoryId $categoryId,
         DateTimeImmutable $now,
     ): self {
-        self::assertTitle($title);
-        self::assertSubtitle($subtitle);
-        self::assertDescription($description);
-
         return new self(
             id: $id,
             title: $title,
@@ -48,8 +46,7 @@ final class Product
             price: $price,
             slug: $slug,
             categoryId: $categoryId,
-            imageName: null,
-            imageUpdatedAt: null,
+            image: new ProductImage(),
             createdAt: $now,
             updatedAt: $now,
         );
@@ -57,21 +54,16 @@ final class Product
 
     public static function reconstitute(
         ProductId $id,
-        string $title,
-        string $subtitle,
-        string $description,
+        ProductTitle $title,
+        ProductSubtitle $subtitle,
+        ProductDescription $description,
         Money $price,
         Slug $slug,
         CategoryId $categoryId,
+        ProductImage $image,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt,
-        ?string $imageName = null,
-        ?DateTimeImmutable $imageUpdatedAt = null,
     ): self {
-        self::assertTitle($title);
-        self::assertSubtitle($subtitle);
-        self::assertDescription($description);
-
         return new self(
             id: $id,
             title: $title,
@@ -80,54 +72,52 @@ final class Product
             price: $price,
             slug: $slug,
             categoryId: $categoryId,
-            imageName: $imageName,
-            imageUpdatedAt: $imageUpdatedAt,
+            image: $image,
             createdAt: $createdAt,
             updatedAt: $updatedAt,
         );
     }
 
-    public function rename(string $title, string $subtitle, DateTimeImmutable $now): void
+    public function delete(DateTimeImmutable $now): void
     {
-        self::assertTitle($title);
-        self::assertSubtitle($subtitle);
+        $this->setUpdatedAt($now);
+    }
 
-        $this->title = $title;
-        $this->subtitle = $subtitle;
-        $this->touch($now);
+    public function rename(ProductTitle $title, ProductSubtitle $subtitle, DateTimeImmutable $now): void
+    {
+        $this->setTitle($title);
+        $this->setSubtitle($subtitle);
+        $this->setUpdatedAt($now);
     }
 
     public function reprice(Money $price, DateTimeImmutable $now): void
     {
-        $this->price = $price;
-        $this->touch($now);
+        $this->setPrice($price);
+        $this->setUpdatedAt($now);
     }
 
-    public function rewrite(string $description, DateTimeImmutable $now): void
+    public function rewrite(ProductDescription $description, DateTimeImmutable $now): void
     {
-        self::assertDescription($description);
-
-        $this->description = $description;
-        $this->touch($now);
+        $this->setDescription($description);
+        $this->setUpdatedAt($now);
     }
 
     public function moveToCategory(CategoryId $categoryId, DateTimeImmutable $now): void
     {
-        $this->categoryId = $categoryId;
-        $this->touch($now);
+        $this->setCategoryId($categoryId);
+        $this->setUpdatedAt($now);
     }
 
     public function reSlug(Slug $slug, DateTimeImmutable $now): void
     {
-        $this->slug = $slug;
-        $this->touch($now);
+        $this->setSlug($slug);
+        $this->setUpdatedAt($now);
     }
 
-    public function updateImage(?string $imageName, DateTimeImmutable $now): void
+    public function updateImage(ProductImage $image, DateTimeImmutable $now): void
     {
-        $this->imageName = null === $imageName ? null : trim($imageName);
-        $this->imageUpdatedAt = null === $this->imageName ? null : $now;
-        $this->touch($now);
+        $this->setImage($image);
+        $this->setUpdatedAt($now);
     }
 
     public function getId(): ProductId
@@ -135,17 +125,17 @@ final class Product
         return $this->id;
     }
 
-    public function getTitle(): string
+    public function getTitle(): ProductTitle
     {
         return $this->title;
     }
 
-    public function getSubtitle(): string
+    public function getSubtitle(): ProductSubtitle
     {
         return $this->subtitle;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ProductDescription
     {
         return $this->description;
     }
@@ -165,14 +155,14 @@ final class Product
         return $this->categoryId;
     }
 
-    public function getImageName(): ?string
+    public function getImage(): ProductImage
     {
-        return $this->imageName;
+        return $this->image;
     }
 
-    public function getImageUpdatedAt(): ?DateTimeImmutable
+    public function getImageName(): ?string
     {
-        return $this->imageUpdatedAt;
+        return $this->image->fileName();
     }
 
     public function getCreatedAt(): DateTimeImmutable
@@ -185,35 +175,43 @@ final class Product
         return $this->updatedAt;
     }
 
-    private static function assertTitle(string $title): void
+    private function setTitle(ProductTitle $title): void
     {
-        $trimmed = trim($title);
-
-        if ('' === $trimmed) {
-            throw new InvalidArgumentException('Product title cannot be empty.');
-        }
+        $this->title = $title;
     }
 
-    private static function assertSubtitle(string $subtitle): void
+    private function setSubtitle(ProductSubtitle $subtitle): void
     {
-        $trimmed = trim($subtitle);
-
-        if ('' === $trimmed) {
-            throw new InvalidArgumentException('Product subtitle cannot be empty.');
-        }
+        $this->subtitle = $subtitle;
     }
 
-    private static function assertDescription(string $description): void
+    private function setDescription(ProductDescription $description): void
     {
-        $trimmed = trim($description);
-
-        if ('' === $trimmed) {
-            throw new InvalidArgumentException('Product description cannot be empty.');
-        }
+        $this->description = $description;
     }
 
-    private function touch(DateTimeImmutable $now): void
+    private function setPrice(Money $price): void
     {
-        $this->updatedAt = $now;
+        $this->price = $price;
+    }
+
+    private function setSlug(Slug $slug): void
+    {
+        $this->slug = $slug;
+    }
+
+    private function setCategoryId(CategoryId $categoryId): void
+    {
+        $this->categoryId = $categoryId;
+    }
+
+    private function setImage(ProductImage $image): void
+    {
+        $this->image = $image;
+    }
+
+    private function setUpdatedAt(DateTimeImmutable $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
     }
 }

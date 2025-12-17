@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\Application\Tests\Unit\User\UseCase\Command;
 
-use App\Application\Shared\Port\ClockInterface;
+use App\Application\Shared\Port\FileInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommand;
 use App\Application\User\UseCase\Command\UpdateAvatar\UpdateAvatarCommandHandler;
 use App\Domain\User\Exception\UserDomainException;
+use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 use App\Domain\User\Identity\ValueObject\UserId;
 use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
 use App\Domain\User\Preference\ValueObject\Preferences;
+use App\Domain\User\Profile\ValueObject\Avatar;
 use App\Domain\User\Security\ValueObject\HashedPassword;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -24,8 +26,6 @@ final class UpdateAvatarTest extends TestCase
 {
     private UserRepositoryInterface&MockObject $repository;
 
-    private ClockInterface&MockObject $clock;
-
     private TransactionalInterface&MockObject $transactional;
 
     private UpdateAvatarCommandHandler $handler;
@@ -33,11 +33,9 @@ final class UpdateAvatarTest extends TestCase
     protected function setUp(): void
     {
         $this->repository = $this->createMock(UserRepositoryInterface::class);
-        $this->clock = $this->createMock(ClockInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
         $this->handler = new UpdateAvatarCommandHandler(
             $this->repository,
-            $this->clock,
             $this->transactional,
         );
     }
@@ -47,22 +45,16 @@ final class UpdateAvatarTest extends TestCase
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $user = $this->createUser($userId);
         $avatarFileName = 'avatar.jpg';
-        $avatarUrl = '/uploads/avatar.jpg';
-        $command = new UpdateAvatarCommand($userId, $avatarFileName, $avatarUrl);
-        $now = new DateTimeImmutable();
+        $file = $this->createMock(FileInterface::class);
+        $file->method('isValid')->willReturn(true);
+        $file->method('getClientOriginalName')->willReturn($avatarFileName);
+        $user->updateAvatar(new Avatar($avatarFileName), new DateTimeImmutable());
 
+        $command = new UpdateAvatarCommand($userId, $file);
         $this->repository->expects($this->once())
-            ->method('findById')
-            ->with($userId)
+            ->method('updateAvatar')
+            ->with($userId, $file)
             ->willReturn($user);
-
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
-
-        $this->repository->expects($this->once())
-            ->method('save')
-            ->with($user);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -74,24 +66,44 @@ final class UpdateAvatarTest extends TestCase
 
         $this->assertSame($user, $output->user);
         $this->assertSame($avatarFileName, $user->getAvatar()->fileName());
-        $this->assertSame($avatarUrl, $user->getAvatar()->url());
-        $this->assertEquals($now, $user->getAvatar()->updatedAt());
     }
 
     public function testHandleThrowsExceptionWhenUserNotFound(): void
     {
         $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440001');
-        $avatarFileName = 'avatar.jpg';
-        $avatarUrl = '/uploads/avatar.jpg';
-        $command = new UpdateAvatarCommand($userId, $avatarFileName, $avatarUrl);
+        $file = $this->createMock(FileInterface::class);
+        $file->method('isValid')->willReturn(true);
+        $file->method('getClientOriginalName')->willReturn('avatar.jpg');
+
+        $command = new UpdateAvatarCommand($userId, $file);
 
         $this->repository->expects($this->once())
-            ->method('findById')
-            ->with($userId)
+            ->method('updateAvatar')
+            ->with($userId, $file)
             ->willReturn(null);
 
+        $this->transactional->expects($this->once())
+            ->method('transactional')
+            ->willReturnCallback(function (callable $callback) {
+                return $callback();
+            });
+
+        $this->expectException(UserNotFoundException::class);
+        $this->expectExceptionMessage('User not found.');
+
+        $this->handler->handle($command);
+    }
+
+    public function testHandleThrowsExceptionWhenAvatarFileIsInvalid(): void
+    {
+        $userId = UserId::fromString('550e8400-e29b-41d4-a716-446655440002');
+        $file = $this->createMock(FileInterface::class);
+        $file->method('isValid')->willReturn(false);
+
+        $command = new UpdateAvatarCommand($userId, $file);
+
         $this->expectException(UserDomainException::class);
-        $this->expectExceptionMessage('Utilisateur introuvable.');
+        $this->expectExceptionMessage('Fichier avatar invalide.');
 
         $this->handler->handle($command);
     }

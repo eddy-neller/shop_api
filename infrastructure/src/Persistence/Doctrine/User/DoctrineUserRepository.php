@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\User;
 
 use App\Application\Shared\Port\EventDispatcherInterface;
+use App\Application\Shared\Port\FileInterface;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
@@ -11,7 +12,11 @@ use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User as DomainUser;
 use App\Infrastructure\Entity\User\User as DoctrineUser;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+/**
+ * @codeCoverageIgnore
+ */
 final readonly class DoctrineUserRepository implements UserRepositoryInterface
 {
     public function __construct(
@@ -42,9 +47,6 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
     public function delete(DomainUser $user): void
     {
         $id = $user->getId();
-        if (null === $id) {
-            return;
-        }
 
         $entity = $this->repository->find($id->toString());
         if (null !== $entity) {
@@ -90,17 +92,25 @@ final readonly class DoctrineUserRepository implements UserRepositoryInterface
         return $entity ? $this->mapper->toDomain($entity) : null;
     }
 
-    /**
-     * @return DomainUser[]
-     */
-    public function findAll(): array
+    public function updateAvatar(UserId $id, FileInterface $file): ?DomainUser
     {
-        $entities = $this->repository->findAll();
+        $entity = $this->repository->find($id->toString());
+        if (null === $entity) {
+            return null;
+        }
 
-        return array_map(
-            fn (DoctrineUser $entity) => $this->mapper->toDomain($entity),
-            $entities
+        $uploadedFile = new UploadedFile(
+            $file->getPathname(),
+            $file->getClientOriginalName(),
+            '' !== $file->getMimeType() ? $file->getMimeType() : null,
+            UPLOAD_ERR_OK,
+            true,
         );
+
+        $entity->setAvatarFile($uploadedFile);
+        $this->em->flush();
+
+        return $this->mapper->toDomain($entity);
     }
 
     private function dispatchDomainEvents(DomainUser $user): void

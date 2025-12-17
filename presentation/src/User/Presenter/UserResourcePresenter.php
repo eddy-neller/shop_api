@@ -8,9 +8,6 @@ use App\Application\User\Port\AvatarUrlResolverInterface;
 use App\Domain\User\Model\User as DomainUser;
 use App\Presentation\User\ApiResource\UserResource;
 
-/**
- * Adapter/Presenter qui transforme un DomainUser en UserResource.
- */
 final readonly class UserResourcePresenter
 {
     public function __construct(
@@ -22,7 +19,7 @@ final readonly class UserResourcePresenter
     {
         $resource = new UserResource();
 
-        $resource->id = $user->getId()?->toString() ?? '';
+        $resource->id = $user->getId()->toString();
         $resource->firstname = $user->getFirstname()?->toString();
         $resource->lastname = $user->getLastname()?->toString();
         $resource->username = $user->getUsername()->toString();

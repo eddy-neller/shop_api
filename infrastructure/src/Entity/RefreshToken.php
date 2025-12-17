@@ -5,11 +5,11 @@ namespace App\Infrastructure\Entity;
 use App\Infrastructure\Persistence\Doctrine\RefreshTokenRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Gesdinet\JWTRefreshTokenBundle\Model\AbstractRefreshToken as BaseRefreshToken;
+use Gesdinet\JWTRefreshTokenBundle\Model\AbstractRefreshToken;
 
 #[ORM\Entity(repositoryClass: RefreshTokenRepository::class)]
 #[ORM\Table(name: 'refresh_tokens')]
-class RefreshToken extends BaseRefreshToken
+class RefreshToken extends AbstractRefreshToken
 {
     /**
      * Doctrine ne lit pas les attributs sur la classe parente : on redéclare donc

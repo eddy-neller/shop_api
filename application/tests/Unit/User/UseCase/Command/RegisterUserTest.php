@@ -108,7 +108,7 @@ final class RegisterUserTest extends TestCase
         $this->repository->expects($this->once())
             ->method('save')
             ->with($this->callback(function (User $user) use ($userId, $username, $email) {
-                return $user->getId()?->equals($userId)
+                return $user->getId()->equals($userId)
                     && $user->getUsername()->toString() === $username
                     && $user->getEmail()->equals(new EmailAddress($email));
             }));

@@ -8,7 +8,6 @@ use App\Infrastructure\Command\User\GenerateUserImagesCommand;
 use App\Infrastructure\Entity\User\User;
 use App\Infrastructure\Persistence\Doctrine\User\UserRepository;
 use App\Infrastructure\Service\Media\CustomImageProvider;
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
@@ -99,10 +98,8 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
         // Set expectations based on scenario
         if (!$hasAvatar && !$imageGenerationFails) {
             $user->expects($this->once())->method('setAvatarName')->with('test_avatar.jpg');
-            $user->expects($this->once())->method('setAvatarUpdatedAt')->with($this->isInstanceOf(DateTimeImmutable::class));
         } else {
             $user->expects($this->never())->method('setAvatarName');
-            $user->expects($this->never())->method('setAvatarUpdatedAt');
         }
 
         // Mock User Repository
@@ -148,7 +145,6 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
         $userWithAvatar->method('getAvatarName')->willReturn('existing_avatar.jpg');
         $userWithAvatar->method('getId')->willReturn(Uuid::uuid4());
         $userWithAvatar->expects($this->never())->method('setAvatarName');
-        $userWithAvatar->expects($this->never())->method('setAvatarUpdatedAt');
 
         // Utilisateur sans avatar
         $userWithoutAvatar = $this->createMock(User::class);
@@ -156,7 +152,6 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
         $userWithoutAvatar->method('getAvatarName')->willReturn(null);
         $userWithoutAvatar->method('getId')->willReturn(Uuid::uuid4());
         $userWithoutAvatar->expects($this->once())->method('setAvatarName')->with('test_avatar.jpg');
-        $userWithoutAvatar->expects($this->once())->method('setAvatarUpdatedAt')->with($this->isInstanceOf(DateTimeImmutable::class));
 
         /** @var UserRepository&MockObject $userRepo */
         $userRepo = $this->createMock(UserRepository::class);
