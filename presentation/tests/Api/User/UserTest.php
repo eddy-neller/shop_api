@@ -168,10 +168,10 @@ final class UserTest extends BaseTest
                     'avatarUrl',
                     'lastVisit',
                     'createdAt',
+                    'updatedAt',
                 ],
                 'hasNotKey' => [
                     'nbLogin',
-                    'updatedAt',
                     'password',
                     'avatarFile',
                 ],

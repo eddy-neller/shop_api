@@ -42,12 +42,12 @@ final class CategoryTest extends BaseTest
                     'slug',
                     'level',
                     'createdAt',
+                    'updatedAt',
                 ],
                 'hasNotKey' => [
                     'description',
                     'parent',
                     'children',
-                    'updatedAt',
                 ],
             ],
         ];

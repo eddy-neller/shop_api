@@ -200,12 +200,12 @@ class Address implements HasOwnerInterface
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'create')]
     #[ApiFilter(filterClass: OrderFilter::class)]
-    protected DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt;
 
-    #[Groups(['shop_address:item:read'])]
+    #[Groups(['shop_address:read'])]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'update')]
-    protected DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt;
 
     public function __toString(): string
     {

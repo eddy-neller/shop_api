@@ -42,6 +42,7 @@ final readonly class CategoryCollectionProvider implements ProviderInterface
         $resource->nbProduct = $user->getNbProduct();
         $resource->level = $user->getLevel();
         $resource->createdAt = $user->getCreatedAt();
+        $resource->updatedAt = $user->getUpdatedAt();
 
         return $resource;
     }

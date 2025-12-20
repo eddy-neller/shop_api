@@ -43,6 +43,16 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
   ###< symfony/messenger with rabbitmq ###
 
+  varnish:
+    container_name: en_shop_api_varnish
+    build:
+      context: ./docker/varnish
+      dockerfile: ./Dockerfile
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ./docker/varnish/conf:/etc/varnish:ro
+
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:

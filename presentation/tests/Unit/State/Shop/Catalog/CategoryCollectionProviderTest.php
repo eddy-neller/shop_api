@@ -25,6 +25,7 @@ final class CategoryCollectionProviderTest extends TestCase
         $category->setNbProduct(3);
         $category->setLevel(1);
         $category->setCreatedAt(new DateTimeImmutable('2025-01-01 10:00:00'));
+        $category->setUpdatedAt(new DateTimeImmutable('2025-02-01 10:00:00'));
 
         $innerProvider = $this->createMock(ProviderInterface::class);
         $innerProvider

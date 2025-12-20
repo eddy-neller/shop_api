@@ -16,3 +16,19 @@ api_platform:
         stateless: true
         cache_headers:
             vary: ["Content-Type", "Authorization", "Origin"]
+            etag: true
+    http_cache: ~
+
+when@dev:
+    api_platform:
+        http_cache:
+            invalidation:
+                enabled: true
+                urls: ["%env(VARNISH_URL)%"]
+
+when@prod:
+    api_platform:
+        http_cache:
+            invalidation:
+                enabled: true
+                urls: ["%env(VARNISH_URL)%"]

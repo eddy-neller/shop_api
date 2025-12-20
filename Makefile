@@ -42,7 +42,7 @@ install:
 	@echo "$(YELLOW)** Starting installation... **$(RESET)"
 	@make down-hard
 	@echo "$(YELLOW)** Update Docker Images **$(RESET)"
-	@docker pull postgres:16-bullseye
+	@docker pull postgres:16-bullseye && docker pull rabbitmq:management-alpine && docker pull varnish:stable
 	@echo "$(YELLOW)** Build & Load Docker Containers **$(RESET)"
 	make binc && make up
 	@echo "$(YELLOW)** Load composer install & dump-autoload **$(RESET)"
@@ -174,7 +174,7 @@ cv:
 ## Démarre le Symfony Server
 .PHONY: serve-start
 serve-start:
-	@$(SYMFONY) server:start --allow-http --listen-ip=127.0.0.1 --port=20900 --no-tls -d
+	@$(SYMFONY) server:start --allow-http --listen-ip=0.0.0.0 --port=20900 --no-tls -d
 
 ## Affiche les logs du Symfony Server
 .PHONY: serve-log

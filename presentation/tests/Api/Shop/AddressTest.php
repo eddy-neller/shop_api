@@ -45,8 +45,6 @@ final class AddressTest extends BaseTest
                     'country',
                     'phone',
                     'createdAt',
-                ],
-                'notHasKey' => [
                     'updatedAt',
                 ],
             ],

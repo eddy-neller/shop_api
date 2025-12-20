@@ -48,6 +48,7 @@ final readonly class ProductCollectionProvider implements ProviderInterface
         $resource->imageUrl = $this->productImageUrlResolver->resolve($product->getImageName());
         $resource->category = $this->mapCategoryToResource($product->getCategory());
         $resource->createdAt = $product->getCreatedAt();
+        $resource->updatedAt = $product->getUpdatedAt();
 
         return $resource;
     }

@@ -32,6 +32,7 @@ final class ProductCollectionProviderTest extends TestCase
         $product->setImageName('product.jpg');
         $product->setCategory($category);
         $product->setCreatedAt(new DateTimeImmutable('2025-01-01 10:00:00'));
+        $product->setUpdatedAt(new DateTimeImmutable('2025-02-01 10:00:00'));
 
         $innerProvider = $this->createMock(ProviderInterface::class);
         $innerProvider

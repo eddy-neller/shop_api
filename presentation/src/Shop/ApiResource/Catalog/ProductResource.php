@@ -29,7 +29,7 @@ use App\Presentation\Shop\State\Catalog\Product\ProductImageProcessor;
 use App\Presentation\Shop\State\Catalog\Product\ProductPatchProcessor;
 use App\Presentation\Shop\State\Catalog\Product\ProductPostProcessor;
 use ArrayObject;
-use DateTimeInterface;
+use DateTimeImmutable;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
@@ -38,6 +38,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Get(
             uriTemplate: '/products/{id}',
             requirements: ['id' => RouteRequirements::UUID],
+            cacheHeaders: [
+                'max_age' => 21600,
+                'shared_max_age' => 86400,
+            ],
             name: self::PREFIX_NAME . 'get',
             provider: ProductGetProvider::class,
         ),
@@ -76,6 +80,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
         ),
         new GetCollection(
             uriTemplate: '/products',
+            cacheHeaders: [
+                'max_age' => 21600,
+                'shared_max_age' => 86400,
+            ],
             paginationClientItemsPerPage: true,
             name: self::PREFIX_NAME . 'col',
             provider: ProductCollectionProvider::class,
@@ -146,8 +154,8 @@ final class ProductResource
     public CategoryResource $category;
 
     #[Groups(['shop_product:read'])]
-    public DateTimeInterface $createdAt;
+    public DateTimeImmutable $createdAt;
 
-    #[Groups(['shop_product:item:read'])]
-    public DateTimeInterface $updatedAt;
+    #[Groups(['shop_product:read'])]
+    public DateTimeImmutable $updatedAt;
 }

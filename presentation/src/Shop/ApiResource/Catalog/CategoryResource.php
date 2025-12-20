@@ -25,7 +25,7 @@ use App\Presentation\Shop\State\Catalog\Category\CategoryDeleteProcessor;
 use App\Presentation\Shop\State\Catalog\Category\CategoryGetProvider;
 use App\Presentation\Shop\State\Catalog\Category\CategoryPatchProcessor;
 use App\Presentation\Shop\State\Catalog\Category\CategoryPostProcessor;
-use DateTimeInterface;
+use DateTimeImmutable;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 
@@ -35,6 +35,10 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
         new Get(
             uriTemplate: '/categories/{id}',
             requirements: ['id' => RouteRequirements::UUID],
+            cacheHeaders: [
+                'max_age' => 21600,
+                'shared_max_age' => 86400,
+            ],
             name: self::PREFIX_NAME . 'get',
             provider: CategoryGetProvider::class,
         ),
@@ -63,6 +67,10 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
         ),
         new GetCollection(
             uriTemplate: '/categories',
+            cacheHeaders: [
+                'max_age' => 21600,
+                'shared_max_age' => 86400,
+            ],
             openapi: new Model\Operation(
                 parameters: [
                     new Model\Parameter(
@@ -126,8 +134,8 @@ final class CategoryResource
     public int $level = 0;
 
     #[Groups(['shop_category:read'])]
-    public DateTimeInterface $createdAt;
+    public DateTimeImmutable $createdAt;
 
-    #[Groups(['shop_category:item:read'])]
-    public DateTimeInterface $updatedAt;
+    #[Groups(['shop_category:read'])]
+    public DateTimeImmutable $updatedAt;
 }

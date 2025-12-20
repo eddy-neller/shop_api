@@ -334,6 +334,6 @@ final class UserResource
     #[Groups(['user:read'])]
     public DateTimeImmutable $createdAt;
 
-    #[Groups(['user:item:read'])]
+    #[Groups(['user:read'])]
     public DateTimeImmutable $updatedAt;
 }
