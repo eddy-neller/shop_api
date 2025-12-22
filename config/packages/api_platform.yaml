@@ -15,9 +15,22 @@ api_platform:
     defaults:
         stateless: true
         cache_headers:
+            max_age: 0
+            shared_max_age: 3600
             vary: ["Content-Type", "Authorization", "Origin"]
             etag: true
     http_cache: ~
+    exception_to_status:
+        App\Domain\Shop\Catalog\Exception\CategoryNotFoundException: 404
+        App\Domain\Shop\Catalog\Exception\ProductNotFoundException: 404
+        App\Domain\User\Exception\UserNotFoundException: 404
+        App\Domain\User\Exception\Uniqueness\EmailAlreadyUsedException: 409
+        App\Domain\User\Exception\Uniqueness\UsernameAlreadyUsedException: 409
+        App\Domain\User\Exception\Security\UserLockedException: 423
+        App\Domain\User\Exception\RateLimit\ActivationLimitReachedException: 429
+        App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException: 429
+        App\Domain\User\Exception\UserDomainException: 400
+        App\Domain\Shop\Exception\ShopDomainException: 400
 
 when@dev:
     api_platform:

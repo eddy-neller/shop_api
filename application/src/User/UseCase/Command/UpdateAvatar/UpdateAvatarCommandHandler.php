@@ -32,7 +32,7 @@ final readonly class UpdateAvatarCommandHandler
         $user = $this->repository->findById($command->userId);
 
         if (null === $user) {
-            throw new UserNotFoundException('User not found.', 404);
+            throw new UserNotFoundException();
         }
 
         return $this->transactional->transactional(function () use ($user, $command): UpdateAvatarOutput {

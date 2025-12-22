@@ -19,7 +19,7 @@ final readonly class DisplayCategoryQueryHandler
         $categoryTree = $this->categoryRepository->findTreeById($query->categoryId);
 
         if (null === $categoryTree) {
-            throw new CategoryNotFoundException('Category not found.', 404);
+            throw new CategoryNotFoundException();
         }
 
         return new DisplayCategoryOutput($categoryTree);

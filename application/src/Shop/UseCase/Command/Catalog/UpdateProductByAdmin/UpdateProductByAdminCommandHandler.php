@@ -33,7 +33,7 @@ final readonly class UpdateProductByAdminCommandHandler
         $product = $this->productRepository->findById($command->productId);
 
         if (null === $product) {
-            throw new ProductNotFoundException('Product not found.', 404);
+            throw new ProductNotFoundException();
         }
 
         return $this->transactional->transactional(function () use ($command, $product): UpdateProductByAdminOutput {
@@ -67,7 +67,7 @@ final readonly class UpdateProductByAdminCommandHandler
                 $newCategory = $this->categoryRepository->findById($command->categoryId);
 
                 if (null === $newCategory) {
-                    throw new CategoryNotFoundException('Category not found.', 404);
+                    throw new CategoryNotFoundException();
                 }
 
                 $product->moveToCategory($command->categoryId, $now);
@@ -85,7 +85,7 @@ final readonly class UpdateProductByAdminCommandHandler
 
             $categoryTree = $this->categoryRepository->findTreeById($product->getCategoryId());
             if (null === $categoryTree) {
-                throw new CategoryNotFoundException('Category not found.', 404);
+                throw new CategoryNotFoundException();
             }
 
             return new UpdateProductByAdminOutput(new ProductView($product, $categoryTree));

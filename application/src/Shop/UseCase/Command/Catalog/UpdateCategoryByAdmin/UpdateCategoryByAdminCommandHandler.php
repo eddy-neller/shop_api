@@ -28,7 +28,7 @@ final readonly class UpdateCategoryByAdminCommandHandler
         $category = $this->categoryRepository->findById($command->categoryId);
 
         if (null === $category) {
-            throw new CategoryNotFoundException('Category not found.', 404);
+            throw new CategoryNotFoundException();
         }
 
         return $this->transactional->transactional(function () use ($category, $command): UpdateCategoryByAdminOutput {
@@ -61,7 +61,7 @@ final readonly class UpdateCategoryByAdminCommandHandler
 
             $categoryTree = $this->categoryRepository->findTreeById($command->categoryId);
             if (null === $categoryTree) {
-                throw new CategoryNotFoundException('Category not found.', 404);
+                throw new CategoryNotFoundException();
             }
 
             return new UpdateCategoryByAdminOutput($categoryTree);

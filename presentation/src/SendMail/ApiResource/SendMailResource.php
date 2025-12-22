@@ -6,7 +6,6 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model;
 use App\Presentation\SendMail\Dto\SendMailInput;
-use App\Presentation\SendMail\Dto\SendMailOutput;
 use App\Presentation\SendMail\State\SendMailProcessor;
 use ArrayObject;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,7 +15,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new Post(
             uriTemplate: '/util/send-mail',
-            status: 200,
+            status: 204,
             openapi: new Model\Operation(
                 summary: 'Send an email through the API',
                 description: "Allows sending an email by providing the sender's details and message content.",
@@ -39,7 +38,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 ),
             ),
             input: SendMailInput::class,
-            output: SendMailOutput::class,
             name: 'send-mail',
             processor: SendMailProcessor::class,
         ),

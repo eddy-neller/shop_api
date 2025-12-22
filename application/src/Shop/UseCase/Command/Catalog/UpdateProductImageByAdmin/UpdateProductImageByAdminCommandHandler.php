@@ -31,12 +31,12 @@ final readonly class UpdateProductImageByAdminCommandHandler
             $product = $this->productRepository->updateImage($command->productId, $command->imageFile);
 
             if (null === $product) {
-                throw new ProductNotFoundException('Product not found.', 404);
+                throw new ProductNotFoundException();
             }
 
             $categoryTree = $this->categoryRepository->findTreeById($product->getCategoryId());
             if (null === $categoryTree) {
-                throw new CategoryNotFoundException('Category not found.', 404);
+                throw new CategoryNotFoundException();
             }
 
             return new UpdateProductImageByAdminOutput(new ProductView($product, $categoryTree));

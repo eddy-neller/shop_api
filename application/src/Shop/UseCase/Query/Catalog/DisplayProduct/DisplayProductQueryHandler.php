@@ -23,12 +23,12 @@ final readonly class DisplayProductQueryHandler
         $product = $this->productRepository->findById($query->productId);
 
         if (null === $product) {
-            throw new ProductNotFoundException('Product not found.', 404);
+            throw new ProductNotFoundException();
         }
 
         $categoryTree = $this->categoryRepository->findTreeById($product->getCategoryId());
         if (null === $categoryTree) {
-            throw new CategoryNotFoundException('Category not found.', 404);
+            throw new CategoryNotFoundException();
         }
 
         return new DisplayProductOutput(new ProductView($product, $categoryTree));

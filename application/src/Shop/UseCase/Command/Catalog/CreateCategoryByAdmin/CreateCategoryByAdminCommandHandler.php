@@ -54,7 +54,7 @@ final readonly class CreateCategoryByAdminCommandHandler
 
             $categoryTree = $this->repository->findTreeById($id);
             if (null === $categoryTree) {
-                throw new CategoryNotFoundException('Category not found.', 404);
+                throw new CategoryNotFoundException();
             }
 
             return new CreateCategoryByAdminOutput($categoryTree);

@@ -4,7 +4,6 @@ namespace App\Infrastructure\Service\Token;
 
 use App\Application\User\Port\TokenProviderInterface;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
-use App\Infrastructure\Service\Encoder\CustomEncoder;
 use App\Infrastructure\Service\User\TokenManager;
 
 final readonly class TokenProvider implements TokenProviderInterface
@@ -14,9 +13,17 @@ final readonly class TokenProvider implements TokenProviderInterface
     ) {
     }
 
-    public function generateRandomToken(): string
+    public function generateRandomToken(int $length = 64): string
     {
-        return CustomEncoder::randomString();
+        $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $pieces = [];
+        $max = mb_strlen($keyspace, '8bit') - 1;
+
+        for ($i = 0; $i < $length; ++$i) {
+            $pieces[] = $keyspace[random_int(0, $max)];
+        }
+
+        return implode('', $pieces);
     }
 
     public function encode(string $token, EmailAddress $email): string

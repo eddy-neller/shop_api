@@ -46,7 +46,7 @@ final readonly class AvatarUploader implements AvatarUploaderInterface
 
             return new Avatar($entity->getAvatarName());
         } catch (EntityNotFoundException|ORMException) {
-            throw new UserNotFoundException('User not found.', 404);
+            throw new UserNotFoundException();
         }
     }
 }

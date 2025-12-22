@@ -26,7 +26,7 @@ final readonly class DeleteProductByAdminCommandHandler
         $product = $this->productRepository->findById($command->productId);
 
         if (null === $product) {
-            throw new ProductNotFoundException('Product not found.', 404);
+            throw new ProductNotFoundException();
         }
 
         $this->transactional->transactional(function () use ($product): void {
@@ -34,7 +34,7 @@ final readonly class DeleteProductByAdminCommandHandler
             $category = $this->categoryRepository->findById($product->getCategoryId());
 
             if (null === $category) {
-                throw new CategoryNotFoundException('Category not found.', 404);
+                throw new CategoryNotFoundException();
             }
 
             $product->delete($now);

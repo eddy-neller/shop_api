@@ -23,7 +23,7 @@ final readonly class DeleteCategoryByAdminCommandHandler
         $category = $this->repository->findById($command->categoryId);
 
         if (null === $category) {
-            throw new CategoryNotFoundException('Category not found.', 404);
+            throw new CategoryNotFoundException();
         }
 
         $this->transactional->transactional(function () use ($category): void {

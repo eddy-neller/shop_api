@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Notification\Mailer;
 
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -23,7 +24,7 @@ readonly class Mailer
     ) {
     }
 
-    public function sendEmail(string $to, string $subject, string $template, array $context, ?bool $response = null): bool
+    public function sendEmail(string $to, string $subject, string $template, array $context, ?bool $response = null): void
     {
         try {
             $email = new TemplatedEmail()
@@ -35,14 +36,10 @@ readonly class Mailer
                 ->html($this->twig->render($template, $context));
 
             $this->mailer->send($email);
-
-            if (is_null($response)) {
-                return true;
-            }
         } catch (Throwable $e) {
             $this->logger?->error('send-email', ['email' => $to, 'ex' => $e]);
-        }
 
-        return true;
+            throw new RuntimeException('Failed to send email. Please try again later.');
+        }
     }
 }

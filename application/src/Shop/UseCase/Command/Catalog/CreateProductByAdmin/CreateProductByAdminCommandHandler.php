@@ -43,7 +43,7 @@ final readonly class CreateProductByAdminCommandHandler
 
             $category = $this->categoryRepository->findById($categoryId);
             if (null === $category) {
-                throw new CategoryNotFoundException('Category not found.', 404);
+                throw new CategoryNotFoundException();
             }
 
             $product = Product::create(
@@ -64,7 +64,7 @@ final readonly class CreateProductByAdminCommandHandler
 
             $categoryTree = $this->categoryRepository->findTreeById($categoryId);
             if (null === $categoryTree) {
-                throw new CategoryNotFoundException('Category not found.', 404);
+                throw new CategoryNotFoundException();
             }
 
             return new CreateProductByAdminOutput(new ProductView($product, $categoryTree));

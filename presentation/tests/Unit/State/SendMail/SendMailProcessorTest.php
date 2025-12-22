@@ -7,13 +7,10 @@ namespace App\Presentation\Tests\Unit\State\SendMail;
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\Messenger\Message\SendEmailMessage;
 use App\Presentation\SendMail\Dto\SendMailInput;
-use App\Presentation\SendMail\Dto\SendMailOutput;
 use App\Presentation\SendMail\State\SendMailProcessor;
 use App\Presentation\Shared\State\PresentationErrorCode;
-use Exception;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
-use RuntimeException;
 use stdClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -104,10 +101,7 @@ final class SendMailProcessorTest extends KernelTestCase
             }))
             ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
-        $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
-
-        $this->assertInstanceOf(SendMailOutput::class, $result);
-        $this->assertSame('Email sent successfully', $result->message);
+        $this->sendMailProcessor->process($this->data, $operation, [], $context);
     }
 
     public function testProcessWithFrenchLanguage(): void
@@ -144,9 +138,7 @@ final class SendMailProcessorTest extends KernelTestCase
             }))
             ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
-        $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
-
-        $this->assertInstanceOf(SendMailOutput::class, $result);
+        $this->sendMailProcessor->process($this->data, $operation, [], $context);
     }
 
     public function testProcessWithNoRequestContextUsesDefaultLanguage(): void
@@ -175,9 +167,7 @@ final class SendMailProcessorTest extends KernelTestCase
             }))
             ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
-        $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
-
-        $this->assertInstanceOf(SendMailOutput::class, $result);
+        $this->sendMailProcessor->process($this->data, $operation, [], $context);
     }
 
     public function testProcessWithRealRequestUsesPreferredLanguage(): void
@@ -211,43 +201,6 @@ final class SendMailProcessorTest extends KernelTestCase
                 return true;
             }))
             ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
-
-        $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
-
-        $this->assertInstanceOf(SendMailOutput::class, $result);
-    }
-
-    public function testProcessWithMailerExceptionThrowsRuntimeException(): void
-    {
-        /** @var Operation&MockObject $operation */
-        $operation = $this->createMock(Operation::class);
-        $context = ['request' => $this->request];
-
-        $this->data->name = 'John Doe';
-        $this->data->email = 'john@example.com';
-        $this->data->subject = 'Test Subject';
-        $this->data->message = 'Test Message';
-
-        $this->request
-            ->expects($this->once())
-            ->method('getPreferredLanguage')
-            ->with(['en', 'fr'])
-            ->willReturn('en');
-
-        $this->parameterBag
-            ->method('get')
-            ->willReturnMap([
-                ['app.enabled_locales', ['en', 'fr']],
-                ['mailer_to', 'admin@example.com'],
-            ]);
-
-        $this->bus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->willThrowException(new Exception('Messenger error'));
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Failed to send email. Please try again later.');
 
         $this->sendMailProcessor->process($this->data, $operation, [], $context);
     }
@@ -289,8 +242,6 @@ final class SendMailProcessorTest extends KernelTestCase
             }))
             ->willReturnCallback(static fn (SendEmailMessage $message): Envelope => new Envelope($message));
 
-        $result = $this->sendMailProcessor->process($this->data, $operation, [], $context);
-
-        $this->assertInstanceOf(SendMailOutput::class, $result);
+        $this->sendMailProcessor->process($this->data, $operation, [], $context);
     }
 }
