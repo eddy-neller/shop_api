@@ -217,7 +217,6 @@ final class ConfirmPasswordResetTest extends TestCase
         );
 
         $reflection = new ReflectionProperty(User::class, 'resetPassword');
-        $reflection->setAccessible(true);
         $reflection->setValue($user, $resetPassword);
 
         return $user;

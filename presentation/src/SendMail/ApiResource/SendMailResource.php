@@ -45,7 +45,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         ),
     ],
 )]
-class SendMailResource
+final class SendMailResource
 {
     #[Groups(['send_mail:write'])]
     public string $name;

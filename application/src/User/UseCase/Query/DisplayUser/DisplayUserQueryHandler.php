@@ -19,7 +19,7 @@ final readonly class DisplayUserQueryHandler
         $user = $this->repository->findById($query->userId);
 
         if (null === $user) {
-            throw new UserNotFoundException('User not found.');
+            throw new UserNotFoundException('User not found.', 404);
         }
 
         return new DisplayUserOutput($user);

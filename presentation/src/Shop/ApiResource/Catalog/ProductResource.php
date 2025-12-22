@@ -49,7 +49,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             uriTemplate: '/products/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: ProductPatchInput::class,
@@ -61,7 +61,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             requirements: ['id' => RouteRequirements::UUID],
             status: 204,
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             output: false,
@@ -71,7 +71,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post(
             uriTemplate: '/products',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: ProductPostInput::class,
@@ -110,7 +110,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                         ],
                     ]),
                 ),
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: ProductImageInput::class,

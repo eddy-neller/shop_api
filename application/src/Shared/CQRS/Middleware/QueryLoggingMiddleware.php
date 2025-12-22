@@ -8,10 +8,10 @@ use App\Application\Shared\CQRS\Query\QueryInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-final class QueryLoggingMiddleware implements QueryMiddlewareInterface
+final readonly class QueryLoggingMiddleware implements QueryMiddlewareInterface
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
+        private LoggerInterface $logger,
     ) {
     }
 

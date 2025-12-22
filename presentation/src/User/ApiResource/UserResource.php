@@ -2,10 +2,7 @@
 
 namespace App\Presentation\User\ApiResource;
 
-use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\State\Options;
-use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -58,7 +55,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Get(
             uriTemplate: '/users/me',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             name: self::PREFIX_NAME . 'me',
@@ -74,7 +71,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                     description: 'User update request body',
                     required: true
                 ),
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('ROLE_ADMIN')",
             input: UserPatchInput::class,
@@ -88,7 +85,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             openapi: new Model\Operation(
                 summary: 'Delete a user (Admin only).',
                 description: 'Delete a user. This endpoint is accessible only by administrators.',
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('ROLE_ADMIN')",
             name: self::PREFIX_NAME . 'delete',
@@ -115,7 +112,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                         ],
                     ]),
                 ),
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: UserMeAvatarInput::class,
@@ -144,7 +141,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                         ],
                     ]),
                 ),
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('ROLE_ADMIN')",
             input: UserAvatarInput::class,
@@ -161,7 +158,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                     description: 'Update my password request body',
                     required: true
                 ),
-                security: [['ApiKeyAuth' => []]],
+                security: [['JWT' => []]],
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             input: UserMePasswordUpdateInput::class,
@@ -174,7 +171,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
             openapi: new Model\Operation(
                 summary: 'Get all users (Admin only).',
                 description: 'Get all users. This endpoint is accessible only by administrators.',
-                security: [['ApiKeyAuth' => []]],
+                security: [['JWT' => []]],
             ),
             paginationClientItemsPerPage: true,
             security: "is_granted('ROLE_ADMIN')",
@@ -190,7 +187,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                     description: 'User creation request body',
                     required: true
                 ),
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('ROLE_ADMIN')",
             input: UserPostInput::class,
@@ -295,8 +292,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
     order: ['createdAt' => 'DESC'],
     stateOptions: new Options(entityClass: User::class),
 )]
-#[ApiFilter(SearchFilter::class, properties: ['username' => 'partial', 'email' => 'partial'])]
-#[ApiFilter(OrderFilter::class, properties: ['username', 'email', 'createdAt'])]
 final class UserResource
 {
     private const string PREFIX_NAME = 'users-';

@@ -76,6 +76,10 @@ services:
     App\Application\Shared\CQRS\Middleware\QueryLoggingMiddleware:
         tags: ["app.cqrs.query_middleware"]
 
+    App\Application\Shared\CQRS\Middleware\QueryCacheMiddleware:
+        tags:
+            - { name: "app.cqrs.query_middleware", priority: -100 }
+
     # CQRS - Configuration des Bus avec injection manuelle des middlewares
     App\Application\Shared\CQRS\Command\CommandBus:
         arguments:

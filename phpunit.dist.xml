@@ -96,21 +96,13 @@
         </include>
         <exclude>
             <directory>application/src/Shared</directory>
-            <directory>application/src/User/Port</directory>
             <directory>infrastructure/src/DataFixtures</directory>
             <directory>infrastructure/src/Entity</directory>
             <directory>infrastructure/src/EventListener</directory>
             <directory>infrastructure/src/EventSubscriber</directory>
             <directory>infrastructure/src/OpenApi</directory>
-            <directory>infrastructure/src/Notification/Mailer</directory>
-            <directory>infrastructure/src/Service/Config</directory>
             <directory>infrastructure/src/Service/Helper</directory>
-            <directory>infrastructure/src/Service/Media</directory>
-            <directory>presentation/src/SendMail/ApiResource</directory>
-            <directory>presentation/src/SendMail/Dto</directory>
             <directory>presentation/src/Shared/Adapter</directory>
-            <directory>presentation/src/User/ApiResource</directory>
-            <directory>presentation/src/User/Dto</directory>
             <directory>presentation/src/User/Security</directory>
             <directory>src/DataFixtures</directory>
             <directory>src/Entity</directory>

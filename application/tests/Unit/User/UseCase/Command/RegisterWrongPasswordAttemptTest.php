@@ -38,7 +38,6 @@ final class RegisterWrongPasswordAttemptTest extends TestCase
         $this->clock = $this->createMock(ClockInterface::class);
         $this->config = $this->createMock(ConfigInterface::class);
         $this->transactional = $this->createMock(TransactionalInterface::class);
-
         $this->handler = new RegisterWrongPasswordAttemptCommandHandler(
             repository: $this->repository,
             clock: $this->clock,

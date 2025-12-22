@@ -20,13 +20,16 @@ backend default {
 # Hosts allowed to send BAN requests
 acl invalidators {
   "localhost";
-  # other network
-  "192.168.1.14"/16;
 }
 
 sub vcl_recv {
   if (req.restarts > 0) {
     set req.hash_always_miss = true;
+  }
+
+  # On ne cache que GET/HEAD par défaut
+  if (req.method != "GET" && req.method != "HEAD") {
+    return (pass);
   }
 
   if (req.http.Authorization || req.http.Cookie) {
@@ -63,11 +66,13 @@ sub vcl_hit {
     # Normal hit
     return (deliver);
   }
+
   if (std.healthy(req.backend_hint)) {
     # The backend is healthy
     # Fetch the object from the backend
     return (restart);
   }
+
   # No fresh object and the backend is not healthy
   if (obj.ttl + obj.grace > 0s) {
     # Deliver graced object
@@ -84,6 +89,7 @@ sub vcl_hit {
 sub vcl_deliver {
   # Don't send cache tags related headers to the client
   unset resp.http.url;
+
   # Uncomment the following line to NOT send the "Cache-Tags" header to the client (prevent using CloudFlare cache tags)
   #unset resp.http.Cache-Tags;
 }

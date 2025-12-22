@@ -53,10 +53,25 @@ services:
     volumes:
       - ./docker/varnish/conf:/etc/varnish:ro
 
+  redis:
+    container_name: en_shop_api_redis
+    build:
+      context: ./docker/redis
+      dockerfile: ./Dockerfile
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
+
 volumes:
-###> doctrine/doctrine-bundle ###
+  ###> doctrine/doctrine-bundle ###
   database_data:
-###< doctrine/doctrine-bundle ###
+  ###< doctrine/doctrine-bundle ###
   ###> symfony/messenger with rabbitmq ###
   rabbitmq_data:
   ###< symfony/messenger with rabbitmq ###
+  redis_data:

@@ -10,6 +10,9 @@ use Symfony\Component\Mime\Address;
 use Throwable;
 use Twig\Environment;
 
+/**
+ * @codeCoverageIgnore
+ */
 readonly class Mailer
 {
     public function __construct(

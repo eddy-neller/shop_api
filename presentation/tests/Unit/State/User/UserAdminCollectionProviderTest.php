@@ -5,51 +5,47 @@ declare(strict_types=1);
 namespace App\Presentation\Tests\Unit\State\User;
 
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\State\ProviderInterface;
+use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\User\Port\AvatarUrlResolverInterface;
+use App\Application\User\UseCase\Query\DisplayListUser\DisplayListUserOutput;
+use App\Application\User\UseCase\Query\DisplayListUser\DisplayListUserQuery;
+use App\Domain\User\Identity\ValueObject\EmailAddress;
+use App\Domain\User\Identity\ValueObject\UserId;
+use App\Domain\User\Identity\ValueObject\Username;
+use App\Domain\User\Model\User as DomainUser;
+use App\Domain\User\Preference\ValueObject\Preferences;
 use App\Domain\User\Profile\ValueObject\Avatar;
-use App\Infrastructure\Entity\User\User as DoctrineUser;
+use App\Domain\User\Security\ValueObject\HashedPassword;
 use App\Presentation\User\ApiResource\UserResource;
+use App\Presentation\User\Presenter\UserResourcePresenter;
 use App\Presentation\User\State\UserAdminCollectionProvider;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
-use stdClass;
 use Symfony\Component\HttpFoundation\Request;
 
 #[CoversClass(UserAdminCollectionProvider::class)]
 final class UserAdminCollectionProviderTest extends TestCase
 {
-    public function testItMapsDoctrineUsersToUserResourceAndKeepsPaginationAttributes(): void
+    public function testItMapsUsersToUserResourceAndKeepsPaginationAttributes(): void
     {
-        $doctrineUser = new DoctrineUser();
-        $doctrineUser->setId(Uuid::uuid4());
-        $doctrineUser->setUsername('john');
-        $doctrineUser->setEmail('john@example.com');
-        $doctrineUser->setRoles(['ROLE_ADMIN']);
-        $doctrineUser->setStatus(1);
-        $doctrineUser->setAvatarName('avatar.jpg');
-        $doctrineUser->setCreatedAt(new DateTimeImmutable('2025-01-01 10:00:00'));
-        $doctrineUser->setUpdatedAt(new DateTimeImmutable('2025-01-02 10:00:00'));
-
         $request = new Request();
+        $queryBus = $this->createMock(QueryBusInterface::class);
+        $domainUser = $this->createDomainUser();
+        $output = new DisplayListUserOutput([$domainUser], 1, 1);
 
-        $innerProvider = $this->createMock(ProviderInterface::class);
-        $innerProvider
+        $queryBus
             ->expects($this->once())
-            ->method('provide')
-            ->willReturnCallback(static function (GetCollection $operation, array $uriVariables, array $context) use ($doctrineUser, $request): array {
-                self::assertSame($request, $context['request'] ?? null);
+            ->method('dispatch')
+            ->willReturnCallback(function ($query) use ($output): DisplayListUserOutput {
+                $this->assertInstanceOf(DisplayListUserQuery::class, $query);
+                $this->assertSame(2, $query->pagination->page);
+                $this->assertSame(15, $query->pagination->itemsPerPage);
+                $this->assertSame('john', $query->username);
+                $this->assertSame('john@example.com', $query->email);
+                $this->assertSame(['createdAt' => 'asc'], $query->orderBy);
 
-                $filters = $context['filters'] ?? null;
-                self::assertIsArray($filters);
-                self::assertSame(['avatarFile' => 'desc', 'createdAt' => 'asc'], $filters['order'] ?? null);
-
-                $request->attributes->set('_total_items', 1);
-                $request->attributes->set('_total_pages', 1);
-
-                return [$doctrineUser];
+                return $output;
             });
 
         $avatarUrlResolver = $this->createMock(AvatarUrlResolverInterface::class);
@@ -61,25 +57,24 @@ final class UserAdminCollectionProviderTest extends TestCase
             }))
             ->willReturn('/uploads/images/user/avatar/avatar.jpg');
 
-        $provider = new UserAdminCollectionProvider(
-            provider: $innerProvider,
-            avatarUrlResolver: $avatarUrlResolver,
-        );
+        $provider = new UserAdminCollectionProvider($queryBus, new UserResourcePresenter($avatarUrlResolver));
 
         $result = $provider->provide(
             new GetCollection(name: 'users-admin-col'),
             context: [
                 'request' => $request,
                 'filters' => [
+                    'page' => '2',
+                    'itemsPerPage' => '15',
+                    'username' => 'john',
+                    'email' => 'john@example.com',
                     'order' => [
-                        'avatarFile' => 'desc',
                         'createdAt' => 'asc',
                     ],
                 ],
             ],
         );
 
-        $this->assertIsArray($result);
         $this->assertCount(1, $result);
         $this->assertInstanceOf(UserResource::class, $result[0]);
         $this->assertSame('john', $result[0]->username);
@@ -88,25 +83,64 @@ final class UserAdminCollectionProviderTest extends TestCase
         $this->assertSame(1, $request->attributes->get('_total_pages'));
     }
 
-    public function testItReturnsProviderResultWhenNotIterable(): void
+    public function testItHandlesInvalidFiltersWithoutRequest(): void
     {
-        $innerProvider = $this->createMock(ProviderInterface::class);
-        $payload = new stdClass();
+        $queryBus = $this->createMock(QueryBusInterface::class);
+        $domainUser = $this->createDomainUser();
+        $output = new DisplayListUserOutput([$domainUser], 2, 3);
 
-        $innerProvider
+        $queryBus
             ->expects($this->once())
-            ->method('provide')
-            ->willReturn($payload);
+            ->method('dispatch')
+            ->willReturnCallback(function ($query) use ($output): DisplayListUserOutput {
+                $this->assertInstanceOf(DisplayListUserQuery::class, $query);
+                $this->assertSame(1, $query->pagination->page);
+                $this->assertSame(30, $query->pagination->itemsPerPage);
+                $this->assertNull($query->username);
+                $this->assertNull($query->email);
+                $this->assertSame([], $query->orderBy);
+
+                return $output;
+            });
 
         $avatarUrlResolver = $this->createMock(AvatarUrlResolverInterface::class);
+        $avatarUrlResolver
+            ->expects($this->once())
+            ->method('resolve')
+            ->with(self::callback(static function (Avatar $avatar): bool {
+                return 'avatar.jpg' === $avatar->fileName();
+            }))
+            ->willReturn('/uploads/images/user/avatar/avatar.jpg');
 
-        $provider = new UserAdminCollectionProvider(
-            provider: $innerProvider,
-            avatarUrlResolver: $avatarUrlResolver,
+        $provider = new UserAdminCollectionProvider($queryBus, new UserResourcePresenter($avatarUrlResolver));
+
+        $result = $provider->provide(
+            new GetCollection(name: 'users-admin-col'),
+            context: [
+                'filters' => 'not-an-array',
+            ],
         );
 
-        $result = $provider->provide(new GetCollection(name: 'users-admin-col'));
+        $this->assertCount(1, $result);
+        $this->assertInstanceOf(UserResource::class, $result[0]);
+        $this->assertSame('john', $result[0]->username);
+        $this->assertSame('/uploads/images/user/avatar/avatar.jpg', $result[0]->avatarUrl);
+    }
 
-        $this->assertSame($payload, $result);
+    private function createDomainUser(): DomainUser
+    {
+        $now = new DateTimeImmutable('2025-01-01 10:00:00');
+        $user = DomainUser::register(
+            id: UserId::fromString('550e8400-e29b-41d4-a716-446655440000'),
+            username: new Username('john'),
+            email: new EmailAddress('john@example.com'),
+            password: new HashedPassword('hash'),
+            preferences: Preferences::fromArray(['lang' => 'fr']),
+            now: $now,
+        );
+
+        $user->updateAvatar(new Avatar('avatar.jpg'), $now);
+
+        return $user;
     }
 }

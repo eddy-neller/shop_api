@@ -1,4 +1,4 @@
-FROM rabbitmq:management-alpine
+FROM rabbitmq:4-management-alpine
 
 # Install a few basic tools (useful when debugging the container)
 RUN apk add --no-cache bash gawk sed grep bc coreutils nano

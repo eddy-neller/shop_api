@@ -219,7 +219,6 @@ final class ValidateActivationTest extends TestCase
         );
 
         $reflection = new ReflectionProperty(User::class, 'activeEmail');
-        $reflection->setAccessible(true);
         $reflection->setValue($user, $activeEmail);
 
         return $user;

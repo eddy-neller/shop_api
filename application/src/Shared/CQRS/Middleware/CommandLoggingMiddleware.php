@@ -8,10 +8,10 @@ use App\Application\Shared\CQRS\Command\CommandInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-final class CommandLoggingMiddleware implements CommandMiddlewareInterface
+final readonly class CommandLoggingMiddleware implements CommandMiddlewareInterface
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
+        private LoggerInterface $logger,
     ) {
     }
 

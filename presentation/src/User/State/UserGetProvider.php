@@ -10,6 +10,7 @@ use App\Application\Shared\CQRS\Query\QueryBusInterface;
 use App\Application\User\UseCase\Query\DisplayUser\DisplayUserQuery;
 use App\Domain\User\Identity\ValueObject\UserId;
 use App\Presentation\Shared\State\PresentationErrorCode;
+use App\Presentation\User\ApiResource\UserResource;
 use App\Presentation\User\Presenter\UserResourcePresenter;
 use LogicException;
 
@@ -21,7 +22,7 @@ readonly class UserGetProvider implements ProviderInterface
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array|object|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): UserResource
     {
         if (!isset($uriVariables['id']) || !is_string($uriVariables['id'])) {
             throw new LogicException(PresentationErrorCode::INVALID_INPUT->value);

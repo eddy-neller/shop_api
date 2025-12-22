@@ -7,10 +7,14 @@ use App\Domain\User\Event\ActivationEmailRequestedEvent;
 use App\Domain\User\Event\PasswordResetCompletedEvent;
 use App\Domain\User\Event\PasswordResetRequestedEvent;
 use App\Domain\User\Event\UserActivatedEvent;
+use App\Domain\User\Event\UserAvatarUpdatedEvent;
 use App\Domain\User\Event\UserCreatedByAdminEvent;
 use App\Domain\User\Event\UserDeletedEvent;
+use App\Domain\User\Event\UserPasswordUpdatedEvent;
 use App\Domain\User\Event\UserRegisteredEvent;
 use App\Domain\User\Event\UserUpdatedByAdminEvent;
+use App\Domain\User\Event\UserWrongPasswordAttemptRegisteredEvent;
+use App\Domain\User\Event\UserWrongPasswordAttemptsResetEvent;
 use App\Domain\User\Exception\RateLimit\ActivationLimitReachedException;
 use App\Domain\User\Exception\RateLimit\ResetPasswordLimitReachedException;
 use App\Domain\User\Exception\Security\UserLockedException;
@@ -271,12 +275,22 @@ final class User
     {
         $this->setPassword($password);
         $this->setUpdatedAt($now);
+
+        $this->recordEvent(new UserPasswordUpdatedEvent(
+            userId: $this->id,
+            occurredOn: $now,
+        ));
     }
 
     public function updateAvatar(Avatar $avatar, DateTimeImmutable $now): void
     {
         $this->setAvatar($avatar);
         $this->setUpdatedAt($now);
+
+        $this->recordEvent(new UserAvatarUpdatedEvent(
+            userId: $this->id,
+            occurredOn: $now,
+        ));
     }
 
     public function updateByAdmin(
@@ -346,6 +360,11 @@ final class User
         }
 
         $this->setUpdatedAt($now);
+
+        $this->recordEvent(new UserWrongPasswordAttemptRegisteredEvent(
+            userId: $this->id,
+            occurredOn: $now,
+        ));
     }
 
     public function resetWrongPasswordAttempts(DateTimeImmutable $now): void
@@ -360,6 +379,11 @@ final class User
         }
 
         $this->setUpdatedAt($now);
+
+        $this->recordEvent(new UserWrongPasswordAttemptsResetEvent(
+            userId: $this->id,
+            occurredOn: $now,
+        ));
     }
 
     public function isActive(): bool

@@ -46,7 +46,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
             uriTemplate: '/categories/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: CategoryPatchInput::class,
@@ -58,7 +58,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
             requirements: ['id' => RouteRequirements::UUID],
             status: 204,
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             output: false,
@@ -90,7 +90,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
         new Post(
             uriTemplate: '/categories',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             input: CategoryPostInput::class,

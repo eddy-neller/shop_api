@@ -8,6 +8,9 @@ use RuntimeException;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * @codeCoverageIgnore
+ */
 class CustomImageProvider
 {
     public function customImage(string $dir, int $width = 0, int $height = 0): ?string

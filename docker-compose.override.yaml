@@ -27,3 +27,7 @@ services:
   varnish:
     ports:
       - "20901:80"
+
+  redis:
+    ports:
+      - "20903:6379"

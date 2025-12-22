@@ -40,7 +40,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/orders/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('shop_order:item:read', object)",
             name: self::PREFIX_NAME . 'get',
@@ -49,7 +49,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/orders/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('shop_order:item:write', object)",
             name: self::PREFIX_NAME . 'patch',
@@ -58,7 +58,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/orders/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('" . RoleSet::ROLE_ADMIN . "')",
             name: self::PREFIX_NAME . 'delete',
@@ -66,7 +66,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(
             uriTemplate: '/orders',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             paginationClientItemsPerPage: true,
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
@@ -76,7 +76,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(
             uriTemplate: '/orders',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             paginationClientItemsPerPage: true,
             security: "is_granted('IS_AUTHENTICATED_FULLY')",

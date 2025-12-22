@@ -31,7 +31,7 @@ final readonly class UpdateUserByAdminCommandHandler
         $user = $this->repository->findById($command->userId);
 
         if (null === $user) {
-            throw new UserNotFoundException('User not found.');
+            throw new UserNotFoundException('User not found.', 404);
         }
 
         return $this->transactional->transactional(function () use ($user, $command): UpdateUserByAdminOutput {

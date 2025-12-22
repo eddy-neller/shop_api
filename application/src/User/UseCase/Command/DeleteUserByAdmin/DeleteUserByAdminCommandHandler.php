@@ -23,7 +23,7 @@ final readonly class DeleteUserByAdminCommandHandler
         $user = $this->repository->findById($command->userId);
 
         if (null === $user) {
-            throw new UserNotFoundException('User not found.');
+            throw new UserNotFoundException('User not found.', 404);
         }
 
         $this->transactional->transactional(function () use ($user): void {

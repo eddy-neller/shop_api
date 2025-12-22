@@ -36,7 +36,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/addresses/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('shop_address:item:read', object)",
             name: self::PREFIX_NAME . 'me-get',
@@ -45,7 +45,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/addresses/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('shop_address:item:write', object)",
             name: self::PREFIX_NAME . 'me-patch',
@@ -54,7 +54,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/addresses/{id}',
             requirements: ['id' => RouteRequirements::UUID],
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('shop_address:item:write', object)",
             name: self::PREFIX_NAME . 'me-delete',
@@ -62,7 +62,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
             uriTemplate: '/addresses',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             name: self::PREFIX_NAME . 'me-post',
@@ -70,7 +70,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(
             uriTemplate: '/addresses',
             openapi: new Model\Operation(
-                security: [['ApiKeyAuth' => []]]
+                security: [['JWT' => []]]
             ),
             paginationClientItemsPerPage: true,
             security: "is_granted('IS_AUTHENTICATED_FULLY')",

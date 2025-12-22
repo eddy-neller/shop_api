@@ -42,7 +42,7 @@ install:
 	@echo "$(YELLOW)** Starting installation... **$(RESET)"
 	@make down-hard
 	@echo "$(YELLOW)** Update Docker Images **$(RESET)"
-	@docker pull postgres:16-bullseye && docker pull rabbitmq:management-alpine && docker pull varnish:stable
+	@docker pull postgres:18-alpine && docker pull rabbitmq:4-management-alpine && docker pull varnish:8-alpine && docker pull redis:8-alpine
 	@echo "$(YELLOW)** Build & Load Docker Containers **$(RESET)"
 	make binc && make up
 	@echo "$(YELLOW)** Load composer install & dump-autoload **$(RESET)"
@@ -92,9 +92,14 @@ binc:
 	@$(DOCKER) build --no-cache
 
 ## Connection au ssh du container db
-.PHONY: bash-db
+.PHONY: bash-dd
 bash-db:
-	@$(DOCKER) exec db bash
+	@$(DOCKER) exec database bash
+
+## Connection au ssh du container redis
+.PHONY: bash-redis
+bash-redis:
+	@$(DOCKER) exec redis sh
 
 ##--------------------------------- Composer -----------------------------------
 
