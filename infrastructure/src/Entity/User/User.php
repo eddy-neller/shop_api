@@ -24,6 +24,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Table(name: '`user`')]
+#[ORM\Index(name: 'UserUsernameIdx', columns: ['username'])]
+#[ORM\Index(name: 'UserEmailIdx', columns: ['email'])]
+#[ORM\Index(name: 'UserCreatedAtIdx', columns: ['created_at'])]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[Vich\Uploadable]
 class User implements UserInterface, PasswordAuthenticatedUserInterface

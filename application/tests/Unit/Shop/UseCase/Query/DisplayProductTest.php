@@ -6,7 +6,6 @@ namespace App\Application\Tests\Unit\Shop\UseCase\Query;
 
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayProduct\DisplayProductQuery;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayProduct\DisplayProductQueryHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -52,7 +51,7 @@ final class DisplayProductTest extends TestCase
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $product = $this->createProduct($productId, $categoryId);
-        $categoryTree = new CategoryTree($this->createCategory($categoryId), null, []);
+        $category = $this->createCategory($categoryId);
         $query = new DisplayProductQuery($productId);
 
         $this->productRepository->expects($this->once())
@@ -61,14 +60,14 @@ final class DisplayProductTest extends TestCase
             ->willReturn($product);
 
         $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findById')
             ->with($categoryId)
-            ->willReturn($categoryTree);
+            ->willReturn($category);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame($product, $output->productView->product);
-        $this->assertSame($categoryTree, $output->productView->categoryTree);
+        $this->assertSame($product, $output->productItem->product);
+        $this->assertSame($category, $output->productItem->category);
     }
 
     public function testHandleThrowsWhenProductNotFound(): void
@@ -100,7 +99,7 @@ final class DisplayProductTest extends TestCase
             ->willReturn($product);
 
         $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findById')
             ->with($categoryId)
             ->willReturn(null);
 

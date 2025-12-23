@@ -9,7 +9,6 @@ use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
 use App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\CreateProductByAdmin\CreateProductByAdminCommandHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -64,7 +63,6 @@ final class CreateProductByAdminTest extends TestCase
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $category = $this->createCategory($categoryId);
-        $categoryTree = new CategoryTree($category, null, []);
         $slug = Slug::fromString('new-product');
 
         $command = new CreateProductByAdminCommand(
@@ -115,11 +113,6 @@ final class CreateProductByAdminTest extends TestCase
                     && $savedCategory->getUpdatedAt() === $now;
             }));
 
-        $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
-            ->with($categoryId)
-            ->willReturn($categoryTree);
-
         $this->transactional->expects($this->once())
             ->method('transactional')
             ->willReturnCallback(function (callable $callback) {
@@ -128,8 +121,8 @@ final class CreateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryTree, $output->productView->categoryTree);
-        $this->assertSame('New product', $output->productView->product->getTitle()->toString());
+        $this->assertSame($category, $output->productItem->category);
+        $this->assertSame('New product', $output->productItem->product->getTitle()->toString());
     }
 
     public function testHandleThrowsWhenCategoryNotFound(): void
@@ -161,64 +154,6 @@ final class CreateProductByAdminTest extends TestCase
 
         $this->productRepository->expects($this->never())
             ->method('save');
-
-        $this->transactional->expects($this->once())
-            ->method('transactional')
-            ->willReturnCallback(function (callable $callback) {
-                return $callback();
-            });
-
-        $this->expectException(CategoryNotFoundException::class);
-        $this->expectExceptionMessage('Category not found.');
-
-        $this->handler->handle($command);
-    }
-
-    public function testHandleThrowsWhenCategoryTreeMissing(): void
-    {
-        $now = new DateTimeImmutable('2024-01-01 10:00:00');
-        $productId = ProductId::fromString(self::PRODUCT_ID);
-        $categoryId = CategoryId::fromString(self::CATEGORY_ID);
-        $category = $this->createCategory($categoryId);
-
-        $command = new CreateProductByAdminCommand(
-            title: 'New product',
-            subtitle: 'Product subtitle',
-            description: 'Product description',
-            price: 12.0,
-            categoryId: $categoryId,
-        );
-
-        $this->clock->expects($this->once())
-            ->method('now')
-            ->willReturn($now);
-
-        $this->productRepository->expects($this->once())
-            ->method('nextIdentity')
-            ->willReturn($productId);
-
-        $this->slugGenerator->expects($this->once())
-            ->method('generate')
-            ->with('New product')
-            ->willReturn(Slug::fromString('new-product'));
-
-        $this->categoryRepository->expects($this->once())
-            ->method('findById')
-            ->with($categoryId)
-            ->willReturn($category);
-
-        $this->productRepository->expects($this->once())
-            ->method('save')
-            ->with($this->isInstanceOf(Product::class));
-
-        $this->categoryRepository->expects($this->once())
-            ->method('save')
-            ->with($category);
-
-        $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
-            ->with($categoryId)
-            ->willReturn(null);
 
         $this->transactional->expects($this->once())
             ->method('transactional')

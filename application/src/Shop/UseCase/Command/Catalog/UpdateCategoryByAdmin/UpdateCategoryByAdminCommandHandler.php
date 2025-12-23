@@ -59,12 +59,12 @@ final readonly class UpdateCategoryByAdminCommandHandler
 
             $this->categoryRepository->save($category);
 
-            $categoryTree = $this->categoryRepository->findTreeById($command->categoryId);
-            if (null === $categoryTree) {
+            $categoryItem = $this->categoryRepository->findItemById($command->categoryId);
+            if (null === $categoryItem) {
                 throw new CategoryNotFoundException();
             }
 
-            return new UpdateCategoryByAdminOutput($categoryTree);
+            return new UpdateCategoryByAdminOutput($categoryItem);
         });
     }
 }

@@ -8,7 +8,7 @@ use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
+use App\Application\Shop\ReadModel\CategoryItem;
 use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCategoryByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCategoryByAdminCommandHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -61,7 +61,7 @@ final class CreateCategoryByAdminTest extends TestCase
         $description = CategoryDescription::fromString($descriptionValue);
         $slug = Slug::fromString('my-category');
         $parent = $this->createCategory($parentId, 'Parent category', 'parent-category');
-        $categoryTree = new CategoryTree(
+        $categoryItem = new CategoryItem(
             $this->createCategory($categoryId, $title, $slug->toString(), $description, $parentId),
             $parent,
             [],
@@ -106,9 +106,9 @@ final class CreateCategoryByAdminTest extends TestCase
             }));
 
         $this->repository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findItemById')
             ->with($categoryId)
-            ->willReturn($categoryTree);
+            ->willReturn($categoryItem);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -118,7 +118,7 @@ final class CreateCategoryByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryTree, $output->categoryTree);
+        $this->assertSame($categoryItem, $output->categoryItem);
     }
 
     public function testHandleThrowsWhenParentNotFound(): void
@@ -195,7 +195,7 @@ final class CreateCategoryByAdminTest extends TestCase
             ->with($this->isInstanceOf(Category::class));
 
         $this->repository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findItemById')
             ->with($categoryId)
             ->willReturn(null);
 

@@ -9,7 +9,6 @@ use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin\UpdateProductByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin\UpdateProductByAdminCommandHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -75,7 +74,6 @@ final class UpdateProductByAdminTest extends TestCase
         $oldCategory->increaseProductCount(new DateTimeImmutable('2024-01-01 10:00:00'));
 
         $newCategory = $this->createCategory($newCategoryId, 'New category', 'new-category');
-        $categoryTree = new CategoryTree($newCategory, null, []);
         $slug = Slug::fromString('new-title');
 
         $command = new UpdateProductByAdminCommand(
@@ -101,7 +99,7 @@ final class UpdateProductByAdminTest extends TestCase
             ->with('New title')
             ->willReturn($slug);
 
-        $this->categoryRepository->expects($this->exactly(2))
+        $this->categoryRepository->expects($this->exactly(3))
             ->method('findById')
             ->willReturnCallback(function (CategoryId $id) use ($oldCategoryId, $newCategoryId, $oldCategory, $newCategory): ?Category {
                 if ($id->equals($oldCategoryId)) {
@@ -133,11 +131,6 @@ final class UpdateProductByAdminTest extends TestCase
             ->method('save')
             ->with($product);
 
-        $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
-            ->with($newCategoryId)
-            ->willReturn($categoryTree);
-
         $this->transactional->expects($this->once())
             ->method('transactional')
             ->willReturnCallback(function (callable $callback) {
@@ -146,7 +139,7 @@ final class UpdateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryTree, $output->productView->categoryTree);
+        $this->assertSame($newCategory, $output->productItem->category);
         $this->assertSame('New title', $product->getTitle()->toString());
         $this->assertSame('New subtitle', $product->getSubtitle()->toString());
         $this->assertSame('New description', $product->getDescription()->toString());
@@ -161,7 +154,7 @@ final class UpdateProductByAdminTest extends TestCase
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $product = $this->createProduct($productId, $categoryId);
-        $categoryTree = new CategoryTree($this->createCategory($categoryId, 'Category', 'category'), null, []);
+        $category = $this->createCategory($categoryId, 'Category', 'category');
 
         $command = new UpdateProductByAdminCommand(
             productId: $productId,
@@ -184,17 +177,14 @@ final class UpdateProductByAdminTest extends TestCase
         $this->slugGenerator->expects($this->never())
             ->method('generate');
 
-        $this->categoryRepository->expects($this->never())
-            ->method('findById');
+        $this->categoryRepository->expects($this->once())
+            ->method('findById')
+            ->with($categoryId)
+            ->willReturn($category);
 
         $this->productRepository->expects($this->once())
             ->method('save')
             ->with($product);
-
-        $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
-            ->with($categoryId)
-            ->willReturn($categoryTree);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -204,7 +194,7 @@ final class UpdateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryTree, $output->productView->categoryTree);
+        $this->assertSame($category, $output->productItem->category);
         $this->assertSame('New description', $product->getDescription()->toString());
         $this->assertSame('Product title', $product->getTitle()->toString());
         $this->assertSame('Product subtitle', $product->getSubtitle()->toString());
@@ -216,7 +206,7 @@ final class UpdateProductByAdminTest extends TestCase
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $product = $this->createProduct($productId, $categoryId);
-        $categoryTree = new CategoryTree($this->createCategory($categoryId, 'Category', 'category'), null, []);
+        $category = $this->createCategory($categoryId, 'Category', 'category');
 
         $command = new UpdateProductByAdminCommand(
             productId: $productId,
@@ -244,9 +234,9 @@ final class UpdateProductByAdminTest extends TestCase
             ->with($product);
 
         $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findById')
             ->with($categoryId)
-            ->willReturn($categoryTree);
+            ->willReturn($category);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -256,7 +246,7 @@ final class UpdateProductByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($categoryTree, $output->productView->categoryTree);
+        $this->assertSame($category, $output->productItem->category);
         $this->assertSame('Product title', $product->getTitle()->toString());
         $this->assertSame('Updated subtitle', $product->getSubtitle()->toString());
         $this->assertSame($now, $product->getUpdatedAt());
@@ -341,7 +331,7 @@ final class UpdateProductByAdminTest extends TestCase
         $this->handler->handle($command);
     }
 
-    public function testHandleThrowsWhenCategoryTreeMissing(): void
+    public function testHandleThrowsWhenCategoryMissing(): void
     {
         $now = new DateTimeImmutable('2024-02-01 12:00:00');
         $productId = ProductId::fromString(self::PRODUCT_ID);
@@ -376,7 +366,7 @@ final class UpdateProductByAdminTest extends TestCase
             ->with($product);
 
         $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findById')
             ->with($categoryId)
             ->willReturn(null);
 

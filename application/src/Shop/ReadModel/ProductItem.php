@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace App\Application\Shop\ReadModel;
 
 use App\Domain\Shop\Catalog\Model\Category;
+use App\Domain\Shop\Catalog\Model\Product;
 
-final readonly class CategoryTree
+final readonly class ProductItem
 {
-    /**
-     * @param Category[] $children
-     */
     public function __construct(
+        public Product $product,
         public Category $category,
-        public ?Category $parent,
-        public array $children,
     ) {
     }
 }

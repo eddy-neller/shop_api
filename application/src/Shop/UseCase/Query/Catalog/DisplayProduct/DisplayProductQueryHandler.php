@@ -6,7 +6,7 @@ namespace App\Application\Shop\UseCase\Query\Catalog\DisplayProduct;
 
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\ProductView;
+use App\Application\Shop\ReadModel\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 
@@ -26,11 +26,11 @@ final readonly class DisplayProductQueryHandler
             throw new ProductNotFoundException();
         }
 
-        $categoryTree = $this->categoryRepository->findTreeById($product->getCategoryId());
-        if (null === $categoryTree) {
+        $category = $this->categoryRepository->findById($product->getCategoryId());
+        if (null === $category) {
             throw new CategoryNotFoundException();
         }
 
-        return new DisplayProductOutput(new ProductView($product, $categoryTree));
+        return new DisplayProductOutput(new ProductItem($product, $category));
     }
 }

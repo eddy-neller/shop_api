@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Presentation\Shop\Presenter\Catalog;
 
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
-use App\Application\Shop\ReadModel\ProductView;
+use App\Application\Shop\ReadModel\ProductItem;
+use App\Domain\Shop\Catalog\Model\Product;
+use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
 use App\Presentation\Shop\ApiResource\Catalog\ProductResource;
 
 final readonly class ProductResourcePresenter
@@ -16,10 +18,15 @@ final readonly class ProductResourcePresenter
     ) {
     }
 
-    public function toResource(ProductView $productView): ProductResource
+    public function toResource(ProductItem $productItem): ProductResource
     {
-        $product = $productView->product;
+        $category = $this->categoryResourcePresenter->toSummaryResource($productItem->category);
 
+        return $this->mapProduct($productItem->product, $category);
+    }
+
+    private function mapProduct(Product $product, CategoryResource $category): ProductResource
+    {
         $resource = new ProductResource();
 
         $resource->id = $product->getId()->toString();
@@ -29,7 +36,7 @@ final readonly class ProductResourcePresenter
         $resource->price = round($product->getPrice()->amount() / 100, 2);
         $resource->slug = $product->getSlug()->toString();
         $resource->imageUrl = $this->productImageUrlResolver->resolve($product->getImageName());
-        $resource->category = $this->categoryResourcePresenter->toResource($productView->categoryTree);
+        $resource->category = $category;
         $resource->createdAt = $product->getCreatedAt();
         $resource->updatedAt = $product->getUpdatedAt();
 

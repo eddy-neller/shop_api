@@ -101,6 +101,11 @@ bash-db:
 bash-redis:
 	@$(DOCKER) exec redis sh
 
+## Connection au ssh du container varnish
+.PHONY: bash-varnish
+bash-varnish:
+	@$(DOCKER) exec varnish sh
+
 ##--------------------------------- Composer -----------------------------------
 
 ## Execute composer

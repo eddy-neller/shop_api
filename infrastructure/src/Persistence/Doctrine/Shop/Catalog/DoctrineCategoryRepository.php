@@ -6,11 +6,14 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Catalog;
 
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
+use App\Application\Shop\ReadModel\CategoryItem;
+use App\Application\Shop\ReadModel\CategoryList;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Gedmo\Tree\Entity\Repository\NestedTreeRepository;
 
 /**
@@ -28,6 +31,38 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
     public function nextIdentity(): CategoryId
     {
         return CategoryId::fromString($this->uuidGenerator->generate());
+    }
+
+    public function list(?int $level, array $orderBy, int $page, int $itemsPerPage): CategoryList
+    {
+        $qb = $this->createQueryBuilder();
+
+        if (null !== $level) {
+            $qb->andWhere('c.level = :level')
+                ->setParameter('level', $level);
+        }
+
+        $this->applyOrdering($qb, $orderBy);
+
+        $offset = max(0, ($page - 1) * $itemsPerPage);
+        $qb->setFirstResult($offset)->setMaxResults($itemsPerPage);
+
+        $paginator = new Paginator($qb);
+        $totalItems = count($paginator);
+        $totalPages = $itemsPerPage > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
+
+        $categories = [];
+        foreach ($paginator as $entity) {
+            if ($entity instanceof DoctrineCategory) {
+                $categories[] = $this->mapper->toDomain($entity);
+            }
+        }
+
+        return new CategoryList(
+            categories: $categories,
+            totalItems: $totalItems,
+            totalPages: $totalPages,
+        );
     }
 
     public function save(DomainCategory $category): void
@@ -60,7 +95,7 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         return null === $entity ? null : $this->mapper->toDomain($entity);
     }
 
-    public function findTreeById(CategoryId $id): ?CategoryTree
+    public function findItemById(CategoryId $id): ?CategoryItem
     {
         $entity = $this->findEntity($id);
         if (null === $entity) {
@@ -71,9 +106,9 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         $childrenEntities = $entity->getChildren();
 
         $parent = null === $parentEntity ? null : $this->mapper->toDomain($parentEntity);
-        $children = array_map(fn (DoctrineCategory $child): DomainCategory => $this->mapper->toDomain($child), $childrenEntities);
+        $children = empty($childrenEntities) ? null : array_map(fn (DoctrineCategory $child): DomainCategory => $this->mapper->toDomain($child), $childrenEntities);
 
-        return new CategoryTree(
+        return new CategoryItem(
             category: $this->mapper->toDomain($entity),
             parent: $parent,
             children: $children,
@@ -90,5 +125,40 @@ final readonly class DoctrineCategoryRepository implements CategoryRepositoryInt
         $entity = $repository->find($id->toString());
 
         return $entity instanceof DoctrineCategory ? $entity : null;
+    }
+
+    private function createQueryBuilder(): QueryBuilder
+    {
+        $repository = $this->em->getRepository(DoctrineCategory::class);
+        if (!$repository instanceof NestedTreeRepository) {
+            return $this->em->createQueryBuilder()
+                ->select('c')
+                ->from(DoctrineCategory::class, 'c');
+        }
+
+        return $repository->createQueryBuilder('c');
+    }
+
+    private function applyOrdering(QueryBuilder $qb, array $orderBy): void
+    {
+        $allowedFields = [
+            'title' => 'c.title',
+            'level' => 'c.level',
+            'nbProduct' => 'c.nbProduct',
+            'createdAt' => 'c.createdAt',
+        ];
+
+        foreach ($orderBy as $field => $direction) {
+            if (!isset($allowedFields[$field])) {
+                continue;
+            }
+
+            $normalizedDirection = strtoupper((string) $direction);
+            if (!in_array($normalizedDirection, ['ASC', 'DESC'], true)) {
+                $normalizedDirection = 'ASC';
+            }
+
+            $qb->addOrderBy($allowedFields[$field], $normalizedDirection);
+        }
     }
 }

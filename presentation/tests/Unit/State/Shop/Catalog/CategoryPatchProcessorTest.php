@@ -6,7 +6,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
+use App\Application\Shop\ReadModel\CategoryItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin\UpdateCategoryByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -102,7 +102,7 @@ final class CategoryPatchProcessorTest extends TestCase
         $this->processor->process($input, $this->operation, ['id' => 123]);
     }
 
-    private function createCategoryTree(): CategoryTree
+    private function createCategoryTree(): CategoryItem
     {
         $categoryId = CategoryId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $parentId = CategoryId::fromString('550e8400-e29b-41d4-a716-446655440001');
@@ -123,7 +123,7 @@ final class CategoryPatchProcessorTest extends TestCase
             now: $now,
         );
 
-        return new CategoryTree($category, $parent, []);
+        return new CategoryItem($category, $parent, []);
     }
 
     private function createCategoryResource(string $id): CategoryResource

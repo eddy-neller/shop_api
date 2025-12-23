@@ -6,60 +6,52 @@ namespace App\Presentation\Shop\State\Catalog\Product;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Application\Shop\Port\ProductImageUrlResolverInterface;
-use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
-use App\Infrastructure\Entity\Shop\Product as DoctrineProduct;
-use App\Presentation\Shared\State\PaginatedCollectionProvider;
-use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
-use App\Presentation\Shop\ApiResource\Catalog\ProductResource;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shared\ReadModel\Pagination;
+use App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct\DisplayListProductQuery;
+use App\Presentation\Shop\Presenter\Catalog\ProductResourcePresenter;
+use Symfony\Component\HttpFoundation\Request;
 
 final readonly class ProductCollectionProvider implements ProviderInterface
 {
     public function __construct(
-        #[Autowire(service: PaginatedCollectionProvider::class)]
-        private ProviderInterface $provider,
-        private ProductImageUrlResolverInterface $productImageUrlResolver,
+        private QueryBusInterface $queryBus,
+        private ProductResourcePresenter $productResourcePresenter,
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
-        $result = $this->provider->provide($operation, $uriVariables, $context);
-
-        if (!is_iterable($result)) {
-            return $result;
+        $filters = $context['filters'] ?? [];
+        if (!is_array($filters)) {
+            $filters = [];
         }
 
-        return array_map(function (mixed $item): ProductResource {
-            return $this->mapToResource($item);
-        }, $result);
-    }
+        $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
+        $title = is_string($filters['title'] ?? null) ? $filters['title'] : null;
+        $subtitle = is_string($filters['subtitle'] ?? null) ? $filters['subtitle'] : null;
+        $description = is_string($filters['description'] ?? null) ? $filters['description'] : null;
+        $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
 
-    private function mapToResource(DoctrineProduct $product): ProductResource
-    {
-        $resource = new ProductResource();
+        $output = $this->queryBus->dispatch(new DisplayListProductQuery(
+            pagination: $pagination,
+            title: $title,
+            subtitle: $subtitle,
+            description: $description,
+            orderBy: $orderBy,
+        ));
 
-        $resource->id = $product->getId()->toString();
-        $resource->title = $product->getTitle();
-        $resource->slug = $product->getSlug();
-        $resource->price = round($product->getPrice() / 100, 2);
-        $resource->slug = $product->getSlug();
-        $resource->imageUrl = $this->productImageUrlResolver->resolve($product->getImageName());
-        $resource->category = $this->mapCategoryToResource($product->getCategory());
-        $resource->createdAt = $product->getCreatedAt();
-        $resource->updatedAt = $product->getUpdatedAt();
+        $request = $context['request'] ?? null;
+        if ($request instanceof Request) {
+            $request->attributes->set('_total_items', $output->totalItems);
+            $request->attributes->set('_total_pages', $output->totalPages);
+        }
 
-        return $resource;
-    }
+        $items = [];
+        foreach ($output->products as $product) {
+            $items[] = $this->productResourcePresenter->toResource($product);
+        }
 
-    private function mapCategoryToResource(DoctrineCategory $user): CategoryResource
-    {
-        $resource = new CategoryResource();
-
-        $resource->id = $user->getId()->toString();
-        $resource->title = $user->getTitle();
-
-        return $resource;
+        return $items;
     }
 }

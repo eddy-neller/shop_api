@@ -128,7 +128,7 @@ final class CategoryResource
 
     #[Groups(['shop_category:item:read'])]
     #[MaxDepth(1)]
-    public array $children = [];
+    public ?array $children = null;
 
     #[Groups(['shop_category:read', 'shop_product:item:read'])]
     public int $level = 0;

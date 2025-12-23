@@ -7,12 +7,16 @@ namespace App\Infrastructure\Persistence\Doctrine\Shop\Catalog;
 use App\Application\Shared\Port\FileInterface;
 use App\Application\Shared\Port\UuidGeneratorInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
+use App\Application\Shop\ReadModel\ProductItem;
+use App\Application\Shop\ReadModel\ProductList;
 use App\Domain\Shop\Catalog\Model\Product as DomainProduct;
 use App\Domain\Shop\Catalog\ValueObject\CategoryId;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
 use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
 use App\Infrastructure\Entity\Shop\Product as DoctrineProduct;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
@@ -24,12 +28,58 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         private EntityManagerInterface $em,
         private UuidGeneratorInterface $uuidGenerator,
         private ProductMapper $mapper,
+        private CategoryMapper $categoryMapper,
     ) {
     }
 
     public function nextIdentity(): ProductId
     {
         return ProductId::fromString($this->uuidGenerator->generate());
+    }
+
+    public function list(?string $title, ?string $subtitle, ?string $description, array $orderBy, int $page, int $itemsPerPage): ProductList
+    {
+        $qb = $this->createQueryBuilder();
+
+        if (null !== $title && '' !== $title) {
+            $qb->andWhere('p.title LIKE :title')
+                ->setParameter('title', '%' . $title . '%');
+        }
+
+        if (null !== $subtitle && '' !== $subtitle) {
+            $qb->andWhere('p.subtitle LIKE :subtitle')
+                ->setParameter('subtitle', '%' . $subtitle . '%');
+        }
+
+        if (null !== $description && '' !== $description) {
+            $qb->andWhere('p.description LIKE :description')
+                ->setParameter('description', '%' . $description . '%');
+        }
+
+        $this->applyOrdering($qb, $orderBy);
+
+        $offset = max(0, ($page - 1) * $itemsPerPage);
+        $qb->setFirstResult($offset)->setMaxResults($itemsPerPage);
+
+        $paginator = new Paginator($qb);
+        $totalItems = count($paginator);
+        $totalPages = $itemsPerPage > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
+
+        $products = [];
+        foreach ($paginator as $entity) {
+            if ($entity instanceof DoctrineProduct) {
+                $products[] = new ProductItem(
+                    product: $this->mapper->toDomain($entity),
+                    category: $this->categoryMapper->toDomain($entity->getCategory()),
+                );
+            }
+        }
+
+        return new ProductList(
+            products: $products,
+            totalItems: $totalItems,
+            totalPages: $totalPages,
+        );
     }
 
     public function save(DomainProduct $product): void
@@ -90,6 +140,37 @@ final readonly class DoctrineProductRepository implements ProductRepositoryInter
         $entity = $this->em->getRepository(DoctrineProduct::class)->find($id->toString());
 
         return $entity instanceof DoctrineProduct ? $entity : null;
+    }
+
+    private function createQueryBuilder(): QueryBuilder
+    {
+        return $this->em->createQueryBuilder()
+            ->select('p', 'c')
+            ->from(DoctrineProduct::class, 'p')
+            ->join('p.category', 'c');
+    }
+
+    private function applyOrdering(QueryBuilder $qb, array $orderBy): void
+    {
+        $allowedFields = [
+            'title' => 'p.title',
+            'price' => 'p.price',
+            'createdAt' => 'p.createdAt',
+            'category.title' => 'c.title',
+        ];
+
+        foreach ($orderBy as $field => $direction) {
+            if (!isset($allowedFields[$field])) {
+                continue;
+            }
+
+            $normalizedDirection = strtoupper((string) $direction);
+            if (!in_array($normalizedDirection, ['ASC', 'DESC'], true)) {
+                $normalizedDirection = 'ASC';
+            }
+
+            $qb->addOrderBy($allowedFields[$field], $normalizedDirection);
+        }
     }
 
     private function findCategoryEntity(CategoryId $id): ?DoctrineCategory

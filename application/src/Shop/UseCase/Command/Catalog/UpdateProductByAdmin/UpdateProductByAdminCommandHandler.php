@@ -9,7 +9,7 @@ use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\ProductView;
+use App\Application\Shop\ReadModel\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 use App\Domain\Shop\Catalog\ValueObject\ProductDescription;
@@ -83,12 +83,12 @@ final readonly class UpdateProductByAdminCommandHandler
 
             $this->productRepository->save($product);
 
-            $categoryTree = $this->categoryRepository->findTreeById($product->getCategoryId());
-            if (null === $categoryTree) {
+            $category = $this->categoryRepository->findById($product->getCategoryId());
+            if (null === $category) {
                 throw new CategoryNotFoundException();
             }
 
-            return new UpdateProductByAdminOutput(new ProductView($product, $categoryTree));
+            return new UpdateProductByAdminOutput(new ProductItem($product, $category));
         });
     }
 }

@@ -8,6 +8,7 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Faker\Generator;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 
@@ -17,7 +18,9 @@ class CategoryFixtures extends Fixture implements FixtureGroupInterface
 
     private AsciiSlugger $slugger;
 
-    public const int NB_LEVEL_1 = 4;
+    public const int NB_LEVEL_0 = 4;
+
+    public const int NB_LEVEL_1 = 8;
 
     public const int NB_LEVEL_2 = 8;
 
@@ -29,43 +32,84 @@ class CategoryFixtures extends Fixture implements FixtureGroupInterface
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create();
+        $level1Categories = [];
+        $level2Categories = [];
 
-        // Générer les catégories racine (niveau 1)
-        for ($i = 1; $i <= self::NB_LEVEL_1; ++$i) {
-            $category = new Category();
-            $category->setId(Uuid::uuid4());
-            $title = 'Shop category title ' . $i;
-            $category->setTitle($title);
-            $category->setDescription($faker->text());
-            $category->setSlug($this->generateSlug($title));
+        // Générer les catégories racine (niveau 0)
+        for ($i = 1; $i <= self::NB_LEVEL_0; ++$i) {
+            $title = 'Shop category level 0 title ' . $i;
+            $category = $this->createCategory($faker, $title, null);
 
-            $this->assignTimestamps($category);
+            $this->addReference('shop_category_level_0_' . $i, $category);
+            $level1Categories[] = $category;
 
+            $manager->persist($category);
+        }
+
+        // Générer les catégories de niveau 1
+        $level2Index = 1;
+        foreach ($level1Categories as $parent) {
+            if ($level2Index > self::NB_LEVEL_1) {
+                break;
+            }
+
+            $title = 'Shop category level 1 title ' . $level2Index;
+            $category = $this->createCategory($faker, $title, $parent);
+            $this->addReference('shop_category_level_1_' . $level2Index, $category);
+            $level2Categories[] = $category;
+            $manager->persist($category);
+            ++$level2Index;
+        }
+
+        for ($i = $level2Index; $i <= self::NB_LEVEL_1; ++$i) {
+            $parent = $level1Categories[$faker->numberBetween(0, count($level1Categories) - 1)];
+            $title = 'Shop category level 1 title ' . $i;
+            $category = $this->createCategory($faker, $title, $parent);
             $this->addReference('shop_category_level_1_' . $i, $category);
-
+            $level2Categories[] = $category;
             $manager->persist($category);
         }
 
         // Générer les catégories de niveau 2
-        for ($i = 1; $i <= self::NB_LEVEL_2; ++$i) {
-            $category = new Category();
-            $category->setId(Uuid::uuid4());
-            $title = 'Shop category level 1 title ' . $i;
-            $category->setTitle($title);
-            $category->setDescription($faker->text());
-            $category->setSlug($this->generateSlug($title));
+        $level3Index = 1;
+        foreach ($level2Categories as $parent) {
+            if ($level3Index > self::NB_LEVEL_2) {
+                break;
+            }
 
-            $parent = $this->getReference('shop_category_level_1_' . $faker->numberBetween(1, self::NB_LEVEL_1), Category::class);
-            $category->setParent($parent);
+            $title = $faker->company();
+            $category = $this->createCategory($faker, $title, $parent);
+            $this->addReference('shop_category_level_2_' . $level3Index, $category);
+            $manager->persist($category);
+            ++$level3Index;
+        }
 
-            $this->assignTimestamps($category);
-
+        for ($i = $level3Index; $i <= self::NB_LEVEL_2; ++$i) {
+            $parent = $level2Categories[$faker->numberBetween(0, count($level2Categories) - 1)];
+            $title = $faker->company();
+            $category = $this->createCategory($faker, $title, $parent);
             $this->addReference('shop_category_level_2_' . $i, $category);
-
             $manager->persist($category);
         }
 
         $manager->flush();
+    }
+
+    private function createCategory(Generator $faker, string $title, ?Category $parent): Category
+    {
+        $category = new Category();
+        $category->setId(Uuid::uuid4());
+        $category->setTitle($title);
+        $category->setSlug($this->generateSlug($title));
+        $category->setDescription($faker->text());
+
+        if (null !== $parent) {
+            $category->setParent($parent);
+        }
+
+        $this->assignTimestamps($category);
+
+        return $category;
     }
 
     private function assignTimestamps(Category $category): void

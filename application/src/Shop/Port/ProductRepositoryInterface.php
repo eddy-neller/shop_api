@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Application\Shop\Port;
 
 use App\Application\Shared\Port\FileInterface;
+use App\Application\Shop\ReadModel\ProductList;
 use App\Domain\Shop\Catalog\Model\Product;
 use App\Domain\Shop\Catalog\ValueObject\ProductId;
 
 interface ProductRepositoryInterface
 {
     public function nextIdentity(): ProductId;
+
+    public function list(?string $title, ?string $subtitle, ?string $description, array $orderBy, int $page, int $itemsPerPage): ProductList;
 
     public function save(Product $product): void;
 

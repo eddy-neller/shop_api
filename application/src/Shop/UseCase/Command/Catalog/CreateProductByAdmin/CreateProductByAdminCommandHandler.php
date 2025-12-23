@@ -9,7 +9,7 @@ use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\ProductView;
+use App\Application\Shop\ReadModel\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Model\Product;
 use App\Domain\Shop\Catalog\ValueObject\ProductDescription;
@@ -62,12 +62,7 @@ final readonly class CreateProductByAdminCommandHandler
             $category->increaseProductCount($now);
             $this->categoryRepository->save($category);
 
-            $categoryTree = $this->categoryRepository->findTreeById($categoryId);
-            if (null === $categoryTree) {
-                throw new CategoryNotFoundException();
-            }
-
-            return new CreateProductByAdminOutput(new ProductView($product, $categoryTree));
+            return new CreateProductByAdminOutput(new ProductItem($product, $category));
         });
     }
 }

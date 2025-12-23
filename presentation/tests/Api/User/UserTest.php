@@ -946,6 +946,8 @@ confirmNewPassword: This value should not be blank.',
 
     public function testGetUser(): void
     {
+        $adminToken = self::PLACEHOLDERS['TOKENS']['ADMIN'];
+
         $assertSerialization = [
             'hasKey' => [
                 'id',
@@ -971,7 +973,9 @@ confirmNewPassword: This value should not be blank.',
         $this->testSuccess(
             Request::METHOD_GET,
             $this->iri,
-            [],
+            [
+                'auth_bearer' => $adminToken,
+            ],
             Response::HTTP_OK,
             [
                 BaseTest::ASSERTION_TYPE['SERIALIZATION'] => $assertSerialization,

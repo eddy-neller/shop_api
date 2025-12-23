@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Tests\Unit\Shop\UseCase\Query;
 
 use App\Application\Shop\Port\CategoryRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
+use App\Application\Shop\ReadModel\CategoryItem;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryQuery;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryQueryHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -36,16 +36,16 @@ final class DisplayCategoryTest extends TestCase
         $categoryId = CategoryId::fromString(self::CATEGORY_ID);
         $query = new DisplayCategoryQuery($categoryId);
         $category = $this->createCategory($categoryId);
-        $categoryTree = new CategoryTree($category, null, []);
+        $categoryItem = new CategoryItem($category, null, []);
 
         $this->repository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findItemById')
             ->with($categoryId)
-            ->willReturn($categoryTree);
+            ->willReturn($categoryItem);
 
         $output = $this->handler->handle($query);
 
-        $this->assertSame($categoryTree, $output->categoryTree);
+        $this->assertSame($categoryItem, $output->categoryItem);
     }
 
     public function testHandleThrowsWhenCategoryNotFound(): void
@@ -54,7 +54,7 @@ final class DisplayCategoryTest extends TestCase
         $query = new DisplayCategoryQuery($categoryId);
 
         $this->repository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findItemById')
             ->with($categoryId)
             ->willReturn(null);
 

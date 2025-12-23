@@ -131,9 +131,12 @@ final class CategoryTest extends BaseTest
                 'nbProduct',
                 'slug',
                 'level',
-                'children',
                 'createdAt',
                 'updatedAt',
+            ],
+            'hasNotKey' => [
+                'parent', // pas de parent donc level 0
+                'children',
             ],
         ];
 

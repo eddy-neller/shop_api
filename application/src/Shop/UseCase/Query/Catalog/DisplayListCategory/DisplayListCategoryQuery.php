@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory;
+
+use App\Application\Shared\CQRS\Query\CacheableQueryInterface;
+use App\Application\Shared\ReadModel\Pagination;
+
+final readonly class DisplayListCategoryQuery implements CacheableQueryInterface
+{
+    private const int CACHE_TTL_SECONDS = 3600;
+
+    public function __construct(
+        public Pagination $pagination,
+        public ?int $level,
+        public array $orderBy = [],
+    ) {
+    }
+
+    public function cacheKey(): string
+    {
+        $payload = [
+            'page' => $this->pagination->page,
+            'itemsPerPage' => $this->pagination->itemsPerPage,
+            'level' => $this->level,
+            'orderBy' => $this->normalizedOrderBy(),
+        ];
+
+        $encoded = serialize($payload);
+
+        return 'category:list:' . hash('sha256', $encoded);
+    }
+
+    public function cacheTtl(): int
+    {
+        return self::CACHE_TTL_SECONDS;
+    }
+
+    public function cacheTags(): array
+    {
+        return ['categories-collection'];
+    }
+
+    private function normalizedOrderBy(): array
+    {
+        $orderBy = $this->orderBy;
+        ksort($orderBy);
+
+        return $orderBy;
+    }
+}

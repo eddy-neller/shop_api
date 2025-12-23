@@ -16,12 +16,12 @@ final readonly class DisplayCategoryQueryHandler
 
     public function handle(DisplayCategoryQuery $query): DisplayCategoryOutput
     {
-        $categoryTree = $this->categoryRepository->findTreeById($query->categoryId);
+        $categoryItem = $this->categoryRepository->findItemById($query->categoryId);
 
-        if (null === $categoryTree) {
+        if (null === $categoryItem) {
             throw new CategoryNotFoundException();
         }
 
-        return new DisplayCategoryOutput($categoryTree);
+        return new DisplayCategoryOutput($categoryItem);
     }
 }

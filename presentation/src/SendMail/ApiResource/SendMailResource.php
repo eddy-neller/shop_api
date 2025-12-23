@@ -10,6 +10,9 @@ use App\Presentation\SendMail\State\SendMailProcessor;
 use ArrayObject;
 use Symfony\Component\Serializer\Annotation\Groups;
 
+/**
+ * @codeCoverageIgnore
+ */
 #[ApiResource(
     shortName: 'SendMail',
     operations: [

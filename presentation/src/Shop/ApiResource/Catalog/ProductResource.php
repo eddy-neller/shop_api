@@ -8,6 +8,7 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Doctrine\Orm\State\Options;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -150,6 +151,7 @@ final class ProductResource
     public ?string $imageUrl = null;
 
     #[ApiFilter(filterClass: SearchFilter::class, strategy: 'exact')]
+    #[ApiProperty(security: "is_granted('ROLE_ADMIN')")]
     #[Groups(['shop_product:read', 'shop_product:write'])]
     public CategoryResource $category;
 

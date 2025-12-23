@@ -14,7 +14,10 @@ use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Table(name: 'shop_product')]
+#[ORM\Index(name: 'ShopProductTitleIdx', columns: ['title'])]
+#[ORM\Index(name: 'ShopProductPriceIdx', columns: ['price'])]
 #[ORM\Index(name: 'ShopProductCategoryIdx', columns: ['category_id'])]
+#[ORM\Index(name: 'ShopProductCreatedAtIdx', columns: ['created_at'])]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[Vich\Uploadable]
 class Product
@@ -47,7 +50,7 @@ class Product
     public ?string $imageUrl = null;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Category $category;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]

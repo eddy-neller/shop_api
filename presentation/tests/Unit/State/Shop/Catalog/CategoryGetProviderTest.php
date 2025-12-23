@@ -6,7 +6,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Query\QueryBusInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
+use App\Application\Shop\ReadModel\CategoryItem;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryOutput;
 use App\Application\Shop\UseCase\Query\Catalog\DisplayCategory\DisplayCategoryQuery;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -75,7 +75,7 @@ final class CategoryGetProviderTest extends TestCase
         $this->provider->provide($this->operation, ['id' => 123]);
     }
 
-    private function createCategoryTree(): CategoryTree
+    private function createCategoryTree(): CategoryItem
     {
         $now = new DateTimeImmutable('2024-01-01 10:00:00');
         $category = Category::create(
@@ -85,6 +85,6 @@ final class CategoryGetProviderTest extends TestCase
             now: $now,
         );
 
-        return new CategoryTree($category, null, []);
+        return new CategoryItem($category, null, []);
     }
 }

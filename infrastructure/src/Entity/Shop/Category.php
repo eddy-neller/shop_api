@@ -15,7 +15,11 @@ use Gedmo\Tree\Traits\NestedSetEntityUuid;
 use Ramsey\Uuid\UuidInterface;
 
 #[ORM\Table(name: 'shop_category')]
+#[ORM\Index(name: 'ShopCategoryTitleIdx', columns: ['title'])]
+#[ORM\Index(name: 'ShopCategoryNbProductIdx', columns: ['nb_product'])]
+#[ORM\Index(name: 'ShopCategoryLevelIdx', columns: ['lvl'])]
 #[ORM\Index(name: 'ShopCategoryParentIdx', columns: ['parent_id'])]
+#[ORM\Index(name: 'ShopCategoryCreatedAtIdx', columns: ['created_at'])]
 #[ORM\Entity(repositoryClass: NestedTreeRepository::class)]
 #[Gedmo\Tree(type: 'nested')]
 class Category

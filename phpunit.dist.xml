@@ -18,11 +18,11 @@
     </php>
 
     <testsuites>
-        <testsuite name="appli.usecase.user">
+        <testsuite name="appli.user">
             <directory>application/tests/Unit/User/UseCase</directory>
             <directory>application/tests/Unit/User/Service</directory>
         </testsuite>
-        <testsuite name="appli.usecase.shop">
+        <testsuite name="appli.shop">
             <directory>application/tests/Unit/Shop/UseCase</directory>
         </testsuite>
 
@@ -36,14 +36,11 @@
             <directory>domain/User/tests/Unit</directory>
         </testsuite>
 
-        <testsuite name="infra.command.shop">
-            <directory>infrastructure/tests/Unit/Command/Shop</directory>
+        <testsuite name="infra.command">
+            <directory>infrastructure/tests/Unit/Command</directory>
         </testsuite>
-        <testsuite name="infra.command.user">
-            <directory>infrastructure/tests/Unit/Command/User</directory>
-        </testsuite>
-        <testsuite name="infra.notif.user">
-            <directory>infrastructure/tests/Unit/Notification/User</directory>
+        <testsuite name="infra.notif">
+            <directory>infrastructure/tests/Unit/Notification</directory>
         </testsuite>
         <testsuite name="infra.persist">
             <directory>infrastructure/tests/Unit/Persistence</directory>
@@ -53,6 +50,9 @@
         </testsuite>
         <testsuite name="infra.service.token">
             <directory>infrastructure/tests/Unit/Service/Token</directory>
+        </testsuite>
+        <testsuite name="infra.service.shop">
+            <directory>infrastructure/tests/Unit/Service/Shop</directory>
         </testsuite>
         <testsuite name="infra.service.user">
             <directory>infrastructure/tests/Unit/Service/User</directory>

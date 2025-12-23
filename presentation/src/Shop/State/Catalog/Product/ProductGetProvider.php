@@ -31,6 +31,6 @@ final readonly class ProductGetProvider implements ProviderInterface
         $productId = ProductId::fromString($uriVariables['id']);
         $output = $this->queryBus->dispatch(new DisplayProductQuery($productId));
 
-        return $this->productResourcePresenter->toResource($output->productView);
+        return $this->productResourcePresenter->toResource($output->productItem);
     }
 }

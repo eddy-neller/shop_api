@@ -52,12 +52,12 @@ final readonly class CreateCategoryByAdminCommandHandler
 
             $this->repository->save($category);
 
-            $categoryTree = $this->repository->findTreeById($id);
-            if (null === $categoryTree) {
+            $categoryItem = $this->repository->findItemById($id);
+            if (null === $categoryItem) {
                 throw new CategoryNotFoundException();
             }
 
-            return new CreateCategoryByAdminOutput($categoryTree);
+            return new CreateCategoryByAdminOutput($categoryItem);
         });
     }
 }

@@ -44,6 +44,8 @@ final class ProductTest extends BaseTest
 
     public static function provideColShopProduct(): Generator
     {
+        $adminToken = self::PLACEHOLDERS['TOKENS']['ADMIN'];
+
         $assertions = [
             BaseTest::ASSERTION_TYPE['SERIALIZATION'] => [
                 'hasKey' => [
@@ -65,12 +67,15 @@ final class ProductTest extends BaseTest
         ];
 
         yield 'Normal' => [
-            [],
+            [
+                'auth_bearer' => $adminToken,
+            ],
             $assertions,
         ];
 
         yield 'Pagin' => [
             [
+                'auth_bearer' => $adminToken,
                 'query' => self::generateQuery(
                     [
                         'page' => self::PAGIN_PAGE_ONE,
@@ -83,6 +88,7 @@ final class ProductTest extends BaseTest
 
         yield 'Filter' => [
             [
+                'auth_bearer' => $adminToken,
                 'query' => self::generateQuery(
                     [
                         'filters' => [
@@ -288,6 +294,8 @@ final class ProductTest extends BaseTest
 
     public function testGetShopProduct(): void
     {
+        $adminToken = self::PLACEHOLDERS['TOKENS']['ADMIN'];
+
         $assertSerialization = [
             'hasKey' => [
                 'id',
@@ -309,7 +317,9 @@ final class ProductTest extends BaseTest
         $this->testSuccess(
             Request::METHOD_GET,
             $this->iri,
-            [],
+            [
+                'auth_bearer' => $adminToken,
+            ],
             Response::HTTP_OK,
             [
                 BaseTest::ASSERTION_TYPE['SERIALIZATION'] => $assertSerialization,

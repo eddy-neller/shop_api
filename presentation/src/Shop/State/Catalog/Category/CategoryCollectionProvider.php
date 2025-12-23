@@ -6,44 +6,50 @@ namespace App\Presentation\Shop\State\Catalog\Category;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Infrastructure\Entity\Shop\Category as DoctrineCategory;
-use App\Presentation\Shared\State\PaginatedCollectionProvider;
-use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use App\Application\Shared\CQRS\Query\QueryBusInterface;
+use App\Application\Shared\ReadModel\Pagination;
+use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQuery;
+use App\Presentation\Shop\Presenter\Catalog\CategoryResourcePresenter;
+use Symfony\Component\HttpFoundation\Request;
 
 final readonly class CategoryCollectionProvider implements ProviderInterface
 {
     public function __construct(
-        #[Autowire(service: PaginatedCollectionProvider::class)]
-        private ProviderInterface $provider,
+        private QueryBusInterface $queryBus,
+        private CategoryResourcePresenter $categoryResourcePresenter,
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
-        $result = $this->provider->provide($operation, $uriVariables, $context);
-
-        if (!is_iterable($result)) {
-            return $result;
+        $filters = $context['filters'] ?? [];
+        if (!is_array($filters)) {
+            $filters = [];
         }
 
-        return array_map(function (mixed $item): CategoryResource {
-            return $this->mapToResource($item);
-        }, $result);
-    }
+        $pagination = Pagination::fromRaw($filters['page'] ?? null, $filters['itemsPerPage'] ?? null);
+        $level = filter_var($filters['level'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+        $level = false === $level ? null : (int) $level;
 
-    private function mapToResource(DoctrineCategory $user): CategoryResource
-    {
-        $resource = new CategoryResource();
+        $orderBy = is_array($filters['order'] ?? null) ? $filters['order'] : [];
 
-        $resource->id = $user->getId()->toString();
-        $resource->title = $user->getTitle();
-        $resource->slug = $user->getSlug();
-        $resource->nbProduct = $user->getNbProduct();
-        $resource->level = $user->getLevel();
-        $resource->createdAt = $user->getCreatedAt();
-        $resource->updatedAt = $user->getUpdatedAt();
+        $output = $this->queryBus->dispatch(new DisplayListCategoryQuery(
+            pagination: $pagination,
+            level: $level,
+            orderBy: $orderBy,
+        ));
 
-        return $resource;
+        $request = $context['request'] ?? null;
+        if ($request instanceof Request) {
+            $request->attributes->set('_total_items', $output->totalItems);
+            $request->attributes->set('_total_pages', $output->totalPages);
+        }
+
+        $items = [];
+        foreach ($output->categories as $category) {
+            $items[] = $this->categoryResourcePresenter->toSummaryResource($category);
+        }
+
+        return $items;
     }
 }

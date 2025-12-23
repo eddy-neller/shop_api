@@ -8,7 +8,6 @@ use App\Application\Shared\Port\FileInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin\UpdateProductImageByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin\UpdateProductImageByAdminCommandHandler;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -58,7 +57,7 @@ final class UpdateProductImageByAdminTest extends TestCase
     {
         $productId = ProductId::fromString(self::PRODUCT_ID);
         $product = $this->createProduct($productId);
-        $categoryTree = $this->createCategoryTree($product->getCategoryId());
+        $category = $this->createCategory($product->getCategoryId());
         $file = $this->createMock(FileInterface::class);
         $file->method('isValid')->willReturn(true);
 
@@ -73,9 +72,9 @@ final class UpdateProductImageByAdminTest extends TestCase
             ->willReturn($product);
 
         $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findById')
             ->with($product->getCategoryId())
-            ->willReturn($categoryTree);
+            ->willReturn($category);
 
         $this->transactional->expects($this->once())
             ->method('transactional')
@@ -85,8 +84,8 @@ final class UpdateProductImageByAdminTest extends TestCase
 
         $output = $this->handler->handle($command);
 
-        $this->assertSame($product, $output->productView->product);
-        $this->assertSame($categoryTree, $output->productView->categoryTree);
+        $this->assertSame($product, $output->productItem->product);
+        $this->assertSame($category, $output->productItem->category);
     }
 
     public function testHandleThrowsExceptionWhenProductNotFound(): void
@@ -135,7 +134,7 @@ final class UpdateProductImageByAdminTest extends TestCase
             ->willReturn($product);
 
         $this->categoryRepository->expects($this->once())
-            ->method('findTreeById')
+            ->method('findById')
             ->with($product->getCategoryId())
             ->willReturn(null);
 
@@ -182,15 +181,13 @@ final class UpdateProductImageByAdminTest extends TestCase
         );
     }
 
-    private function createCategoryTree(CategoryId $categoryId): CategoryTree
+    private function createCategory(CategoryId $categoryId): Category
     {
-        $category = Category::create(
+        return Category::create(
             id: $categoryId,
             title: CategoryTitle::fromString('Category title'),
             slug: Slug::fromString('category-title'),
             now: new DateTimeImmutable(),
         );
-
-        return new CategoryTree($category, null, []);
     }
 }

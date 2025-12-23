@@ -8,8 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
 use App\Application\Shared\Port\FileInterface;
 use App\Application\Shop\Port\ProductImageUrlResolverInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
-use App\Application\Shop\ReadModel\ProductView;
+use App\Application\Shop\ReadModel\ProductItem;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin\UpdateProductImageByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin\UpdateProductImageByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -146,7 +145,7 @@ final class ProductImageProcessorTest extends TestCase
         return $mockFile;
     }
 
-    private function createProductView(): ProductView
+    private function createProductView(): ProductItem
     {
         $now = new DateTimeImmutable('2024-01-01 10:00:00');
         $category = Category::create(
@@ -155,8 +154,6 @@ final class ProductImageProcessorTest extends TestCase
             slug: Slug::fromString('category-title'),
             now: $now,
         );
-
-        $categoryTree = new CategoryTree($category, null, []);
 
         $product = Product::reconstitute(
             id: ProductId::fromString('550e8400-e29b-41d4-a716-446655440000'),
@@ -171,6 +168,6 @@ final class ProductImageProcessorTest extends TestCase
             updatedAt: $now,
         );
 
-        return new ProductView($product, $categoryTree);
+        return new ProductItem($product, $category);
     }
 }

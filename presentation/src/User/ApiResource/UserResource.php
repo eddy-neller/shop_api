@@ -49,6 +49,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Get(
             uriTemplate: '/users/{id}',
             requirements: ['id' => RouteRequirements::UUID],
+            openapi: new Model\Operation(
+                summary: 'Display a user (Admin only).',
+                description: 'Display a user. This endpoint is accessible only by administrators.',
+                security: [['JWT' => []]]
+            ),
+            security: "is_granted('ROLE_ADMIN')",
             name: self::PREFIX_NAME . 'get',
             provider: UserGetProvider::class,
         ),
@@ -67,10 +73,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
             openapi: new Model\Operation(
                 summary: 'Update a user (Admin only).',
                 description: 'Update a user. All fields are optional. This endpoint is accessible only by administrators.',
-                requestBody: new RequestBody(
-                    description: 'User update request body',
-                    required: true
-                ),
                 security: [['JWT' => []]]
             ),
             security: "is_granted('ROLE_ADMIN')",

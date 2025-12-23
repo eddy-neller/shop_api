@@ -7,7 +7,7 @@ namespace App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
-use App\Application\Shop\ReadModel\ProductView;
+use App\Application\Shop\ReadModel\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CatalogDomainException;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
@@ -34,12 +34,12 @@ final readonly class UpdateProductImageByAdminCommandHandler
                 throw new ProductNotFoundException();
             }
 
-            $categoryTree = $this->categoryRepository->findTreeById($product->getCategoryId());
-            if (null === $categoryTree) {
+            $category = $this->categoryRepository->findById($product->getCategoryId());
+            if (null === $category) {
                 throw new CategoryNotFoundException();
             }
 
-            return new UpdateProductImageByAdminOutput(new ProductView($product, $categoryTree));
+            return new UpdateProductImageByAdminOutput(new ProductItem($product, $category));
         });
     }
 }

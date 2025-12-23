@@ -6,7 +6,7 @@ namespace App\Presentation\Tests\Unit\State\Shop\Catalog;
 
 use ApiPlatform\Metadata\Operation;
 use App\Application\Shared\CQRS\Command\CommandBusInterface;
-use App\Application\Shop\ReadModel\CategoryTree;
+use App\Application\Shop\ReadModel\CategoryItem;
 use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCategoryByAdminCommand;
 use App\Application\Shop\UseCase\Command\Catalog\CreateCategoryByAdmin\CreateCategoryByAdminOutput;
 use App\Domain\SharedKernel\ValueObject\Slug;
@@ -80,7 +80,7 @@ final class CategoryPostProcessorTest extends TestCase
         $this->processor->process($invalidInput, $this->operation);
     }
 
-    private function createCategoryTree(): CategoryTree
+    private function createCategoryTree(): CategoryItem
     {
         $categoryId = CategoryId::fromString('550e8400-e29b-41d4-a716-446655440000');
         $parentId = CategoryId::fromString('550e8400-e29b-41d4-a716-446655440001');
@@ -101,7 +101,7 @@ final class CategoryPostProcessorTest extends TestCase
             now: $now,
         );
 
-        return new CategoryTree($category, $parent, []);
+        return new CategoryItem($category, $parent, []);
     }
 
     private function createCategoryResource(string $id): CategoryResource

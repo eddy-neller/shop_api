@@ -1,0 +1,90 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Tests\Unit\Shop\UseCase\Query;
+
+use App\Application\Shared\ReadModel\Pagination;
+use App\Application\Shop\Port\CategoryRepositoryInterface;
+use App\Application\Shop\ReadModel\CategoryList;
+use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQuery;
+use App\Application\Shop\UseCase\Query\Catalog\DisplayListCategory\DisplayListCategoryQueryHandler;
+use App\Domain\SharedKernel\ValueObject\Slug;
+use App\Domain\Shop\Catalog\Model\Category;
+use App\Domain\Shop\Catalog\ValueObject\CategoryId;
+use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
+use DateTimeImmutable;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+final class DisplayListCategoryTest extends TestCase
+{
+    private CategoryRepositoryInterface&MockObject $repository;
+
+    private DisplayListCategoryQueryHandler $handler;
+
+    protected function setUp(): void
+    {
+        $this->repository = $this->createMock(CategoryRepositoryInterface::class);
+        $this->handler = new DisplayListCategoryQueryHandler($this->repository);
+    }
+
+    public function testHandleReturnsCategoriesAndPagination(): void
+    {
+        $query = new DisplayListCategoryQuery(
+            pagination: Pagination::fromValues(2, 5),
+            level: 1,
+            orderBy: ['title' => 'ASC'],
+        );
+
+        $category = $this->createCategory(CategoryId::fromString('550e8400-e29b-41d4-a716-446655440000'));
+        $list = new CategoryList([$category], 10, 2);
+
+        $this->repository->expects($this->once())
+            ->method('list')
+            ->with(1, ['title' => 'ASC'], 2, 5)
+            ->willReturn($list);
+
+        $output = $this->handler->handle($query);
+
+        $this->assertSame([$category], $output->categories);
+        $this->assertSame(10, $output->totalItems);
+        $this->assertSame(2, $output->totalPages);
+    }
+
+    public function testHandleAppliesDefaultsWhenValuesAreInvalid(): void
+    {
+        $query = new DisplayListCategoryQuery(
+            pagination: Pagination::fromValues(0, 0),
+            level: null,
+            orderBy: [],
+        );
+
+        $category = $this->createCategory(CategoryId::fromString('550e8400-e29b-41d4-a716-446655440001'));
+        $list = new CategoryList([$category], 1, 1);
+
+        $this->repository->expects($this->once())
+            ->method('list')
+            ->with(null, ['createdAt' => 'DESC'], 1, 30)
+            ->willReturn($list);
+
+        $output = $this->handler->handle($query);
+
+        $this->assertSame([$category], $output->categories);
+    }
+
+    private function createCategory(CategoryId $categoryId): Category
+    {
+        return Category::reconstitute(
+            id: $categoryId,
+            title: CategoryTitle::fromString('Category title'),
+            slug: Slug::fromString('category-title'),
+            createdAt: new DateTimeImmutable('2025-01-01 10:00:00'),
+            updatedAt: new DateTimeImmutable('2025-01-02 10:00:00'),
+            parentId: null,
+            description: null,
+            productCount: 0,
+            level: 1,
+        );
+    }
+}

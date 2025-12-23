@@ -4,25 +4,33 @@ declare(strict_types=1);
 
 namespace App\Presentation\Shop\Presenter\Catalog;
 
-use App\Application\Shop\ReadModel\CategoryTree;
+use App\Application\Shop\ReadModel\CategoryItem;
 use App\Domain\Shop\Catalog\Model\Category as DomainCategory;
 use App\Presentation\Shop\ApiResource\Catalog\CategoryResource;
 
 final readonly class CategoryResourcePresenter
 {
-    public function toResource(CategoryTree $categoryTree): CategoryResource
+    public function toResource(CategoryItem $categoryItem): CategoryResource
     {
-        $resource = $this->mapCategory($categoryTree->category);
+        $resource = $this->mapCategory($categoryItem->category);
 
-        $resource->parent = null === $categoryTree->parent ? null : $this->mapCategory($categoryTree->parent);
-        $resource->children = array_map(
+        $resource->parent = null === $categoryItem->parent ? null : $this->mapCategory($categoryItem->parent);
+        $resource->children = null === $categoryItem->children ? null : array_map(
             fn (DomainCategory $child): CategoryResource => $this->mapCategory($child),
-            $categoryTree->children,
+            $categoryItem->children,
         );
 
         return $resource;
     }
 
+    public function toSummaryResource(DomainCategory $category): CategoryResource
+    {
+        return $this->mapCategory($category);
+    }
+
+    /**
+     * Flat mapping to prevent parent/children recursion in list/get payloads.
+     */
     private function mapCategory(DomainCategory $category): CategoryResource
     {
         $resource = new CategoryResource();
