@@ -43,7 +43,7 @@ services:
     App\Presentation\:
         resource: "../presentation/src/"
 
-    # CQRS - configuration manuelle des handlers
+    # CQRS - configuration des handlers
     App\Application\User\UseCase\Command\:
         resource: "../application/src/User/UseCase/Command/**/*CommandHandler.php"
         tags: ["app.cqrs.command_handler"]
@@ -60,14 +60,14 @@ services:
         resource: "../application/src/Shop/UseCase/Query/**/*QueryHandler.php"
         tags: ["app.cqrs.query_handler"]
 
-    # CQRS - Configuration des resolvers avec injection manuelle des ServiceLocators
+    # CQRS - Configuration des resolvers
     App\Application\Shared\CQRS\Command\CommandHandlerResolver:
         arguments:
-            $handlerLocator: !tagged_locator { tag: "app.cqrs.command_handler" }
+            $handlers: !tagged_locator { tag: "app.cqrs.command_handler" }
 
     App\Application\Shared\CQRS\Query\QueryHandlerResolver:
         arguments:
-            $handlerLocator: !tagged_locator { tag: "app.cqrs.query_handler" }
+            $handlers: !tagged_locator { tag: "app.cqrs.query_handler" }
 
     # CQRS - Configuration des middlewares
     App\Application\Shared\CQRS\Middleware\CommandLoggingMiddleware:
@@ -80,7 +80,7 @@ services:
         tags:
             - { name: "app.cqrs.query_middleware", priority: -100 }
 
-    # CQRS - Configuration des Bus avec injection manuelle des middlewares
+    # CQRS - Configuration des Bus
     App\Application\Shared\CQRS\Command\CommandBus:
         arguments:
             $middlewares:

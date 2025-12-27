@@ -12,7 +12,7 @@ final class CommandHandlerResolver implements CommandHandlerResolverInterface
     private array $handlerCache = [];
 
     public function __construct(
-        private readonly ContainerInterface $handlerLocator,
+        private readonly ContainerInterface $handlers,
     ) {
     }
 
@@ -26,12 +26,11 @@ final class CommandHandlerResolver implements CommandHandlerResolverInterface
 
         $handlerClass = $this->discoverHandlerClass($commandClass);
 
-        // TODO: Récupérer le handler depuis le ServiceLocator (à changer)
-        if (!$this->handlerLocator->has($handlerClass)) {
+        if (!$this->handlers->has($handlerClass)) {
             throw new RuntimeException(sprintf('Handler "%s" not found for command "%s". Make sure the handler is registered as a service.', $handlerClass, $commandClass));
         }
 
-        $handler = $this->handlerLocator->get($handlerClass);
+        $handler = $this->handlers->get($handlerClass);
 
         if (!method_exists($handler, 'handle')) {
             throw new RuntimeException(sprintf('Handler "%s" does not have a "handle" method for command "%s".', $handlerClass, $commandClass));
