@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\UseCase\Query\Catalog\DisplayProduct;
 
+use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 use App\Application\Shop\ReadModel\ProductItem;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 
-final readonly class DisplayProductQueryHandler
+final readonly class DisplayProductQueryHandler implements QueryHandlerInterface
 {
     public function __construct(
         private ProductRepositoryInterface $productRepository,

@@ -34,8 +34,7 @@ final class CommandBus implements CommandBusInterface
         $next = $handler;
 
         /**
-         * On inverse pour que le premier middleware de la liste
-         * soit exécuté en premier.
+         * On inverse pour que le premier middleware de la liste soit exécuté en premier.
          */
         $middlewares = is_array($this->middlewares) ? $this->middlewares : iterator_to_array($this->middlewares);
         $middlewares = array_reverse($middlewares);

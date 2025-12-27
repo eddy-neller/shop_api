@@ -5,6 +5,8 @@ $finder = (new PhpCsFixer\Finder())
     ->exclude('var')
     ->exclude('save')
     ->exclude('config')
+    ->exclude('vendor')
+    ->exclude('public')
     ->notPath('tests/bootstrap.php')
 ;
 

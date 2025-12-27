@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\UseCase\Command\Catalog\UpdateProductImageByAdmin;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\Shop\Port\CategoryRepositoryInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
@@ -12,7 +13,7 @@ use App\Domain\Shop\Catalog\Exception\CatalogDomainException;
 use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\Exception\ProductNotFoundException;
 
-final readonly class UpdateProductImageByAdminCommandHandler
+final readonly class UpdateProductImageByAdminCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private ProductRepositoryInterface $productRepository,

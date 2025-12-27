@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\UseCase\Command\Catalog\UpdateCategoryByAdmin;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
@@ -13,7 +14,7 @@ use App\Domain\Shop\Catalog\Exception\CategoryNotFoundException;
 use App\Domain\Shop\Catalog\ValueObject\CategoryDescription;
 use App\Domain\Shop\Catalog\ValueObject\CategoryTitle;
 
-final readonly class UpdateCategoryByAdminCommandHandler
+final readonly class UpdateCategoryByAdminCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,

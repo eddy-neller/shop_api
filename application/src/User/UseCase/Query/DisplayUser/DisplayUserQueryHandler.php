@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Query\DisplayUser;
 
+use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserNotFoundException;
 
-final readonly class DisplayUserQueryHandler
+final readonly class DisplayUserQueryHandler implements QueryHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,

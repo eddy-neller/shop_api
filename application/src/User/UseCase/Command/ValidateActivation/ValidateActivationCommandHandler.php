@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Command\ValidateActivation;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\TokenProviderInterface;
@@ -11,7 +12,7 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserNotFoundException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
-final readonly class ValidateActivationCommandHandler
+final readonly class ValidateActivationCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,

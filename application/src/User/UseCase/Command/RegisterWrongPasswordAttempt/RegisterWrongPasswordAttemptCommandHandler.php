@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Command\RegisterWrongPasswordAttempt;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
-final readonly class RegisterWrongPasswordAttemptCommandHandler
+final readonly class RegisterWrongPasswordAttemptCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,

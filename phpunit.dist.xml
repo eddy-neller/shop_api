@@ -25,6 +25,9 @@
         <testsuite name="appli.shop">
             <directory>application/tests/Unit/Shop/UseCase</directory>
         </testsuite>
+        <testsuite name="appli.shared">
+            <directory>application/tests/Unit/Shared</directory>
+        </testsuite>
 
         <testsuite name="domain.shared">
             <directory>domain/SharedKernel/tests/Unit</directory>
@@ -50,9 +53,6 @@
         </testsuite>
         <testsuite name="infra.service.token">
             <directory>infrastructure/tests/Unit/Service/Token</directory>
-        </testsuite>
-        <testsuite name="infra.service.shop">
-            <directory>infrastructure/tests/Unit/Service/Shop</directory>
         </testsuite>
         <testsuite name="infra.service.user">
             <directory>infrastructure/tests/Unit/Service/User</directory>

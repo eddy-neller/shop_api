@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Command\UpdateUserByAdmin;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
@@ -16,7 +17,7 @@ use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
 
-final readonly class UpdateUserByAdminCommandHandler
+final readonly class UpdateUserByAdminCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\UseCase\Command\Catalog\UpdateProductByAdmin;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\SlugGeneratorInterface;
 use App\Application\Shared\Port\TransactionalInterface;
@@ -17,7 +18,7 @@ use App\Domain\Shop\Catalog\ValueObject\ProductSubtitle;
 use App\Domain\Shop\Catalog\ValueObject\ProductTitle;
 use App\Domain\Shop\Shared\ValueObject\Money;
 
-final readonly class UpdateProductByAdminCommandHandler
+final readonly class UpdateProductByAdminCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private ProductRepositoryInterface $productRepository,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Command\RegisterUser;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\DateIntervalTrait;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\ConfigInterface;
@@ -17,7 +18,7 @@ use App\Domain\User\Identity\ValueObject\Username;
 use App\Domain\User\Model\User;
 use App\Domain\User\Preference\ValueObject\Preferences;
 
-final readonly class RegisterUserCommandHandler
+final readonly class RegisterUserCommandHandler implements CommandHandlerInterface
 {
     use DateIntervalTrait;
 

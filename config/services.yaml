@@ -1,90 +1,61 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
 # This file is the entry point to configure your own services.
 # Files in the packages/ subdirectory configure your dependencies.
+# See also https://symfony.com/doc/current/service_container/import.html
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    app.path.images: /uploads/images
-    app.enabled_locales: "%kernel.enabled_locales%"
-    app.default_locale: "%kernel.default_locale%"
-    app_title: "%env(resolve:APP_TITLE)%"
-    register_token_ttl: "%env(resolve:REGISTER_TOKEN_TTL)%"
-    reset_password_token_ttl: "%env(resolve:RESET_PASSWORD_TOKEN_TTL)%"
-    mailerFrontLinkRegisterValidation: "%env(resolve:MAILER_URI_FRONT_REGISTER_VALIDATION)%"
-    mailerFrontLinkResetPassword: "%env(resolve:MAILER_URI_FRONT_RESET_PASSWORD)%"
-    mailer_to: "%env(resolve:MAILER_TO)%"
-    app.security.max_login_attempts: "%env(resolve:APP_MAX_LOGIN_ATTEMPTS)%"
 
-    ###> symfony/mailer ###
-    mailer_dsn: "%env(resolve:MAILER_DSN)%"
-    mailer_user: "%env(resolve:MAILER_USER)%"
-    mailer_password: "%env(resolve:MAILER_PASSWORD)%"
-    mailer_reply: "%env(resolve:MAILER_REPLY)%"
-    mailer_port: "%env(resolve:MAILER_PORT)%"
-    ###< symfony/mailer ###
+# config/services.yaml
+imports:
+    - { resource: 'services/*.yaml' }
 
 services:
     # default configuration for services in *this* file
     _defaults:
-        autowire: true # Automatically injects dependencies in your services.
+        autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    _instanceof:
+        App\Application\Shared\CQRS\Command\CommandHandlerInterface:
+            tags: [ "app.cqrs.command_handler" ]
+        App\Application\Shared\CQRS\Query\QueryHandlerInterface:
+            tags: [ "app.cqrs.query_handler" ]
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: "../src/"
+        exclude:
+            - "../src/Entity"
 
     App\Application\:
         resource: "../application/src/"
 
     App\Infrastructure\:
         resource: "../infrastructure/src/"
+        exclude:
+            - "../infrastructure/src/Entity"
 
     App\Presentation\:
         resource: "../presentation/src/"
+        exclude:
+            - "../presentation/src/**/ApiResource/"
+            - "../presentation/src/**/Dto/"
 
-    # CQRS - configuration manuelle des handlers
-    App\Application\User\UseCase\Command\:
-        resource: "../application/src/User/UseCase/Command/**/*CommandHandler.php"
-        tags: ["app.cqrs.command_handler"]
-
-    App\Application\User\UseCase\Query\:
-        resource: "../application/src/User/UseCase/Query/**/*QueryHandler.php"
-        tags: ["app.cqrs.query_handler"]
-
-    App\Application\Shop\UseCase\Command\:
-        resource: "../application/src/Shop/UseCase/Command/**/*CommandHandler.php"
-        tags: ["app.cqrs.command_handler"]
-
-    App\Application\Shop\UseCase\Query\:
-        resource: "../application/src/Shop/UseCase/Query/**/*QueryHandler.php"
-        tags: ["app.cqrs.query_handler"]
-
-    # CQRS - Configuration des resolvers avec injection manuelle des ServiceLocators
     App\Application\Shared\CQRS\Command\CommandHandlerResolver:
         arguments:
-            $handlerLocator: !tagged_locator { tag: "app.cqrs.command_handler" }
+            $handlers: !tagged_locator { tag: "app.cqrs.command_handler" }
 
     App\Application\Shared\CQRS\Query\QueryHandlerResolver:
         arguments:
-            $handlerLocator: !tagged_locator { tag: "app.cqrs.query_handler" }
+            $handlers: !tagged_locator { tag: "app.cqrs.query_handler" }
 
-    # CQRS - Configuration des middlewares
-    App\Application\Shared\CQRS\Middleware\CommandLoggingMiddleware:
-        tags: ["app.cqrs.command_middleware"]
-
-    App\Application\Shared\CQRS\Middleware\QueryLoggingMiddleware:
-        tags: ["app.cqrs.query_middleware"]
-
-    App\Application\Shared\CQRS\Middleware\QueryCacheMiddleware:
-        tags:
-            - { name: "app.cqrs.query_middleware", priority: -100 }
-
-    # CQRS - Configuration des Bus avec injection manuelle des middlewares
     App\Application\Shared\CQRS\Command\CommandBus:
         arguments:
-            $middlewares:
-                !tagged_iterator { tag: "app.cqrs.command_middleware" }
+            $middlewares: !tagged_iterator { tag: "app.cqrs.command_middleware" }
 
     App\Application\Shared\CQRS\Query\QueryBus:
         arguments:

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Command\ConfirmPasswordReset;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
@@ -12,7 +13,7 @@ use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Exception\UserDomainException;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
-final readonly class ConfirmPasswordResetCommandHandler
+final readonly class ConfirmPasswordResetCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,

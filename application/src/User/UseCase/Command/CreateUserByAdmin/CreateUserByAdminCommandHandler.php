@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Command\CreateUserByAdmin;
 
+use App\Application\Shared\CQRS\Command\CommandHandlerInterface;
 use App\Application\Shared\Port\ClockInterface;
 use App\Application\Shared\Port\TransactionalInterface;
 use App\Application\User\Port\PasswordHasherInterface;
@@ -18,7 +19,7 @@ use App\Domain\User\Preference\ValueObject\Preferences;
 use App\Domain\User\Security\ValueObject\RoleSet;
 use App\Domain\User\Security\ValueObject\UserStatus;
 
-final readonly class CreateUserByAdminCommandHandler
+final readonly class CreateUserByAdminCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,

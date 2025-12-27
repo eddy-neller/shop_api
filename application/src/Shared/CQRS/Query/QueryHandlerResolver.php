@@ -12,7 +12,7 @@ final class QueryHandlerResolver implements QueryHandlerResolverInterface
     private array $handlerCache = [];
 
     public function __construct(
-        private readonly ContainerInterface $handlerLocator,
+        private readonly ContainerInterface $handlers,
     ) {
     }
 
@@ -26,12 +26,11 @@ final class QueryHandlerResolver implements QueryHandlerResolverInterface
 
         $handlerClass = $this->discoverHandlerClass($queryClass);
 
-        // TODO: Récupérer le handler depuis le ServiceLocator (à changer)
-        if (!$this->handlerLocator->has($handlerClass)) {
+        if (!$this->handlers->has($handlerClass)) {
             throw new RuntimeException(sprintf('Query handler "%s" not found for query "%s". Make sure the handler is registered as a service.', $handlerClass, $queryClass));
         }
 
-        $handler = $this->handlerLocator->get($handlerClass);
+        $handler = $this->handlers->get($handlerClass);
 
         if (!method_exists($handler, 'handle')) {
             throw new RuntimeException(sprintf('Query handler "%s" does not have a "handle" method for query "%s".', $handlerClass, $queryClass));

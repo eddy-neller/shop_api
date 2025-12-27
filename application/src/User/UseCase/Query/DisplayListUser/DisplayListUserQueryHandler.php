@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Query\DisplayListUser;
 
+use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 
-final readonly class DisplayListUserQueryHandler
+final readonly class DisplayListUserQueryHandler implements QueryHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,

@@ -82,7 +82,7 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
         $command = new GenerateUserImagesCommand($userRepo, $em, $customImageProvider);
 
         $application = new Application(self::bootKernel());
-        $application->add($command);
+        $application->addCommand($command);
 
         return new CommandTester($command);
     }
@@ -132,7 +132,7 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
         $command = new GenerateUserImagesCommand($userRepo, $em, $customImageProvider);
 
         $application = new Application(self::bootKernel());
-        $application->add($command);
+        $application->addCommand($command);
 
         return new CommandTester($command);
     }
@@ -170,7 +170,7 @@ final class GenerateUserImagesCommandTest extends KernelTestCase
         $command = new GenerateUserImagesCommand($userRepo, $em, $customImageProvider);
 
         $application = new Application(self::bootKernel());
-        $application->add($command);
+        $application->addCommand($command);
 
         return new CommandTester($command);
     }

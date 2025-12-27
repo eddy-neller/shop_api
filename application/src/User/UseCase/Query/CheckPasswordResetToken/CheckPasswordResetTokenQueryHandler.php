@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\User\UseCase\Query\CheckPasswordResetToken;
 
+use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\User\Port\TokenProviderInterface;
 use App\Application\User\Port\UserRepositoryInterface;
 use App\Domain\User\Identity\ValueObject\EmailAddress;
 
-final readonly class CheckPasswordResetTokenQueryHandler
+final readonly class CheckPasswordResetTokenQueryHandler implements QueryHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $repository,

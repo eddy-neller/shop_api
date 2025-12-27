@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\Shop\UseCase\Query\Catalog\DisplayListProduct;
 
+use App\Application\Shared\CQRS\Query\QueryHandlerInterface;
 use App\Application\Shop\Port\ProductRepositoryInterface;
 
-final readonly class DisplayListProductQueryHandler
+final readonly class DisplayListProductQueryHandler implements QueryHandlerInterface
 {
     public function __construct(
         private ProductRepositoryInterface $repository,

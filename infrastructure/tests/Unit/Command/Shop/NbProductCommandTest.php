@@ -107,7 +107,7 @@ final class NbProductCommandTest extends KernelTestCase
         $command = new NbProductCommand($em);
 
         $application = new Application(self::bootKernel());
-        $application->add($command);
+        $application->addCommand($command);
 
         return new CommandTester($command);
     }
